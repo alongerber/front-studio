@@ -1,0 +1,1158 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>פרונט — שוכרים לכם פנים</title>
+<meta name="description" content="פרונט מפיקה את הפרסומת של העסק שלכם — תסריט, דמות, קול וכתוביות. אתם לא עומדים מול המצלמה. החל מ־590 ₪.">
+<meta property="og:title" content="מישהו חייב לרקוד את זה. זה לא חייב להיות אתם.">
+<meta property="og:description" content="פרונט מפיקה את הפרסומת — אתם עונים על כמה שאלות ומקבלים קובץ.">
+<meta property="og:type" content="website"><meta property="og:locale" content="he_IL">
+<meta property="og:image" content="./assets/posterhero.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070a; --bg2:#0d0e12; --card:#121317; --line:#24252b; --line2:#34353c;
+  --paper:#f2f0ea; --lineL:#dcd8cd;
+  --y:#ffd400; --tx:#fff; --tx2:#98979f; --txD:#0a0a0c; --txD2:#63615b;
+  --ease:cubic-bezier(.22,.9,.28,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--tx);font-family:Heebo,system-ui,sans-serif;font-size:17px;
+  line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img,svg,video{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--y);outline-offset:3px;border-radius:2px}
+.w{width:100%;max-width:1200px;margin-inline:auto;padding-inline:22px}
+.h1{font-size:clamp(35px,6.6vw,84px);font-weight:900;line-height:.97;letter-spacing:-.035em;text-wrap:balance}
+.h2{font-size:clamp(29px,5vw,58px);font-weight:900;line-height:1.02;letter-spacing:-.03em;text-wrap:balance}
+.h3{font-size:clamp(20px,2.3vw,26px);font-weight:800;letter-spacing:-.02em;line-height:1.16}
+.lead{font-size:clamp(17px,1.85vw,20px);color:var(--tx2);line-height:1.55}
+.kick{font-size:12px;font-weight:800;letter-spacing:.2em;color:var(--y);display:flex;align-items:center;gap:10px}
+.kick::before{content:"";width:22px;height:1px;background:currentColor;flex:none}
+.paper{background:var(--paper);color:var(--txD)}
+.paper .lead{color:var(--txD2)} .paper .kick{color:var(--txD)}
+.band{background:var(--y);color:var(--txD)}
+.band .lead{color:#3d3826} .band .kick{color:rgba(10,10,12,.55)}
+.num{font-variant-numeric:tabular-nums}
+section{padding-block:clamp(70px,9.5vw,116px)}
+.rv{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.rv.in{opacity:1;transform:none}
+.rv[data-d="1"]{transition-delay:.08s}.rv[data-d="2"]{transition-delay:.16s}
+.rv[data-d="3"]{transition-delay:.24s}.rv[data-d="4"]{transition-delay:.32s}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important;transition:none}
+  .mq__t,.orb i,.ph__cap span{animation:none!important}*{scroll-behavior:auto!important}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--y);color:var(--txD);
+  font-weight:900;font-size:16.5px;padding:0 30px;height:56px;border-radius:4px;border:0;cursor:pointer;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);text-align:center}
+.btn:hover{transform:translateY(-3px);box-shadow:0 14px 34px -12px rgba(255,212,0,.55)}
+.btn--o{background:transparent;color:var(--tx);border:1px solid var(--line2)}
+.btn--o:hover{border-color:var(--y);color:var(--y);box-shadow:none}
+.btn--d{background:var(--txD);color:var(--y)}
+.btn--d:hover{box-shadow:0 14px 34px -14px rgba(0,0,0,.6)}
+
+.nav{position:fixed;inset-block-start:0;inset-inline:0;z-index:70;padding:13px 0;transform:translateY(-105%);
+  transition:transform .5s var(--ease);background:rgba(7,7,10,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.nav.on{transform:none}
+.nav .w{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.nav .btn{height:44px;font-size:15px;padding:0 20px}
+.nav__b{display:flex;align-items:baseline;gap:11px;min-width:0}
+.nav__b i{font-style:normal;font-size:12.5px;font-weight:700;color:var(--tx2);white-space:nowrap}
+@media(max-width:640px){.nav__b i{display:none}}
+.logo{font-weight:900;font-size:21px;letter-spacing:-.03em}.logo b{color:var(--y)}
+
+/* ══ HERO ══ */
+.hero{position:relative;overflow:hidden;padding-top:88px;padding-bottom:0;
+  background:radial-gradient(110% 74% at 78% 2%,#1d1f26 0%,var(--bg) 62%)}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.4;mix-blend-mode:overlay;z-index:1;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='.5'/></svg>")}
+.hero__g{position:relative;z-index:3;display:grid;grid-template-columns:1fr;gap:30px;align-items:end}
+.hero__t{padding-bottom:4px}
+.hero .h1 em{font-style:normal;color:var(--y)}
+.hero__sub{margin-top:22px;max-width:38ch}
+.hero__cta{margin-top:30px;display:flex;flex-wrap:wrap;gap:11px}
+
+.stage{position:relative;justify-self:center;width:min(360px,86vw)}
+.stage__f{position:relative;z-index:2;border-radius:20px;overflow:hidden;aspect-ratio:9/16;background:#0b0c0e;
+  border:1px solid var(--line2);box-shadow:0 50px 90px -40px rgba(0,0,0,.95)}
+.stage__f video,.stage__f img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage__f::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(to top,rgba(7,7,10,.9) 0%,rgba(7,7,10,.15) 34%,transparent 60%)}
+.stage__gl{position:absolute;z-index:0;inset:-10% -10% -8%;border-radius:50%;filter:blur(62px);pointer-events:none;
+  background:radial-gradient(50% 48% at 50% 55%,rgba(255,212,0,.34),transparent 72%)}
+.chip{position:absolute;z-index:4;inset-inline-start:-14px;bottom:14%;background:var(--y);color:var(--txD);
+  border-radius:5px;padding:12px 15px;max-width:216px;font-size:13.5px;font-weight:700;line-height:1.42;
+  box-shadow:0 20px 44px -16px rgba(0,0,0,.85)}
+.chip b{display:block;font-weight:900;font-size:11px;letter-spacing:.14em;margin-bottom:5px;opacity:.6}
+.chip::after{content:"";position:absolute;inset-inline-end:-7px;bottom:17px;width:0;height:0;
+  border-block:7px solid transparent;border-inline-start:8px solid var(--y)}
+.stage__lbl{position:absolute;z-index:4;inset-block-start:14px;inset-inline-end:14px;font-size:10.5px;font-weight:900;
+  letter-spacing:.16em;color:#fff;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);padding:6px 10px;border-radius:3px}
+
+/* ══ EQUATION ══ */
+.eq{position:relative;z-index:3;margin-top:38px;border-top:1px solid var(--line);padding-top:26px;padding-bottom:34px}
+.eq__k{font-size:12px;font-weight:800;letter-spacing:.18em;color:var(--tx2);margin-bottom:18px}
+.eq__r{display:flex;flex-wrap:wrap;align-items:stretch;gap:0}
+.eqi{display:flex;align-items:baseline;gap:10px;padding-inline-end:22px}
+.eqi b{font-size:clamp(38px,6.2vw,58px);font-weight:900;letter-spacing:-.05em;line-height:.9;
+  font-variant-numeric:tabular-nums;color:#3c3d45;transition:color .5s var(--ease)}
+.eqi.one b{color:var(--y)}
+.eqi.in b{color:#fff}.eqi.one.in b{color:var(--y)}
+.eqi span{font-size:14px;font-weight:700;color:var(--tx2);white-space:nowrap}
+.eqo{display:flex;align-items:center;font-size:24px;font-weight:300;color:#4c4d55;padding-inline-end:22px;line-height:1}
+.eqr{display:flex;align-items:center;gap:11px;padding-inline-start:2px}
+.eqr b{font-size:clamp(17px,2.2vw,22px);font-weight:900;letter-spacing:-.025em;line-height:1.15;
+  border-bottom:3px solid var(--y);padding-bottom:3px}
+@media(max-width:719px){
+  .eq__r{display:grid;grid-template-columns:1fr 1fr;gap:20px 14px;align-items:start}
+  .eqo{display:none}
+  .eqi{padding:0;flex-direction:column;align-items:flex-start;gap:1px}
+  .eqi b{font-size:44px;line-height:1}
+  .eqi span{font-size:13px;white-space:normal;line-height:1.35}
+  .eqr{grid-column:1/-1;border-top:1px solid var(--line);padding-top:16px;margin-top:2px;gap:10px}
+  .eqr::before{content:"=";font-size:21px;font-weight:300;color:#4c4d55;line-height:1}
+}
+
+.mq{border-block:1px solid var(--line);padding:18px 0;overflow:hidden;background:var(--bg2);position:relative;z-index:3}
+.mq__t{display:flex;width:max-content;animation:mv 36s linear infinite}
+.mq:hover .mq__t{animation-play-state:paused}
+@keyframes mv{to{transform:translateX(50%)}}
+.mq__t span{font-size:15px;font-weight:700;color:var(--tx2);padding-inline:22px;white-space:nowrap;
+  display:flex;align-items:center;gap:22px}
+.mq__t span::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--y);opacity:.7}
+
+/* ══ WORK ══ */
+.wk{display:grid;grid-template-columns:1fr;gap:18px;margin-top:46px;align-items:start}
+.ph{position:relative;border:1px solid var(--line2);border-radius:26px;padding:8px;background:#101116;
+  box-shadow:0 40px 80px -40px rgba(0,0,0,.95);max-width:330px;margin-inline:auto;width:100%}
+.ph__s{position:relative;aspect-ratio:9/16;border-radius:19px;overflow:hidden;background:#0b0c0e}
+.ph__s video,.ph__s img.pv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ph__grad{position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(0,0,0,.82) 0%,transparent 42%)}
+.ph__cap{position:absolute;inset-inline:14px;bottom:64px;z-index:3;text-align:center;font-weight:900;
+  font-size:clamp(17px,4.4vw,21px);line-height:1.28;letter-spacing:-.02em;display:flex;flex-wrap:wrap;
+  justify-content:center;gap:0 6px;text-shadow:0 2px 14px rgba(0,0,0,.95)}
+.ph__cap span{opacity:.3;transition:opacity .15s,color .15s}
+.ph__cap span.on{opacity:1;color:var(--y)}
+.ph__cap span.said{opacity:1;color:#fff}
+.ph__bar{position:absolute;inset-inline:14px;bottom:34px;height:3px;border-radius:2px;background:rgba(255,255,255,.2);z-index:3}
+.ph__bar i{position:absolute;inset-block:0;inset-inline-start:0;width:0;background:var(--y);border-radius:2px;display:block}
+.ph__tag{position:absolute;inset-block-start:16px;inset-inline-start:14px;z-index:3;font-size:10.5px;font-weight:900;
+  letter-spacing:.14em;color:#fff;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);padding:5px 9px;border-radius:3px}
+.wk__note{border:1px solid var(--line);border-radius:10px;padding:24px 22px;background:var(--card)}
+.wk__note h3{font-size:20px;font-weight:800;letter-spacing:-.015em}
+.wk__note p{color:var(--tx2);font-size:15.5px;margin-top:9px}
+.wk__note p+p{margin-top:12px}
+.wk__note b{color:var(--y);font-weight:800}
+
+/* ══ PROBLEM ══ */
+.pr{margin-top:50px;border-top:1px solid var(--lineL)}
+.pr__i{padding:32px 0;border-bottom:1px solid var(--lineL)}
+.pr__n{font-size:12px;font-weight:900;letter-spacing:.18em;color:var(--txD2);margin-bottom:11px}
+.pr__i h3{font-size:clamp(22px,3.2vw,32px);font-weight:900;letter-spacing:-.025em;line-height:1.12;max-width:19ch}
+.pr__i p{margin-top:11px;color:var(--txD2);max-width:44ch}
+.pr__q{margin-top:18px;font-size:16px;font-weight:700;border-inline-start:2px solid var(--y);
+  padding-inline-start:14px;max-width:40ch}
+
+/* ══ STICKY ══ */
+.st{display:grid;grid-template-columns:1fr;gap:40px;align-items:start}
+.st__steps{display:grid;gap:14px}
+.sc{border:1px solid var(--line);border-radius:9px;padding:24px 22px;background:var(--card);
+  transition:border-color .45s var(--ease),background .45s var(--ease),transform .45s var(--ease)}
+.sc.act{border-color:var(--y);background:#17160e;transform:translateX(-6px)}
+.sc__k{font-size:11.5px;font-weight:900;letter-spacing:.18em;color:var(--tx2);margin-bottom:9px}
+.sc.act .sc__k{color:var(--y)}
+.sc p{color:var(--tx2);font-size:15.5px;margin-top:8px}
+
+/* ══ COMPARISON (hooks) ══ */
+.cmp{margin-top:32px;display:grid;gap:16px}
+.cmp__pick{display:flex;flex-wrap:wrap;gap:7px}
+.cmp__pick button{border:1px solid rgba(10,10,12,.26);background:transparent;color:var(--txD);border-radius:999px;
+  padding:9px 16px;font-weight:700;font-size:14.5px;cursor:pointer;transition:all .22s var(--ease)}
+.cmp__pick button:hover{border-color:var(--txD);background:rgba(10,10,12,.05)}
+.cmp__pick button.on{background:var(--txD);color:var(--y);border-color:var(--txD)}
+.cmp__g{display:grid;gap:14px;align-items:stretch}
+.cmp__g>div{display:flex;flex-direction:column}
+.cmp__g>div>.cbad,.cmp__g>div>.cgood{flex:1}
+.cmp__lbl{font-size:11.5px;font-weight:900;letter-spacing:.15em;margin-bottom:9px;display:block}
+.cbad{background:#e9e6dd;color:#77746b;border:1px solid #cfcabb;border-radius:12px;padding:22px 22px 18px;
+  position:relative;overflow:hidden;opacity:.42;transition:opacity .65s var(--ease);display:flex;flex-direction:column}
+.cbad.in{opacity:1}
+.cbad__h{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:800;letter-spacing:.1em;
+  color:#96938a;border-bottom:1px solid #d9d5c9;padding-bottom:11px}
+.cbad__h i{width:16px;height:16px;border-radius:50%;background:#d3cfc2;flex:none;font-style:normal}
+.cbad__t{font-size:16px;font-weight:600;line-height:1.55;margin-top:16px;flex:1}
+.cbad__f{margin-top:16px;padding-top:11px;border-top:1px solid #d9d5c9;display:flex;gap:18px;
+  font-size:12.5px;color:#9a978e;font-weight:700}
+.cbad__st{position:absolute;inset-block-end:20%;inset-inline-start:50%;transform:translate(50%,50%) rotate(-13deg);
+  border:2.5px solid rgba(0,0,0,.13);color:rgba(0,0,0,.15);font-weight:900;font-size:clamp(15px,2.4vw,20px);
+  letter-spacing:.06em;padding:6px 16px;border-radius:5px;white-space:nowrap;pointer-events:none}
+.cgood{background:#0a0a0c;border:1px solid #2b2c33;border-radius:12px;padding:22px 22px 18px;position:relative;
+  display:flex;flex-direction:column;box-shadow:0 30px 60px -30px rgba(0,0,0,.6);overflow:hidden}
+.cgood::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;background:var(--y)}
+.cgood__h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10.5px;
+  font-weight:900;letter-spacing:.14em;color:#7e7d85;border-bottom:1px solid #22232a;padding-bottom:11px}
+.cgood__h b{color:var(--y)}
+.cgood__t{font-size:clamp(20px,3vw,29px);font-weight:900;color:#fff;line-height:1.3;letter-spacing:-.025em;
+  margin-top:18px;flex:1;text-wrap:balance}
+.cgood__f{margin-top:18px;padding-top:12px;border-top:1px solid #22232a}
+.cgood__bar{height:4px;border-radius:3px;background:#242530;overflow:hidden;position:relative}
+.cgood__bar i{position:absolute;inset-block:0;inset-inline-start:0;width:0;background:var(--y);border-radius:3px;display:block}
+.cgood__tm{display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:#6f6e77;margin-top:8px;
+  font-variant-numeric:tabular-nums;letter-spacing:.06em}
+.cmp__note{margin-top:4px;font-size:clamp(16px,2vw,19px);font-weight:800;color:var(--txD);
+  border-inline-start:3px solid var(--txD);padding-inline-start:14px;max-width:56ch}
+.cmp__cta{margin-top:18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cmp__cta span{font-size:14.5px;font-weight:700;color:#3d3826;max-width:34ch}
+
+/* ══ RECEIPT ══ */
+.rc{margin-top:44px;display:grid;gap:22px}
+.rc__c{background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:clamp(22px,3.5vw,34px);
+  box-shadow:0 40px 90px -50px rgba(0,0,0,.9);position:relative;overflow:hidden}
+.rc__c::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;
+  background:repeating-linear-gradient(90deg,var(--y) 0 12px,transparent 12px 24px);opacity:.65}
+.rc__h{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:baseline;
+  padding-bottom:16px;border-bottom:1px dashed var(--line2)}
+.rc__h h3{font-size:19px;font-weight:900;letter-spacing:-.02em}
+.rc__h span{font-size:11.5px;font-weight:800;letter-spacing:.14em;color:var(--tx2)}
+.rc__l{list-style:none;padding:6px 0}
+.rc__l li{display:flex;align-items:baseline;gap:8px;padding:11px 0;font-size:15.5px}
+.rc__l li i{font-style:normal;font-weight:800;color:#e9e8e4;white-space:nowrap;flex:none}
+.rc__l li u{flex:1;border-bottom:1px dotted #3a3b43;text-decoration:none;transform:translateY(-4px)}
+.rc__l li s{text-decoration:none;color:var(--tx2);white-space:normal;text-align:end;flex:none;max-width:56%}
+.rc__f{border-top:1px dashed var(--line2);padding-top:10px}
+.rc__f li i{color:var(--y)}
+.rc__f li s{color:#fff;font-weight:800}
+.rc__t{margin-top:14px;border-top:1px solid var(--line2);padding-top:18px;display:flex;flex-wrap:wrap;
+  gap:12px;justify-content:space-between;align-items:center}
+.rc__t b{font-size:clamp(19px,2.6vw,25px);font-weight:900;letter-spacing:-.025em}
+.rc__t b em{font-style:normal;color:var(--y)}
+.rc__t span{font-size:13.5px;color:var(--tx2);max-width:34ch}
+.rc__side{display:grid;gap:12px;align-content:start}
+.rcs{border:1px solid var(--line);border-radius:10px;background:var(--bg2);padding:20px}
+.rcs b{display:block;font-size:clamp(30px,5vw,42px);font-weight:900;letter-spacing:-.045em;color:var(--y);line-height:1}
+.rcs b i{font-style:normal;font-size:.38em;letter-spacing:0;margin-inline-start:3px}
+.rcs span{display:block;font-size:14.5px;color:var(--tx2);margin-top:8px}
+.rcs--y{background:linear-gradient(150deg,#1c1a11,#111216);border-color:#3a3520}
+
+/* ══ TIMELINE ══ */
+.tl{position:relative;margin-top:50px;padding-inline-start:32px}
+.tl::before{content:"";position:absolute;inset-block:6px;inset-inline-start:10px;width:2px;background:var(--line2)}
+.tl__p{position:absolute;inset-inline-start:10px;inset-block-start:6px;width:2px;background:var(--y);height:0}
+.tl__i{position:relative;padding-bottom:38px}.tl__i:last-child{padding-bottom:0}
+.tl__i::before{content:"";position:absolute;inset-inline-start:-28px;inset-block-start:6px;width:16px;height:16px;
+  border-radius:50%;background:var(--bg);border:2px solid var(--line2);transition:border-color .4s,background .4s}
+.tl__i.act::before{border-color:var(--y);background:var(--y)}
+.tl__i h3{font-size:clamp(20px,2.5vw,25px);font-weight:900;letter-spacing:-.02em}
+.tl__i p{color:var(--tx2);margin-top:7px;max-width:46ch}
+.tl__t{font-size:11.5px;font-weight:900;letter-spacing:.15em;color:var(--tx2);margin-bottom:5px}
+.tl__i.act .tl__t{color:var(--y)}
+
+/* ══ PRICING ══ */
+.tg{display:inline-flex;padding:5px;border:1px solid var(--line);border-radius:999px;background:var(--card);
+  margin-top:28px;position:relative}
+.tg button{background:none;border:0;color:var(--tx2);font-weight:800;font-size:15px;padding:11px 24px;
+  border-radius:999px;cursor:pointer;position:relative;z-index:2;transition:color .35s}
+.tg button.on{color:var(--txD)}
+.tg__p{position:absolute;inset-block:5px;border-radius:999px;background:var(--y);transition:all .42s var(--ease);z-index:1}
+.pl{display:grid;grid-template-columns:1fr;gap:17px;margin-top:32px}
+.pc{border:1px solid var(--line);border-radius:12px;padding:30px 26px;background:var(--card);position:relative;
+  display:flex;flex-direction:column;transition:transform .4s var(--ease)}
+.pc:hover{transform:translateY(-4px)}
+.pc--hi{border-color:var(--y);background:linear-gradient(165deg,#1b1910,#0f1014);
+  box-shadow:0 30px 70px -36px rgba(255,212,0,.45)}
+.pc--fast{border-color:#3d3f49;background:linear-gradient(165deg,#16181d,#0f1014)}
+.pc__tag{position:absolute;inset-block-start:-12px;inset-inline-start:24px;background:var(--y);color:var(--txD);
+  font-size:11px;font-weight:900;letter-spacing:.1em;padding:5px 12px;border-radius:3px}
+.pc__tag--o{background:#2b2d35;color:#cfcec9;border:1px solid var(--line2)}
+.pc h3{font-size:26px;font-weight:900;letter-spacing:-.025em}
+.pc__d{color:var(--tx2);font-size:15px;margin-top:8px;min-height:3.1em}
+.pc__pr{display:flex;align-items:baseline;gap:9px;margin-top:20px}
+.pc__pr b{font-size:clamp(38px,6.6vw,52px);font-weight:900;letter-spacing:-.045em;line-height:1}
+.pc__pr i{font-style:normal;font-size:13.5px;color:var(--tx2)}
+.pc__sv{display:inline-block;align-self:flex-start;margin-top:9px;font-size:13px;font-weight:800;color:var(--y);
+  background:rgba(255,212,0,.1);padding:5px 11px;border-radius:3px}
+.pc ul{list-style:none;margin-top:20px;padding-top:18px;border-top:1px solid var(--line);flex:1}
+.pc li{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:#d7d6d2;padding:6px 0}
+.pc li svg{width:15px;height:15px;flex:none;margin-top:5px;stroke:var(--y);fill:none;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round}
+.pc__x{margin-top:14px;font-size:13.5px;color:#8d8c93;border-inline-start:2px solid var(--line2);
+  padding-inline-start:12px;line-height:1.45}
+.pc__x b{color:#c9c8c4;font-weight:800}
+.pc .btn{margin-top:22px;width:100%}
+.pc__alt{display:block;text-align:center;margin-top:11px;font-size:13.5px;font-weight:700;color:var(--tx2);
+  text-decoration:underline;text-underline-offset:3px;transition:color .25s}
+.pc__alt:hover{color:var(--y)}
+.fine{margin-top:28px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px;color:var(--tx2);display:grid;gap:9px}
+.fine b{color:#fff;font-weight:800}
+
+/* ══ WALL OF DELAYS ══ */
+#delays{overflow-x:clip}
+.wall{margin-top:44px;display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:34px 22px}
+.note{background:#f5f0dd;color:#2c2a23;border-radius:2px;padding:28px 20px 20px;position:relative;
+  box-shadow:0 20px 38px -20px rgba(0,0,0,.9);transition:transform .38s var(--ease),box-shadow .38s var(--ease),opacity .6s var(--ease)}
+.note{opacity:0}
+.wall.in .note{opacity:1}
+.note:nth-child(1){transition-delay:.05s}.note:nth-child(2){transition-delay:.12s}
+.note:nth-child(3){transition-delay:.19s}.note:nth-child(4){transition-delay:.26s}
+.note:nth-child(5){transition-delay:.33s}.note:nth-child(6){transition-delay:.4s}
+.note:nth-child(7){transition-delay:.5s}
+.note:nth-child(6n+1){transform:rotate(-2.4deg)}.note:nth-child(6n+2){transform:rotate(1.7deg)}
+.note:nth-child(6n+3){transform:rotate(-1.1deg)}.note:nth-child(6n+4){transform:rotate(2.6deg)}
+.note:nth-child(6n+5){transform:rotate(-3deg)}.note:nth-child(6n){transform:rotate(1.2deg)}
+.note:hover{transform:rotate(0) translateY(-7px);box-shadow:0 30px 50px -22px rgba(0,0,0,.95)}
+.note::before{content:"";position:absolute;inset-block-start:-8px;inset-inline-start:50%;transform:translateX(50%);
+  width:15px;height:15px;border-radius:50%;background:var(--y);
+  box-shadow:0 3px 6px rgba(0,0,0,.55),inset 0 -3px 4px rgba(0,0,0,.22),inset 0 2px 3px rgba(255,255,255,.5)}
+.note q{display:block;font-size:19.5px;font-weight:800;line-height:1.38;letter-spacing:-.015em;min-height:2.7em}
+.note__d{margin-top:18px;padding-top:12px;border-top:1px dashed #cfc8a9;font-size:11px;font-weight:800;
+  color:#8e8871;letter-spacing:.08em}
+.note__c{margin-top:5px;display:flex;align-items:baseline;gap:7px}
+.note__c b{font-size:29px;font-weight:900;letter-spacing:-.04em;color:#9c7a10;line-height:1;font-variant-numeric:tabular-nums}
+.note__c span{font-size:12.5px;font-weight:800;color:#8e8871}
+.note--x{background:#0a0a0c;color:#fff;transform:none!important;box-shadow:0 26px 46px -20px rgba(0,0,0,.95),0 0 0 1px #2e2f36}
+.note--x:hover{transform:translateY(-7px)!important}
+.note--x::before{background:#fff}
+.note--x .note__d{border-top-color:#2e2f36;color:#87868e}
+.note--x .note__c b{color:var(--y)}.note--x .note__c span{color:#87868e}
+.note--x .btn{margin-top:16px;width:100%;height:46px;font-size:15px;padding:0 14px}
+.wall__end{margin-top:40px;font-size:clamp(17px,2.1vw,21px);font-weight:800;color:#fff;
+  border-inline-start:3px solid var(--y);padding-inline-start:16px;max-width:52ch}
+
+/* ══ CHAT ══ */
+.ch{margin-top:44px;display:grid;gap:12px;max-width:760px}
+.cq{justify-self:start;background:#1c1d22;border:1px solid var(--line);border-radius:16px 16px 4px 16px;
+  padding:14px 19px;font-size:16.5px;font-weight:600;cursor:pointer;max-width:90%;color:var(--tx);
+  transition:border-color .3s,background .3s;display:flex;align-items:center;gap:12px;text-align:start}
+.cq:hover{border-color:var(--line2)}
+.cq[aria-expanded="true"]{border-color:var(--y)}
+.cq .pl2{color:var(--y);font-weight:900;font-size:19px;line-height:1;transition:transform .35s var(--ease);flex:none}
+.cq[aria-expanded="true"] .pl2{transform:rotate(45deg)}
+.ca{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease);justify-self:end;max-width:90%}
+.ca.open{grid-template-rows:1fr}
+.ca>div{overflow:hidden}
+.ca__h{display:flex;align-items:center;gap:8px;margin-bottom:6px;justify-content:flex-end}
+.ca__h img{width:24px;height:24px;border-radius:50%;object-fit:cover}
+.ca__h span{font-size:11.5px;font-weight:900;letter-spacing:.1em;color:var(--tx2)}
+.ca__b{background:var(--y);color:var(--txD);border-radius:16px 16px 16px 4px;padding:15px 19px;
+  font-size:16px;line-height:1.55;font-weight:500}
+
+/* ══ AGENT ══ */
+.ag{background:var(--y);color:var(--txD);overflow:hidden}
+.ag .kick{color:rgba(10,10,12,.5)}
+.ag__g{display:grid;grid-template-columns:1fr;gap:38px;align-items:center}
+.ag p{font-size:clamp(16.5px,1.9vw,19px);font-weight:500;max-width:44ch;margin-top:18px;color:#262418}
+.orb{position:relative;width:min(230px,64vw);aspect-ratio:1;margin-inline:auto}
+.orb img{width:100%;height:100%;object-fit:cover;border-radius:50%;position:relative;z-index:2;
+  -webkit-mask-image:radial-gradient(circle at 50% 46%,#000 63%,rgba(0,0,0,.5) 76%,transparent 88%);
+  mask-image:radial-gradient(circle at 50% 46%,#000 63%,rgba(0,0,0,.5) 76%,transparent 88%)}
+.orb i{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(10,10,12,.32);animation:pulse 3s ease-out infinite;z-index:1}
+.orb i:nth-child(2){animation-delay:1s}.orb i:nth-child(3){animation-delay:2s}
+@keyframes pulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+.orb b{position:absolute;z-index:3;inset-block-end:6px;inset-inline-start:50%;transform:translateX(-50%);
+  background:var(--txD);color:var(--y);font-size:12px;font-weight:900;letter-spacing:.1em;padding:6px 14px;border-radius:999px;white-space:nowrap}
+.mt{margin-top:26px;display:grid;gap:1px;background:rgba(10,10,12,.2);border:1px solid rgba(10,10,12,.2);
+  border-radius:10px;overflow:hidden}
+.mt__c{background:var(--y);padding:20px 22px}
+.mt__c h4{font-size:11.5px;font-weight:900;letter-spacing:.14em;color:rgba(10,10,12,.5);margin-bottom:13px}
+.mt__c ul{list-style:none;display:grid;gap:11px}
+.mt__c li{font-size:15px;font-weight:600;color:#231f10;display:flex;gap:9px;align-items:flex-start;line-height:1.42}
+.mt__c li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--txD);flex:none;margin-top:8px}
+.mt__c--b li::before{border-radius:1px;background:transparent;border:1.5px solid rgba(10,10,12,.4);width:7px;height:7px;margin-top:7px}
+.ag__cta{margin-top:26px;display:flex;flex-wrap:wrap;gap:11px}
+.ag__btn2{background:transparent;border:1px solid rgba(10,10,12,.32);color:var(--txD)}
+.ag__btn2:hover{background:rgba(10,10,12,.06);box-shadow:none}
+.ag__fine{font-size:13.5px!important;color:#3d3826!important;margin-top:14px!important;font-weight:600!important;
+  display:grid;gap:4px;max-width:50ch!important}
+.orb b .live{width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block;
+  margin-inline-end:7px;animation:blip 1.8s infinite}
+@keyframes blip{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ══ ABOUT ══ */
+.ab{display:grid;grid-template-columns:1fr;gap:34px;align-items:start}
+.ab__v{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:9/16;background:#0b0c0e;
+  border:1px solid var(--line2);box-shadow:0 44px 90px -46px rgba(0,0,0,.95);max-width:330px;
+  margin-inline:auto;width:100%}
+.ab__v video,.ab__v img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ab__v::after{content:"";position:absolute;inset:0;z-index:2;
+  background:linear-gradient(to top,rgba(7,7,10,.88) 0%,transparent 46%)}
+.ab__cap{position:absolute;z-index:3;inset-inline:16px;inset-block-end:16px;font-size:13.5px;
+  font-weight:700;line-height:1.45;color:#e7e6e2}
+.ab__cap b{display:block;color:var(--y);font-size:11px;letter-spacing:.14em;margin-bottom:6px}
+.beats{margin-top:34px}
+.beat{padding:26px 0;border-top:1px solid var(--line)}
+.beat:first-child{border-top:0;padding-top:0}
+.beat__n{font-size:11.5px;font-weight:900;letter-spacing:.18em;color:var(--y);margin-bottom:9px}
+.beat h3{font-size:clamp(25px,4.2vw,44px);font-weight:900;letter-spacing:-.035em;line-height:1.03;text-wrap:balance}
+.beat p{color:var(--tx2);margin-top:11px;max-width:50ch;font-size:16.5px;line-height:1.55}
+.ab__sign{margin-top:32px;border:1px solid var(--line);border-radius:12px;background:var(--card);
+  padding:26px 24px;display:grid;gap:14px}
+.ab__sign p{font-size:16.5px;line-height:1.55;color:#c9c8c4}
+.ab__sign p.big{font-size:clamp(18px,2.3vw,23px);font-weight:900;color:#fff;letter-spacing:-.02em;line-height:1.3}
+.ab__sign p.last{color:var(--y);font-weight:800}
+
+/* ══ FINAL ══ */
+.fin{text-align:center}
+.fin .h2{font-size:clamp(32px,6.8vw,80px);max-width:15ch;margin-inline:auto}
+.fin .lead{max-width:42ch;margin:20px auto 0}
+.gate{margin-top:60px;border-top:1px solid var(--line);padding-top:44px;text-align:start;
+  display:grid;gap:14px;max-width:640px;margin-inline:auto}
+.gate h3{font-size:clamp(21px,3vw,30px);font-weight:900;letter-spacing:-.025em}
+.gate p{color:var(--tx2);font-size:16px;line-height:1.55}
+.gate b{color:#fff;font-weight:800}
+.gate .hl{color:var(--y);font-weight:800}
+footer{border-top:1px solid var(--line);padding:36px 0;font-size:14px;color:var(--tx2)}
+.ft{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+footer a:hover{color:var(--y)}
+
+/* ══ WA FALLBACK ══ */
+.wam{position:fixed;inset:0;z-index:120;background:rgba(4,4,6,.82);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;padding:22px}
+.wam__c{background:var(--card);border:1px solid var(--line2);border-radius:14px;padding:28px 24px;max-width:400px;width:100%}
+.wam__c h4{font-size:20px;font-weight:900;letter-spacing:-.02em}
+.wam__c p{color:var(--tx2);font-size:15px;margin-top:9px;line-height:1.5}
+.wam__n{margin-top:16px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:14px;
+  text-align:center;font-size:22px;font-weight:900;letter-spacing:.02em;font-variant-numeric:tabular-nums;direction:ltr}
+.wam__b{margin-top:14px;display:grid;gap:9px}
+.wam__b .btn{width:100%}
+
+@media(min-width:860px){
+  .hero{padding-top:100px}
+  .hero__g{grid-template-columns:1.06fr .94fr;gap:26px;align-items:center;padding-top:14px}
+  .hero__t{padding-bottom:0}
+  .stage{width:min(440px,100%);justify-self:center}
+  .pr__i{display:grid;grid-template-columns:.95fr 1.05fr;gap:44px;align-items:start;padding:38px 0}
+  .pr__n{grid-column:1}.pr__i h3{grid-column:1;grid-row:2}
+  .pr__i p{grid-column:2;grid-row:1/span 2}.pr__q{grid-column:2;grid-row:3;margin-top:0}
+  .st{grid-template-columns:.84fr 1.16fr;gap:60px}
+  .st__l{position:sticky;top:104px}
+  .rc{grid-template-columns:1.55fr .95fr;gap:20px;align-items:start}
+  .pl{grid-template-columns:1fr 1fr;gap:20px}
+  .wk{grid-template-columns:1fr 1fr .9fr;gap:22px}
+  .ag__g{grid-template-columns:1.35fr .65fr}
+  .mt{grid-template-columns:1fr 1fr}
+  .ab{grid-template-columns:.72fr 1.28fr;gap:52px}
+  .ab__vw{position:sticky;top:104px}
+  .cmp__g{grid-template-columns:1fr 1fr}
+}
+@media(min-width:1200px){.stage{width:min(482px,100%)}}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav"><div class="w">
+  <div class="nav__b"><span class="logo">פרונט<b>.</b></span><i>שוכרים לכם פנים</i></div>
+  <a class="btn" href="#talk">דברו איתה</a>
+</div></nav>
+
+<!-- ══ HERO ══ -->
+<header class="hero">
+  <div class="grain"></div>
+  <div class="w">
+    <div class="hero__g">
+      <div class="hero__t">
+        <div class="kick rv">פרונט · שוכרים לכם פנים</div>
+        <h1 class="h1 rv" data-d="1" style="margin-top:20px">מישהו חייב לרקוד את זה.<br>זה לא חייב להיות <em>אתם.</em></h1>
+        <p class="lead hero__sub rv" data-d="2">כל פרסומת דורשת שמישהו יעמוד מול מצלמה ויעשה קצת צחוק מעצמו. את התסריט אנחנו כותבים, את הדמות אנחנו מלהקים, ואת המבוכה מישהו אחר לוקח על עצמו. מכם נדרשת שיחה אחת.</p>
+        <div class="hero__cta rv" data-d="3">
+          <a class="btn" href="#pricing">החל מ־590 ₪ לסרטון</a>
+          <a class="btn btn--o" href="#work">לראות מה יוצא מזה</a>
+        </div>
+      </div>
+      <div class="stage rv" data-d="1">
+        <span class="stage__gl"></span>
+        <div class="stage__f">
+          <video muted loop playsinline preload="none" poster="./assets/posterhero.webp" data-src="./assets/hero.mp4" aria-label="שני פרזנטורים רוקדים בסרטון פרסומת"></video>
+          <span class="stage__lbl">פרונט · הפקה</span>
+        </div>
+        <div class="chip"><b>מי רוקד</b>לא אתם. ליהקנו מישהו בדיוק בשביל החלק הזה.</div>
+      </div>
+    </div>
+    <div class="eq rv" data-d="3">
+      <div class="eq__k">כל מה שנדרש מכם, במשוואה אחת</div>
+      <div class="eq__r" id="eq">
+        <div class="eqi one"><b class="num">1</b><span>שיחה</span></div>
+        <div class="eqo" aria-hidden="true">+</div>
+        <div class="eqi"><b class="num">0</b><span>צילומים</span></div>
+        <div class="eqo" aria-hidden="true">+</div>
+        <div class="eqi"><b class="num">0</b><span>תסריטים שכתבתם</span></div>
+        <div class="eqo" aria-hidden="true">+</div>
+        <div class="eqi"><b class="num">0</b><span>פגישות סטטוס</span></div>
+        <div class="eqo" aria-hidden="true">=</div>
+        <div class="eqr"><b>הפרסומת של העסק שלכם</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="mq" aria-hidden="true"><div class="mq__t" id="mq"></div></div>
+</header>
+
+<!-- ══ WORK ══ -->
+<section id="work">
+  <div class="w">
+    <div class="kick rv">מה שיוצא מזה בפועל</div>
+    <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:20ch">אף אחד מהאנשים בסרטונים האלה<br>לא הבעלים של העסק.</h2>
+    <div class="wk">
+      <div class="ph rv" data-d="1">
+        <div class="ph__s">
+          <video muted loop playsinline preload="none" poster="./assets/poster2.webp" data-src="./assets/work2.mp4" aria-label="פרסומת של מוסך הצומת"></video>
+          <span class="ph__grad"></span><span class="ph__tag">מוסך הצומת</span>
+          <div class="ph__cap" id="cap"></div><div class="ph__bar"><i id="bar"></i></div>
+        </div>
+      </div>
+      <div class="ph rv" data-d="2">
+        <div class="ph__s">
+          <video muted loop playsinline preload="none" poster="./assets/poster1.webp" data-src="./assets/work1.mp4" aria-label="סרטון מתוך העבודות של פרונט"></video>
+          <span class="ph__grad"></span><span class="ph__tag">סבתא ג׳ינה · קמפיין</span>
+        </div>
+      </div>
+      <div class="wk__note rv" data-d="3">
+        <h3>שתי שניות. זה כל מה שיש.</h3>
+        <p>בשתי השניות הראשונות אצבע אחת מחליטה אם להמשיך או להחליק הלאה. אין שם מקום להסביר מי אתם, כמה שנים אתם בשוק, ואיזה שירות מקצועי אתם נותנים.</p>
+        <p><b>אנחנו לא מוכרים וידאו. אנחנו מוכרים את שתי השניות האלה</b> — ואת מה שנאמר בהן.</p>
+        <p style="font-size:14px;color:var(--tx2);border-top:1px solid var(--line);padding-top:13px">הכתוביות שרצות שם, מילה־מילה בצהוב, הן חלק מכל סרטון. גם ב־590.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROBLEM ══ -->
+<section class="paper">
+  <div class="w">
+    <div class="kick rv">למה זה לא קורה</div>
+    <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:15ch">אתם יודעים שצריך סרטון.<br>אתם פשוט לא מגיעים לזה.</h2>
+    <div class="pr">
+      <div class="pr__i rv">
+        <div class="pr__n">01 — התסריט</div>
+        <h3>יש לך פתק בטלפון. יש בו שורה אחת.</h3>
+        <p>היא מ־2024. פתחת מסמך, כתבת ״היי חברים!״, מחקת, כתבת ״מה קורה חברים?״, וסגרת את המחשב. מאז לא חזרת לשם.</p>
+        <div class="pr__q">לכתוב פרסומת זה מקצוע. לא משהו שעושים בין לקוח ללקוח.</div>
+      </div>
+      <div class="pr__i rv" data-d="1">
+        <div class="pr__n">02 — ההקלטה</div>
+        <h3>הטייק השלישי כבר לא מצחיק</h3>
+        <p>מקליטים, שומעים את עצמכם, מוחקים. הידיים לא יודעות איפה לשבת, הקול נשמע כמו של מישהו אחר, ובסוף מוותרים.</p>
+        <div class="pr__q">לצלם את עצמכם מנקים פילטר זה כמו לשדר את עצמכם מצחצחים שיניים.</div>
+      </div>
+      <div class="pr__i rv" data-d="2">
+        <div class="pr__n">03 — מה שיוצא</div>
+        <h3>מעלים משהו. אף אחד לא עוצר.</h3>
+        <p>בסוף מצלמים מהרכב, מעלים, ומקבלים שבע צפיות — חמש מהן שלכם. וזה בדיוק הרגע שבו מחליטים שסרטונים לא עובדים.</p>
+        <div class="pr__q">לקהל יש זיכרון של דג. לא הסרטון נכשל — שלוש השניות הראשונות נכשלו.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SOLUTION ══ -->
+<section>
+  <div class="w st">
+    <div class="st__l">
+      <div class="kick rv">מה אנחנו עושים</div>
+      <h2 class="h2 rv" data-d="1" style="margin-top:18px">אנחנו כותבים,<br>מביימים ומפיקים.</h2>
+      <p class="lead rv" data-d="2" style="margin-top:20px">שיווק זו הטרדה מאורגנת — אז לפחות שתהיה מצחיקה. כל סרטון נבנה במערכת הפקה שפיתחנו בעצמנו, ובדיוק בגללה זה לוקח ימים ולא שבועות.</p>
+      <a class="btn btn--o rv" data-d="3" href="#pricing" style="margin-top:26px">לראות מה זה עולה</a>
+    </div>
+    <div class="st__steps">
+      <div class="sc rv" data-step><div class="sc__k">01 — התחקיר</div><h3 class="h3">מי בכלל קונה מכם</h3><p>לא מה שאתם מוכרים — מי שקונה. מישהי שנזכרת בשתיים בלילה, מישהו שכבר בדרך ומחפש בטלפון. משם נבנה המסר.</p></div>
+      <div class="sc rv" data-d="1" data-step><div class="sc__k">02 — התסריט</div><h3 class="h3">שלוש שניות שעוצרות</h3><p>נכתב מאפס לעסק שלכם, בשלוש בבוקר, על ידי אנשים ששונאים קלישאות. שם מושקעת רוב העבודה.</p></div>
+      <div class="sc rv" data-d="2" data-step><div class="sc__k">03 — הדמות</div><h3 class="h3">מישהו אחר מזיע במקומכם</h3><p>פרזנטור שמדבר את הטקסט שלכם בעברית — בלי לגמגם ובלי להיראות כמו חטוף. אתם רק מאשרים.</p></div>
+      <div class="sc rv" data-d="3" data-step><div class="sc__k">04 — ההרכבה</div><h3 class="h3">סצנות, מוזיקה, כתוביות</h3><p>הכל נחתך לקצב, הכתוביות בולטות כי רוב האנשים צופים בלי סאונד, והלוגו שלכם משולב בפנים ולא מודבק מעל.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ COMPARISON ══ -->
+<section class="band" id="hooks">
+  <div class="w">
+    <div class="kick rv">קחו משהו מפה בחינם</div>
+    <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:20ch">שני עסקים. אותו תקציב.<br>שלוש שניות שונות.</h2>
+    <p class="lead rv" data-d="2" style="margin-top:16px;max-width:54ch">בחרו תחום ותראו את שתי הפתיחות זו מול זו. הימנית היא מה שרוב העסקים כותבים. השמאלית היא מה שאנחנו כותבים. קחו אותה, תשתמשו בה בעצמכם, אל תספרו לנו.</p>
+    <div class="cmp rv" data-d="2">
+      <div class="cmp__pick" id="cmpPick" role="group" aria-label="בחירת תחום"></div>
+      <div class="cmp__g">
+        <div>
+          <span class="cmp__lbl" style="color:rgba(10,10,12,.5)">כזה יש לכולם</span>
+          <div class="cbad" id="cBad">
+            <div class="cbad__h"><i></i><span id="cBadName">העסק שלכם</span> · מודעה ממומנת</div>
+            <div class="cbad__t" id="cBadText">—</div>
+            <div class="cbad__f"><span>👍 3</span><span>💬 1 · ״איפה אתם ממוקמים?״</span></div>
+            <div class="cbad__st">כזה יש לכולם</div>
+          </div>
+        </div>
+        <div>
+          <span class="cmp__lbl" style="color:var(--txD)">מה שאנחנו כותבים</span>
+          <div class="cgood" id="cGood">
+            <div class="cgood__h"><span>פרונט · הפקה</span><b id="cGoodName">—</b></div>
+            <div class="cgood__t" id="cGoodText">—</div>
+            <div class="cgood__f">
+              <div class="cgood__bar"><i id="cBar"></i></div>
+              <div class="cgood__tm"><span>שלוש השניות הראשונות</span><span dir="ltr">00:03 / 00:30</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cmp__note">שני העסקים משלמים אותו דבר על הפרסום. אחד מהם משלם גם על השורה.</div>
+      <div class="cmp__cta">
+        <a class="btn btn--d" href="#pricing">לראות כמה זה עולה</a>
+        <span>את עשרים ושבע השניות שאחרי — התסריט, הדמות, המוזיקה והכתוביות — אנחנו עושים.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SPEC SHEET ══ -->
+<section style="border-block:1px solid var(--line);background:var(--bg2)">
+  <div class="w">
+    <div class="kick rv">מה נכנס לכל סרטון</div>
+    <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:18ch">זו לא רשימת פיצ׳רים.<br>זו רשימת דברים שלא תעשו.</h2>
+    <div class="rc">
+      <div class="rc__c rv" data-d="1">
+        <div class="rc__h"><h3>תעודת משלוח · סרטון אחד</h3><span>פרונט · הפקה</span></div>
+        <ul class="rc__l">
+          <li><i>תסריט</i><u></u><s>נכתב לעסק שלכם, לא תבנית</s></li>
+          <li><i>דמות</i><u></u><s>מלוהקת, מדברת עברית</s></li>
+          <li><i>קול</i><u></u><s>עברית שוטפת, בלי מבטא</s></li>
+          <li><i>מוזיקה</i><u></u><s>חתוכה לקצב העריכה</s></li>
+          <li><i>כתוביות</i><u></u><s>מילה־מילה, בצהוב, בולטות</s></li>
+          <li><i>הלוגו שלכם</i><u></u><s>משולב בפנים, לא מודבק מעל</s></li>
+          <li><i>הקובץ</i><u></u><s>מוכן לכל רשת, בלי סימן מים</s></li>
+          <li><i>זמן אספקה</i><u></u><s>72 שעות בטייק אחד · 7 ימים בסטוץ</s></li>
+        </ul>
+        <ul class="rc__l rc__f">
+          <li><i>מה שאתם מצלמים</i><u></u><s>כלום</s></li>
+          <li><i>מה שאתם כותבים</i><u></u><s>כלום</s></li>
+          <li><i>מה שאתם עורכים</i><u></u><s>כלום</s></li>
+        </ul>
+        <div class="rc__t">
+          <b>סה״כ נדרש מכם: <em>שיחה אחת</em></b>
+          <span>ואם ממש תתעקשו — גם הלוגו בקובץ נפרד.</span>
+        </div>
+      </div>
+      <div class="rc__side">
+        <div class="rcs rcs--y rv" data-d="2"><b class="num">72<i>שעות</i></b><span>מהתשלום עד שהקובץ אצלכם, בטייק אחד. בסטוץ — שבעה ימי עסקים, כי שם התסריט נכתב מאפס.</span></div>
+        <div class="rcs rv" data-d="3"><b class="num">0<i>סבבי אישורים</i></b><span>אין ״נחזור אליכם עם גרסה״, אין קובץ שמחכה לחתימה שלכם שבועיים.</span></div>
+        <div class="rcs rv" data-d="4"><b class="num">1<i>קובץ</i></b><span>שאפשר להעלות לרשתות, לשלוח בוואטסאפ, לשים בסטטוס ולצרף לכל פנייה. לתמיד.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TIMELINE ══ -->
+<section>
+  <div class="w">
+    <div class="kick rv">איך זה עובד</div>
+    <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:13ch">שלושה שלבים.<br>אחד מהם שלכם.</h2>
+    <div class="tl" id="tl">
+      <span class="tl__p" id="tlp"></span>
+      <div class="tl__i rv" data-tl><div class="tl__t">שלב 1 · אתם</div><h3>עונים על שאלות</h3><p>שיחה קצרה: מה העסק עושה, מי קונה מכם, ומה אתם רוצים לדחוף השבוע. זה כל מה שנדרש מכם בכל התהליך.</p></div>
+      <div class="tl__i rv" data-d="1" data-tl><div class="tl__t">שלב 2 · אנחנו</div><h3>נועלים את עצמנו בסטודיו</h3><p>מחקר מתחרים, כתיבה, ליהוק, עריכה. בלי עשרה סבבי אישורים בדרך ובלי פגישת סטטוס.</p></div>
+      <div class="tl__i rv" data-d="2" data-tl><div class="tl__t">שלב 3 · מוכן</div><h3>מקבלים קובץ</h3><p>מעלים לרשתות, שולחים בוואטסאפ, שמים בסטטוס, מצרפים לכל פנייה. הקובץ שלכם, לתמיד.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRICING ══ -->
+<section id="pricing" style="border-block:1px solid var(--line);background:var(--bg2)">
+  <div class="w">
+    <div class="kick rv">מחירים</div>
+    <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:17ch">שני צירים: מי כותב את התסריט, וכמה זמן.</h2>
+    <p class="lead rv" data-d="2" style="margin-top:16px;max-width:46ch">אין דמי הקמה, אין חוזה, ואין שורה קטנה.</p>
+    <div class="tg rv" data-d="2" role="tablist">
+      <span class="tg__p" id="tgp"></span>
+      <button class="on" id="tb0" role="tab" aria-selected="true" aria-controls="pl0">סרטון בודד</button>
+      <button id="tb1" role="tab" aria-selected="false" aria-controls="pl1">חבילה חודשית</button>
+    </div>
+    <div class="pl" id="pl0" role="tabpanel">
+      <div class="pc pc--hi rv"><span class="pc__tag">הכי נמכר</span>
+        <h3>סטוץ</h3>
+        <p class="pc__d">ניסוי קליני על הלקוחות שלכם. חצי דקה שמסכמת את העסק — כדי לראות איך זה עובד לפני שמתחייבים לקשר.</p>
+        <div class="pc__pr"><b class="num" dir="ltr">₪1,290</b><i>תשלום חד־פעמי</i></div>
+        <ul>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>תסריט שנכתב לעסק שלכם מאפס, לא תבנית</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>תחקיר קהל ומחקר מתחרים לפני שכותבים מילה</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>פרזנטור שמדבר עברית שוטפת, בלי מבטא</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>סצנות ומוזיקה חתוכות לקצב העריכה</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>כתוביות מילה־מילה בצהוב, כי צופים בלי סאונד</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>הלוגו שלכם משולב בפנים, לא מודבק מעל</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>סבב תיקונים אחד מרוכז · שבעה ימי עסקים</li>
+        </ul>
+        <a class="btn" href="https://www.paypal.com/ncp/payment/PLB-PG8Z77J7ETCU" target="_blank" rel="noopener">מתחילים בסטוץ</a>
+        <a class="pc__alt" href="#talk">יש שאלה? דברו עם מיטל קודם</a></div>
+      <div class="pc pc--fast rv" data-d="1"><span class="pc__tag pc__tag--o">הכי מהיר</span>
+        <h3>טייק אחד</h3>
+        <p class="pc__d">לעסקים שכבר יודעים מה הם רוצים להגיד. אומרים לנו בשיחה, אנחנו מפיקים, ומחרתיים זה אצלכם ורץ.</p>
+        <div class="pc__pr"><b class="num" dir="ltr">₪590</b><i>תשלום חד־פעמי</i></div>
+        <ul>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>אצלכם תוך 72 שעות</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>אותה דמות, אותו קול, אותן כתוביות</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>המסר שלכם, בניסוח שלנו</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>הקובץ שלכם, בלי סימן מים</li>
+        </ul>
+        <div class="pc__x"><b>בלי סבב תיקונים ובלי מחקר מתחרים.</b> לא בגלל קמצנות — בגלל שבעים ושתיים שעות. פשוט אין בהן מקום לסבב.</div>
+        <a class="btn btn--o" href="https://www.paypal.com/ncp/payment/PLB-S5BMLEAPA7CF" target="_blank" rel="noopener">מתחילים בטייק</a>
+        <a class="pc__alt" href="#talk">יש שאלה? דברו עם מיטל קודם</a></div>
+    </div>
+    <div class="pl" id="pl1" role="tabpanel" hidden>
+      <div class="pc pc--hi"><span class="pc__tag">המוצר השלם</span>
+        <h3>לא נעלמים בבוקר</h3>
+        <p class="pc__d">ארבעה סטוצים בחודש, אחד בשבוע, כל אחד דופק על כאב אחר. ככה לא שוכחים מכם בעוד חודשיים.</p>
+        <div class="pc__pr"><b class="num" dir="ltr">₪3,890</b><i>לחודש</i></div>
+        <span class="pc__sv">חוסכים <span dir="ltr" class="num">₪1,270</span> בחודש</span>
+        <ul>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>ארבעה תסריטים שנכתבים מאפס</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>תחקיר, מחקר מתחרים, סבב תיקונים</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>סרטון בשבוע, בלי לנהל את זה</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>קמים והולכים מתי שרוצים</li>
+        </ul>
+        <a class="btn" href="#talk">לדבר על חבילה</a>
+        <a class="pc__alt" href="https://www.paypal.com/ncp/payment/PLB-YQZUPHZ86MB8" target="_blank" rel="noopener">או להתחיל את החודש הראשון עכשיו</a></div>
+      <div class="pc pc--fast"><span class="pc__tag pc__tag--o">הכי משתלם לסרטון</span>
+        <h3>טייק אחד בשבוע</h3>
+        <p class="pc__d">ארבעה טייקים בחודש. מי שרואה אתכם פעם בשבוע זוכר אתכם — וזה יוצא פחות מחמש מאות לסרטון.</p>
+        <div class="pc__pr"><b class="num" dir="ltr">₪1,790</b><i>לחודש</i></div>
+        <span class="pc__sv">חוסכים <span dir="ltr" class="num">₪570</span> בחודש</span>
+        <ul>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>ארבעה סרטונים, אחד בשבוע</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>כל אחד אצלכם תוך 72 שעות</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>יוצא <span dir="ltr" class="num">₪448</span> לסרטון</li>
+          <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>קמים והולכים מתי שרוצים</li>
+        </ul>
+        <div class="pc__x"><b>בלי תסריט מותאם ובלי תיקונים.</b> אותה מערכת, אותה מהירות — ההבדל הוא מי כתב את התסריט.</div>
+        <a class="btn btn--o" href="#talk">לדבר על חבילה</a>
+        <a class="pc__alt" href="https://www.paypal.com/ncp/payment/PLB-KCD6F5KS8ZA6" target="_blank" rel="noopener">או להתחיל את החודש הראשון עכשיו</a></div>
+    </div>
+    <div class="fine rv">
+      <div><b>תקציב פרסום לא כלול.</b> משולם ישירות לפייסבוק, מתחיל מאלף שקלים לחודש, ופרונט לא נוגעת בכסף הזה. הסרטון גם לא חייב לרוץ בממומן — הוא יושב בעמוד, בסטטוס ובגוגל, ונשלח לכל מי שמתעניין.</div>
+      <div><b>תשלום:</b> פייפאל או ביט. סרטון בודד — תשלום מלא לפני תחילת העבודה. חבילה — חיוב חודשי, אפשר להפסיק בכל עת. <b>לא נמסר בזמן שהובטח?</b> כל הסכום חוזר, בלי שתצטרכו לבקש.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ WALL OF DELAYS ══ -->
+<section id="delays" style="overflow-x:clip">
+  <div class="w">
+    <div class="kick rv">ארכיון</div>
+    <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:17ch">ארכיון הסרטונים<br>שלא נעשו.</h2>
+    <p class="lead rv" data-d="2" style="margin-top:16px;max-width:48ch">כל משפט פה נאמר על ידי בעל עסק אמיתי. לעצמו.</p>
+    <div class="wall rv" id="wall"></div>
+    <div class="wall__end rv">הסרטון הכי יקר הוא זה שלא עשית. הוא לא עולה כלום, והוא גם לא מחזיר כלום.</div>
+  </div>
+</section>
+
+<!-- ══ CHAT ══ -->
+<section style="border-block:1px solid var(--line);background:var(--bg2)">
+  <div class="w">
+    <div class="kick rv">מה שבאמת שואלים</div>
+    <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:15ch">מה שמפריע לכם.<br>לא מה שנוח לנו.</h2>
+    <div class="ch" id="faq"></div>
+  </div>
+</section>
+
+<!-- ══ ABOUT ══ -->
+<section id="about">
+  <div class="w ab">
+    <div class="ab__vw">
+      <div class="ab__v rv">
+        <video muted loop playsinline preload="none" poster="./assets/posterabout.webp" data-src="./assets/about.mp4" aria-label="הצוות של פרונט עובד מהבית"></video>
+        <div class="ab__cap"><b>המשרד הראשי</b>זה לא סטוק. זה יום שלישי. השלט הצהוב על הקיר עלה יותר מהכיסא שיושבים עליו.</div>
+      </div>
+    </div>
+    <div>
+      <div class="kick rv">וידוי קצר, למען הסר ספק</div>
+      <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:16ch">לא התכוונו<br>להקים עסק.</h2>
+      <div class="beats">
+        <div class="beat rv"><div class="beat__n">01</div><h3>התחיל כמתיחה.</h3>
+          <p>ייצרנו את הסרטונים האלה נטו כדי לראות כמה רחוק אפשר לזייף מקצוענות ברשת לפני שמישהו יעלה עלינו.</p></div>
+        <div class="beat rv"><div class="beat__n">02</div><h3>אף אחד לא עלה עלינו.</h3>
+          <p>מיליוני צפיות. אפס שקל קידום. ותחושה לא לגמרי נוחה שעבדנו על כולם.</p></div>
+        <div class="beat rv"><div class="beat__n">03</div><h3>ואז מישהו שאל כמה זה עולה.</h3>
+          <p>שלחנו הצעת מחיר עם ביטחון עצמי של נהג חדש שעושה חניה במקביל. הוא ענה ״סגור״. היינו בטוחים שהוא התבלבל במספר.</p></div>
+        <div class="beat rv"><div class="beat__n">04</div><h3>הוא לא התבלבל. אחריו הגיע עוד אחד.</h3>
+          <p>בערך כמו שמגלים שחתול הרחוב שזרקת לו פעם אחת חתיכת פסטרמה כבר עבר לגור לך על הספה.</p></div>
+        <div class="beat rv"><div class="beat__n">05</div><h3>אז התפטרנו.</h3>
+          <p>ויתרנו על ימי מחלה, על שי לחג, ועל האפשרות להאשים מישהו אחר. בתמורה אנחנו פותחים לילדים את הדלת בצהריים.</p></div>
+      </div>
+      <div class="ab__sign rv">
+        <p>כל סרטון שיוצא מפה עובר בין שנינו לפחות שלוש פעמים, בדרך כלל אחרי עשר בלילה, בדרך כלל בלחישות כדי לא להעיר אף אחד. זה לא סיפור עצוב — זו פשוט הסיבה שזה יוצא טוב.</p>
+        <p class="big">אנחנו לא מספרים את זה כדי שתרחמו. אנחנו מספרים את זה כדי שתדעו למי אתם מעבירים ביט.</p>
+        <p class="last">מבחינתנו זו עדיין אותה מתיחה. פשוט עכשיו מוציאים עליה חשבוניות.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ AGENT ══ -->
+<section class="ag" id="talk">
+  <div class="w ag__g">
+    <div>
+      <div class="kick rv">העובדת מספר שלוש</div>
+      <h2 class="h2 rv" data-d="1" style="margin-top:18px">מיטל אצלנו<br>בהתלמדות.</h2>
+      <p class="rv" data-d="2">היא התחילה לפני חודש והיא לוקחת את זה יותר מדי ברצינות. עובדת מסביב לשעון, מסרבת בתוקף לקחת הפסקה, ולפעמים בשתיים בלילה שומעים את זה — היא נבלעת באמצע מילה מרוב התלהבות ומיד מתקנת את עצמה. אם היא הוגה את שם העסק שלכם קצת יצירתי בפעם הראשונה, תנו לה עוד ניסיון. בשנייה היא כבר קולעת.</p>
+      <div class="mt rv" data-d="3">
+        <div class="mt__c"><h4>מה מיטל כבר יודעת</h4><ul>
+          <li>כמה כל דבר עולה. בדיוק. בעל פה.</li>
+          <li>מה ההבדל בין טייק אחד לסטוץ, בלי לגמגם</li>
+          <li>להגיד לכם שמוצר לא מתאים לכם, גם כשזה עולה לנו כסף</li>
+          <li>לפתוח לכם את התשלום באמצע השיחה</li>
+        </ul></div>
+        <div class="mt__c mt__c--b"><h4>מה מיטל עדיין לומדת</h4><ul>
+          <li>להתווכח על מחיר. ניסינו ללמד אותה. היא לא קולטת את הרעיון.</li>
+          <li>לתת הנחות. אותו סיפור.</li>
+          <li>להגות ״אינסטלציה״ בניסיון הראשון. גם אנחנו לא.</li>
+          <li>לקחת הפסקה. אמרנו לה שמותר. היא לא מאמינה לנו.</li>
+        </ul></div>
+      </div>
+      <div class="rv ag__cta" data-d="4">
+        <button class="btn btn--d" id="talkBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" style="width:19px;height:19px"><path d="M12 3v10M8 7v4M16 7v4M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          לדבר עם מיטל עכשיו
+        </button>
+        <a class="btn ag__btn2" href="#pricing">או לבחור מוצר ולשלם</a>
+      </div>
+      <div class="ag__fine rv" data-d="4">
+        <p class="ag__fine" style="margin:0!important">אם היא מדברת מהר — זה סימן טוב. זה אומר שהעסק שלכם מעניין אותה.</p>
+        <p class="ag__fine" style="margin:0!important">נבלעה לה מילה? תגידו לה שוב. היא לא נעלבת, היא רק מתאמצת.</p>
+        <p class="ag__fine" style="margin:0!important">עוד לא ביקשה העלאה. אנחנו מחכים בדריכות.</p>
+      </div>
+    </div>
+    <div class="rv" data-d="2"><div class="orb">
+      <i></i><i></i><i></i>
+      <img src="./assets/meital.webp" alt="מיטל, מנהלת המכירות של פרונט" width="620" height="620" loading="lazy">
+      <b><span class="live"></span>מיטל · זמינה עכשיו</b>
+    </div></div>
+  </div>
+</section>
+
+<section class="fin">
+  <div class="w">
+    <h2 class="h2 rv">ספרו לנו מה העסק עושה.<br>את הריקוד נעשה אנחנו.</h2>
+    <p class="lead rv" data-d="1">אין טפסים, אין הצעת מחיר בחמישה ימי עסקים, ואין פגישת היכרות.</p>
+    <div class="rv" data-d="2" style="margin-top:32px">
+      <a class="btn" data-wa="היי, ראיתי את הדף של פרונט ואני רוצה לשמוע על סרטון לעסק שלי." href="https://wa.me/972559501280" target="_blank" rel="noopener">תכתבו לנו בוואטסאפ</a>
+    </div>
+    <div class="gate rv" data-d="3">
+      <h3>אנחנו נגיד לכם אם לא כדאי.</h3>
+      <p>יש עסקים שסרטון לא יעזור להם עכשיו — כי האתר נפתח לאט בנייד, כי אף אחד לא פותח את תיבת ההודעות, או כי הם עדיין לא החליטו מה בדיוק הם מוכרים. אם נראה לנו שזה המצב, <b>נגיד לכם את זה לפני שתשלמו</b>, גם כשזה עולה לנו את העסקה.</p>
+      <p class="hl">הסרטון מביא אנשים עד הדלת. אנחנו רק נוודא שהדלת נפתחת.</p>
+    </div>
+  </div>
+</section>
+
+<footer><div class="w ft">
+  <div><span class="logo">פרונט<b>.</b></span> <span style="margin-inline-start:12px">להשפיל את עצמכם ברשת זה לא מודל עסקי.</span></div>
+  <div><a href="#pricing">מחירים</a> · <a data-wa="היי, ראיתי את הדף של פרונט ואני רוצה לשמוע על סרטון לעסק שלי." href="https://wa.me/972559501280" target="_blank" rel="noopener">וואטסאפ</a> · <a href="https://frontvid.netlify.app/privacy" target="_blank" rel="noopener">פרטיות</a> · <span class="num" dir="ltr">055-950-1280</span> · <span class="num">© 2026</span></div>
+</div></footer>
+
+<elevenlabs-convai agent-id="agent_9801kzrfd8k2e0hr5g95brg049yv"></elevenlabs-convai>
+<script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+<script>
+(function(){"use strict";
+var RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var io=new IntersectionObserver(function(es){es.forEach(function(e){
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},
+  {threshold:.12,rootMargin:'0px 0px -6% 0px'});
+document.querySelectorAll('.rv').forEach(function(e){io.observe(e);});
+
+var nav=document.getElementById('nav');
+addEventListener('scroll',function(){nav.classList.toggle('on',scrollY>560);},{passive:true});
+
+var art=document.querySelector('.stage');
+if(!RM&&art){addEventListener('scroll',function(){
+  var y=Math.min(scrollY,900); art.style.transform='translateY('+(y*.05)+'px)';},{passive:true});}
+
+/* equation */
+(function(){
+  var eq=document.getElementById('eq'); if(!eq) return;
+  var items=[].slice.call(eq.querySelectorAll('.eqi'));
+  if(RM){items.forEach(function(i){i.classList.add('in');});return;}
+  new IntersectionObserver(function(es,o){es.forEach(function(e){
+    if(!e.isIntersecting)return; o.unobserve(e.target);
+    items.forEach(function(it,i){setTimeout(function(){it.classList.add('in');},i*130);});
+  });},{threshold:.5}).observe(eq);
+})();
+
+/* marquee */
+var biz=['מוסכים','מספרות','שיפוצניקים','קליניקות','מסעדות','אולמות אירועים','עורכי דין','קוסמטיקאיות',
+'חדרי כושר','גני ילדים','חנויות רהיטים','מאמנים אישיים','גינון','הובלות','מנעולנים','מתקיני מזגנים'];
+document.getElementById('mq').innerHTML=biz.concat(biz).map(function(b){return '<span>'+b+'</span>';}).join('');
+
+/* lazy video */
+document.querySelectorAll('video[data-src]').forEach(function(v){
+  new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){ if(!v.src){v.src=v.dataset.src;} v.play().catch(function(){}); }
+    else{ v.pause(); }});},{threshold:.28}).observe(v);
+});
+
+/* word-by-word captions */
+var words='להשפיל את עצמכם ברשת · זה לא · מודל עסקי'.split(' ');
+var cap=document.getElementById('cap'),bar=document.getElementById('bar');
+cap.innerHTML=words.map(function(w){return w==='·'?'<br>':'<span>'+w+'</span>';}).join(' ');
+var sp=[].slice.call(cap.querySelectorAll('span')),tid=[];
+function play(){
+  tid.forEach(clearTimeout); tid=[];
+  sp.forEach(function(s){s.className='';});
+  bar.style.transition='none';bar.style.width='0';
+  requestAnimationFrame(function(){bar.style.transition='width '+(sp.length*.38+1)+'s linear';bar.style.width='100%';});
+  sp.forEach(function(s,i){tid.push(setTimeout(function(){
+    sp.forEach(function(x,j){x.className=j<i?'said':(j===i?'on':'');});
+    if(i===sp.length-1)tid.push(setTimeout(function(){sp.forEach(function(x){x.className='said';});},380));
+  },450+i*380));});
+  tid.push(setTimeout(play,450+sp.length*380+2000));
+}
+if(RM){sp.forEach(function(s){s.className='said';});bar.style.width='100%';}else play();
+
+/* sticky steps */
+document.querySelectorAll('[data-step]').forEach(function(s){
+  new IntersectionObserver(function(es){es.forEach(function(e){
+    s.classList.toggle('act',e.intersectionRatio>.55);});},
+    {threshold:[0,.55,1],rootMargin:'-20% 0px -20% 0px'}).observe(s);
+});
+
+/* timeline */
+var tl=document.getElementById('tl'),tlp=document.getElementById('tlp'),
+    tli=[].slice.call(document.querySelectorAll('[data-tl]'));
+function tick(){if(!tl)return;var r=tl.getBoundingClientRect();
+  var p=Math.max(0,Math.min(1,(innerHeight*.72-r.top)/(r.height*.86)));
+  tlp.style.height=(p*100)+'%';var m=r.top+r.height*p;
+  tli.forEach(function(i){i.classList.toggle('act',i.getBoundingClientRect().top<=m+14);});}
+addEventListener('scroll',tick,{passive:true});addEventListener('resize',tick);tick();
+
+/* pricing toggle */
+var tbs=[document.getElementById('tb0'),document.getElementById('tb1')],
+    pls=[document.getElementById('pl0'),document.getElementById('pl1')],tgp=document.getElementById('tgp');
+function pill(){var b=tbs.filter(function(x){return x.classList.contains('on');})[0];
+  tgp.style.width=b.offsetWidth+'px';tgp.style.insetInlineStart='auto';tgp.style.left=b.offsetLeft+'px';}
+tbs.forEach(function(b,i){b.addEventListener('click',function(){
+  tbs.forEach(function(x,j){x.classList.toggle('on',i===j);x.setAttribute('aria-selected',i===j);});
+  pls.forEach(function(p,j){p.hidden=i!==j;});
+  pls[i].querySelectorAll('.rv').forEach(function(e){e.classList.add('in');});pill();});});
+addEventListener('load',pill);addEventListener('resize',pill);pill();
+
+/* ══ FAQ ══ */
+var AV='./assets/meital.webp';
+var qa=[
+['זה לא ייראה זול?','ליד סרטון שצולם ברכב עם המזגן ברקע? אתם תיראו כמו רשת.'],
+['למה שלא אני אצטלם?','תצלמו. ארבעה טייקים, תבחרו את השני, תראו לבן או בת הזוג — והם יגידו ״זה נחמד״. ואז לא תעלו את זה. ככה זה נגמר בכל פעם.'],
+['ראיתי סרטונים ב־300 שקל','גם אנחנו. שם אתם כותבים את הטקסט. אם היה לכם טקסט, לא הייתם פה.'],
+['מה ההבדל בין טייק אחד לסטוץ?','בטייק אחד אתם אומרים לנו מה להגיד, ואנחנו מפיקים את זה תוך שבעים ושתיים שעות. בסטוץ אנחנו שואלים, חוקרים את המתחרים שלכם, כותבים תסריט מאפס — ואפילו נשארים לסבב תיקונים בבוקר שאחרי.'],
+['ואם זה לא ימצא חן בעיניי?','בסטוץ יש סבב תיקונים, בדיוק בשביל זה. בטייק אחד אין, ועל זה בדיוק שילמתם פחות. אם זה מלחיץ אתכם — קחו סטוץ. כן, הוא יותר יקר. שמנו לב.'],
+['כמה זמן זה לוקח לי?','שיחה אחת. אם ניקח לכם יותר מזה, כתבו לנו בוואטסאפ ותזכירו לנו שהבטחנו.'],
+['התחום שלי משעמם','מכרנו פעם צנרת ביוב. אתם תסתדרו.'],
+['אין לי תקציב פרסום','אז זה יעבוד לאט. הסרטון עדיין יושב בעמוד, בסטטוס ובכל פנייה שנכנסת. ממומן זה גז, לא מנוע.']];
+var faq=document.getElementById('faq');
+qa.forEach(function(p,i){
+  var b=document.createElement('button');b.className='cq rv';b.setAttribute('aria-expanded','false');
+  b.setAttribute('aria-controls','a'+i);
+  b.innerHTML='<span class="pl2" aria-hidden="true">+</span><span>'+p[0]+'</span>';
+  var a=document.createElement('div');a.className='ca';a.id='a'+i;
+  a.innerHTML='<div><div class="ca__h"><span>מיטל · פרונט</span><img src="'+AV+'" alt="" loading="lazy"></div>'+
+              '<div class="ca__b">'+p[1]+'</div></div>';
+  b.addEventListener('click',function(){b.setAttribute('aria-expanded',a.classList.toggle('open'));});
+  faq.appendChild(b);faq.appendChild(a);io.observe(b);
+});
+
+/* ══ COMPARISON ══ */
+var NAMES=["מוסך הצומת", "סטודיו ליהיא", "א.מ. שיפוצים", "פסטה נונה", "קליניקת אורית", "משרד עו״ד לוי ושות׳", "פיט סנטר", "גן פעמונים", "הובלות רמי", "קול אייר", "בית עידן", "אולמי הדר", "גינות ירוקות", "מרפאת ד״ר שגב", "עוגות של מיכל", "סטודיו בלאנס", "סטודיו רון", "מנעולן 24", "מרפאת שיניים הדס", "ניקיון פלוס"];
+var CMP=[
+['מוסך','מוסך הצומת — 20 שנות ניסיון, שירות אמין ומחירים הוגנים. בואו להתרשם! 🔧',
+ 'יש לך רעש באוטו כבר חודש וחצי. אשתך שמעה אותו. אמא שלך שמעה אותו. אתה עדיין מגביר את הרדיו.'],
+['מספרה','צוות מקצועי, אווירה נעימה ותוצאות מדהימות. קבעו תור עוד היום! ✂️',
+ '״רק תוריד קצת״. שתי מילים. ארבעה חודשים של כובעים.'],
+['שיפוצים','שיפוצים ובנייה — עבודה נקייה, עמידה בלוחות זמנים ואחריות מלאה. 🏠',
+ '״עוד שבועיים״. אמרת את זה גם בפברואר. עכשיו אוגוסט.'],
+['מסעדה','חוויה קולינרית בלתי נשכחת עם מיטב המנות. הזמינו שולחן! 🍽️',
+ 'ארבעה אנשים ברכב. ״לי לא משנה״. ״גם לי לא משנה״. כבר עשרים דקות שנוסעים.'],
+['קליניקה','טיפולים מתקדמים בטכנולוגיה חדשנית לעור זוהר ובריא. ✨',
+ 'היא לא תגיד לך איפה עשתה את זה. היא גם לא תגיד לך שהיא עשתה.'],
+['עורך דין','ליווי משפטי צמוד, מקצועיות וניסיון של שני עשורים. ⚖️',
+ 'החוזה שחתמת עליו נכתב על ידי מישהו שמקבל משכורת מהצד השני.'],
+['חדר כושר','ציוד חדיש, מאמנים מוסמכים ואווירה מדהימה. חודש ראשון מתנה! 💪',
+ 'אתה משלם 249 בחודש על חניה ליד חדר כושר.'],
+['גן ילדים','חינוך איכותי בסביבה חמה ואוהבת, עם צוות מסור ומנוסה. 🧸',
+ 'הוא יבכה בבוקר הראשון. גם את. רק אחד מכם יסתדר עד עשר.'],
+['הובלות','הובלות — מהיר, אמין, זהיר. הצעת מחיר ללא התחייבות! 🚚',
+ 'אתה כבר יודע שהחברים שלך לא באים. הם גם יודעים.'],
+['מזגנים','התקנת מזגנים — שירות מהיר ומקצועי, אחריות לשנה. ❄️',
+ 'אמרת ״נטפל בזה בחורף״. עכשיו 38 מעלות ואתה מתקשר לכולם.'],
+['רהיטים','עיצוב איטלקי, איכות ללא פשרות, במחירים שלא תמצאו בשום מקום! 🛋️',
+ 'הספה שאתה יושב עליה עכשיו נקנתה כפתרון זמני. ב־2019.'],
+['אולם אירועים','האירוע שתמיד חלמתם עליו, במקום קסום ובשירות ללא פשרות. 💍',
+ 'אמא שלך כבר הוסיפה שמונה אנשים לרשימה. אתם עוד לא סגרתם תאריך.'],
+['גינון','גינון ותחזוקת גינות — שירות מקצועי, אמין וזמין. התקשרו עכשיו! 🌿',
+ 'השכן עשה סידור לגינה בשבת. יצאת לרגע לראות. חזרת עצבני.'],
+['וטרינר','מרפאה וטרינרית — טיפול מסור ומקצועי לחיות המחמד שלכם. 🐾',
+ 'הוא לא אכל מאתמול. חיפשת בגוגל. עכשיו אתה משוכנע שזה משהו נורא.'],
+['עוגות','עוגות מעוצבות לכל אירוע — טעם בלתי נשכח ועיצוב מרהיב. 🎂',
+ 'יום ההולדת מחר. הזמנת עוגה? כן. איפה? זה החלק שאתה לא זוכר.'],
+['פילאטיס','שיעורים בקבוצות קטנות, יחס אישי ואווירה תומכת. 🧘',
+ 'הגב שלך תפוס. אמרת שזה יעבור. עברו חמישה חודשים.'],
+['צלם','צילום אירועים — לוכדים את הרגעים המיוחדים שלכם לנצח. 📸',
+ 'יש לך 400 תמונות מהחתונה. בשלוש מהן אתם ביחד ובפוקוס.'],
+['מנעולן','מנעולן 24/7 — פריצת דלתות, החלפת צילינדר, שירות מהיר בכל שעה. 🔑',
+ 'המפתחות בפנים. הדלת נעולה. אתה בגופייה. שמור את המספר עכשיו, לא אחר כך.'],
+['רופא שיניים','מרפאת שיניים — טיפול ללא כאב, ציוד מתקדם ומימון נוח. 🦷',
+ 'יש לך שן שכואבת רק כשאתה שותה קר. אז הפסקת לשתות קר.'],
+['ניקיון','חברת ניקיון — ניקיון יסודי ואמין לבית ולמשרד. 🧽',
+ 'הזמנת אורחים לשבת רק כדי שתהיה לך סיבה לנקות. זה עובד. זה גם עולה יותר.']
+];
+(function(){
+  var pick=document.getElementById('cmpPick'),bad=document.getElementById('cBad'),
+      badT=document.getElementById('cBadText'),badN=document.getElementById('cBadName'),
+      goodT=document.getElementById('cGoodText'),goodN=document.getElementById('cGoodName'),
+      cbar=document.getElementById('cBar');
+  if(!pick) return;
+  function show(i){
+    var r=CMP[i];
+    bad.classList.remove('in');
+    badN.textContent=NAMES[i];
+    badT.textContent=r[1];
+    goodN.textContent=r[0];
+    goodT.style.opacity=0;
+    setTimeout(function(){goodT.textContent='״'+r[2]+'״';goodT.style.opacity=1;},110);
+    cbar.style.transition='none';cbar.style.width='0';
+    requestAnimationFrame(function(){cbar.style.transition='width 2.4s linear';cbar.style.width='100%';});
+    setTimeout(function(){bad.classList.add('in');},RM?0:120);
+  }
+  goodT.style.transition='opacity .12s';
+  CMP.forEach(function(r,i){
+    var b=document.createElement('button');b.type='button';b.textContent=r[0];
+    b.addEventListener('click',function(){
+      pick.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');show(i);});
+    pick.appendChild(b);
+    if(i===0) setTimeout(function(){b.click();},420);
+  });
+})();
+
+/* ══ WALL OF DELAYS ══ */
+var DELAYS=[
+ ['אחרי החגים.','2025-09-14'],
+ ['כשיהיה תקציב.','2026-01-03'],
+ ['אני אצלם את זה בעצמי בשבוע הבא.','2026-04-02'],
+ ['צריך קודם לסדר את האתר.','2025-11-11'],
+ ['בקיץ אין אנשים. נחכה לספטמבר.','2026-06-20'],
+ ['יש לי גיס שמבין בזה.','2026-02-08']
+];
+(function(){
+  var wall=document.getElementById('wall'); if(!wall) return;
+  function fmt(d){var p=d.split('-');return p[2]+'.'+p[1]+'.'+p[0];}
+  var now=new Date(), items=[];
+  DELAYS.forEach(function(r){
+    var days=Math.max(1,Math.floor((now-new Date(r[1]+'T09:00:00'))/86400000));
+    var el=document.createElement('div'); el.className='note';
+    el.innerHTML='<q>'+r[0]+'</q><div class="note__d">נאמר: '+fmt(r[1])+'</div>'+
+      '<div class="note__c"><b class="num" data-to="'+days+'">0</b><span>ימים מאז</span></div>';
+    wall.appendChild(el); items.push(el);
+  });
+  var last=document.createElement('div'); last.className='note note--x';
+  last.innerHTML='<q>היום.</q><div class="note__d">נאמר: עכשיו</div>'+
+    '<div class="note__c"><b class="num">0</b><span>ימים מאז</span></div>'+
+    '<a class="btn" href="#pricing">להתחיל מפה</a>';
+  wall.appendChild(last); io.observe(wall);
+
+  new IntersectionObserver(function(es,o){es.forEach(function(e){
+    if(!e.isIntersecting)return; o.unobserve(e.target);
+    items.forEach(function(el,i){
+      var b=el.querySelector('[data-to]'),t=+b.dataset.to;
+      if(RM){b.textContent=t;return;}
+      var s=null,dur=900+i*180;
+      requestAnimationFrame(function step(n){ if(s===null)s=n;
+        var p=Math.min((n-s)/dur,1);
+        b.textContent=Math.round(t*(1-Math.pow(1-p,3)));
+        if(p<1)requestAnimationFrame(step);});
+    });});},{threshold:.25}).observe(wall);
+})();
+
+/* ══ WHATSAPP (survives the Facebook / Instagram in-app browser) ══ */
+var WA='972559501280', WAD='055-950-1280';
+(function(){
+  function inApp(){var u=navigator.userAgent||'';
+    return /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Line\/|MicroMessenger|Snapchat|Pinterest|TikTok/i.test(u);}
+  function modal(url){
+    var m=document.createElement('div'); m.className='wam';
+    m.innerHTML='<div class="wam__c"><h4>הדפדפן של פייסבוק חוסם את וואטסאפ</h4>'+
+      '<p>זו לא אשמתכם ולא שלנו. שתי דרכים לעקוף את זה:</p>'+
+      '<div class="wam__n">'+WAD+'</div><div class="wam__b">'+
+      '<button class="btn" id="wamCopy">להעתיק את המספר</button>'+
+      '<a class="btn btn--o" href="'+url+'" target="_blank" rel="noopener">לנסות שוב לפתוח וואטסאפ</a>'+
+      '<button class="btn btn--o" id="wamX">סגירה</button></div>'+
+      '<p style="font-size:13px;margin-top:14px">אפשר גם ללחוץ על שלוש הנקודות למעלה ולבחור ״פתח בדפדפן״.</p></div>';
+    document.body.appendChild(m);
+    m.querySelector('#wamX').onclick=function(){m.remove();};
+    m.onclick=function(e){if(e.target===m)m.remove();};
+    m.querySelector('#wamCopy').onclick=function(){
+      var b=this;
+      var done=function(){b.textContent='הועתק ✓';setTimeout(function(){b.textContent='להעתיק את המספר';},2000);};
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(WAD).then(done,done);}
+      else{var t=document.createElement('textarea');t.value=WAD;document.body.appendChild(t);t.select();
+            try{document.execCommand('copy');}catch(e){} t.remove(); done();}
+    };
+  }
+  document.querySelectorAll('[data-wa]').forEach(function(a){
+    var url='https://wa.me/'+WA+'?text='+encodeURIComponent(a.dataset.wa);
+    a.href=url;
+    a.addEventListener('click',function(e){
+      if(!inApp()) return;
+      e.preventDefault();
+      var t=Date.now(), hidden=false;
+      var vis=function(){if(document.hidden)hidden=true;};
+      document.addEventListener('visibilitychange',vis);
+      window.location.href='whatsapp://send?phone='+WA+'&text='+encodeURIComponent(a.dataset.wa);
+      setTimeout(function(){
+        document.removeEventListener('visibilitychange',vis);
+        if(hidden||document.hidden) return;
+        if(Date.now()-t<2400) modal(url);
+      },1500);
+    });
+  });
+})();
+
+/* ══ MEITAL → payment ══ */
+var PAY={
+ 'take1':'https://www.paypal.com/ncp/payment/PLB-S5BMLEAPA7CF',
+ 'stotz':'https://www.paypal.com/ncp/payment/PLB-PG8Z77J7ETCU',
+ 'weekly':'https://www.paypal.com/ncp/payment/PLB-KCD6F5KS8ZA6',
+ 'retainer':'https://www.paypal.com/ncp/payment/PLB-YQZUPHZ86MB8'
+};
+function openPayment(p){
+  var u=PAY[(p||'').toLowerCase()]; if(!u){location.hash='#pricing';return 'showed pricing';}
+  var w=window.open(u,'_blank','noopener');
+  if(!w){location.href=u;}
+  return 'opened '+p;
+}
+window.frontOpenPayment=openPayment;
+function openWhatsapp(){
+  var a=document.querySelector('[data-wa]');
+  if(a){a.scrollIntoView({behavior:'smooth',block:'center'});
+        a.style.transition='box-shadow .4s';a.style.boxShadow='0 0 0 6px rgba(255,212,0,.35)';
+        setTimeout(function(){a.style.boxShadow='';},2600);}
+  return 'highlighted whatsapp button';
+}
+window.frontOpenWhatsapp=openWhatsapp;
+(function(){
+  var w=document.querySelector('elevenlabs-convai'); if(!w) return;
+  w.addEventListener('elevenlabs-convai:call',function(ev){
+    try{
+      ev.detail.config.clientTools=Object.assign(ev.detail.config.clientTools||{},{
+        show_payment:function(p){return openPayment(p&&p.product);},
+        open_payment:function(p){return openPayment(p&&p.product);},
+        show_whatsapp:function(){return openWhatsapp();}
+      });
+    }catch(e){}
+  });
+})();
+
+document.getElementById('talkBtn').addEventListener('click',function(){
+  var w=document.querySelector('elevenlabs-convai');
+  if(w&&w.shadowRoot){var btn=w.shadowRoot.querySelector('button');if(btn){btn.click();return;}}
+  document.getElementById('pricing').scrollIntoView({behavior:'smooth'});
+});
+})();
+</script>
+</body>
+</html>
