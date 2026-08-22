@@ -5,13 +5,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>פרונט — שוכרים לכם פנים</title>
 <meta name="description" content="פרונט מפיקה את הפרסומת של העסק שלכם — תסריט, דמות, קול וכתוביות. אתם לא עומדים מול המצלמה. החל מ־590 ₪.">
+<link rel="canonical" href="https://front-studio.vercel.app/">
+<meta property="og:site_name" content="פרונט">
 <meta property="og:title" content="מישהו חייב לרקוד את זה. זה לא חייב להיות אתם.">
-<meta property="og:description" content="פרונט מפיקה את הפרסומת — אתם עונים על כמה שאלות ומקבלים קובץ.">
+<meta property="og:description" content="פרונט מפיקה את הפרסומת — תסריט, דמות, קול, מוזיקה וכתוביות. אתם עונים על כמה שאלות ומקבלים קובץ. החל מ־590 ₪.">
 <meta property="og:type" content="website"><meta property="og:locale" content="he_IL">
-<meta property="og:image" content="./assets/posterhero.webp">
+<meta property="og:url" content="https://front-studio.vercel.app/">
+<meta property="og:image" content="https://front-studio.vercel.app/assets/og.jpg">
+<meta property="og:image:secure_url" content="https://front-studio.vercel.app/assets/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="שני פרזנטורים רוקדים מקרנה, לצד הכיתוב: מישהו חייב לרקוד את זה. זה לא חייב להיות אתם.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="מישהו חייב לרקוד את זה. זה לא חייב להיות אתם.">
+<meta name="twitter:description" content="פרונט מפיקה את הפרסומת. אתם לא עומדים מול המצלמה. החל מ־590 ₪.">
+<meta name="twitter:image" content="https://front-studio.vercel.app/assets/og.jpg">
+<meta name="theme-color" content="#07070a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="./assets/posterhero.webp" fetchpriority="high">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap"></noscript>
 <style>
 :root{
   --bg:#07070a; --bg2:#0d0e12; --card:#121317; --line:#24252b; --line2:#34353c;
@@ -54,6 +68,19 @@ section{padding-block:clamp(70px,9.5vw,116px)}
 .btn:hover{transform:translateY(-3px);box-shadow:0 14px 34px -12px rgba(255,212,0,.55)}
 .btn--o{background:transparent;color:var(--tx);border:1px solid var(--line2)}
 .btn--o:hover{border-color:var(--y);color:var(--y);box-shadow:none}
+
+/* in-app browser notice */
+.iab{display:none;position:relative;z-index:60;background:#ffd400;color:#0a0a0c;padding:12px 18px;
+ font-size:14.5px;font-weight:700;line-height:1.45;text-align:center}
+.iab b{font-weight:900}
+.iab.on{display:block}
+.iab__x{position:absolute;inset-inline-end:10px;inset-block-start:8px;background:none;border:0;
+ font-size:19px;line-height:1;cursor:pointer;color:#0a0a0c;opacity:.55;padding:4px}
+.cta2{display:flex;flex-wrap:wrap;gap:11px;justify-content:center}
+.cta2 .btn svg{width:19px;height:19px;flex:none}
+.cta2__h{margin-top:16px;font-size:14.5px;color:#6d6c74}
+.walink{color:var(--tx2);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line2)}
+.walink:hover{color:var(--y);text-decoration-color:var(--y)}
 .btn--d{background:var(--txD);color:var(--y)}
 .btn--d:hover{box-shadow:0 14px 34px -14px rgba(0,0,0,.6)}
 
@@ -153,7 +180,11 @@ section{padding-block:clamp(70px,9.5vw,116px)}
 /* ══ PROBLEM ══ */
 .pr{margin-top:50px;border-top:1px solid var(--lineL)}
 .pr__i{padding:32px 0;border-bottom:1px solid var(--lineL)}
-.pr__n{font-size:12px;font-weight:900;letter-spacing:.18em;color:var(--txD2);margin-bottom:11px}
+.pr__n{font-size:13px;font-weight:900;letter-spacing:.1em;color:#a8412f;margin-bottom:12px;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(168,65,47,.3);background:rgba(168,65,47,.07);padding:6px 13px 6px 10px;border-radius:999px}
+.pr__n i{font-style:normal;font-size:14px;line-height:1;opacity:.85}
+.pr__n{justify-self:start;width:fit-content}
+.pr__i{position:relative}
+.pr__i h3{color:#3a3730}
 .pr__i h3{font-size:clamp(22px,3.2vw,32px);font-weight:900;letter-spacing:-.025em;line-height:1.12;max-width:19ch}
 .pr__i p{margin-top:11px;color:var(--txD2);max-width:44ch}
 .pr__q{margin-top:18px;font-size:16px;font-weight:700;border-inline-start:2px solid var(--y);
@@ -359,7 +390,7 @@ section{padding-block:clamp(70px,9.5vw,116px)}
 .mt{margin-top:26px;display:grid;gap:1px;background:rgba(10,10,12,.2);border:1px solid rgba(10,10,12,.2);
   border-radius:10px;overflow:hidden}
 .mt__c{background:var(--y);padding:20px 22px}
-.mt__c h4{font-size:11.5px;font-weight:900;letter-spacing:.14em;color:rgba(10,10,12,.5);margin-bottom:13px}
+.mt__c .mt__h{font-size:11.5px;font-weight:900;letter-spacing:.14em;color:rgba(10,10,12,.5);margin-bottom:13px}
 .mt__c ul{list-style:none;display:grid;gap:11px}
 .mt__c li{font-size:15px;font-weight:600;color:#231f10;display:flex;gap:9px;align-items:flex-start;line-height:1.42}
 .mt__c li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--txD);flex:none;margin-top:8px}
@@ -441,16 +472,34 @@ footer a:hover{color:var(--y)}
   .cmp__g{grid-template-columns:1fr 1fr}
 }
 @media(min-width:1200px){.stage{width:min(482px,100%)}}
+@media(min-width:960px){
+  .hero__g{grid-template-columns:1.14fr .86fr;gap:0}
+  .hero__t{position:relative;z-index:6}
+  .hero .h1{margin-inline-end:-96px;position:relative;z-index:6;
+    text-shadow:0 14px 46px rgba(7,7,10,.95),0 3px 12px rgba(7,7,10,.8)}
+  .hero__sub,.hero__cta{position:relative;z-index:6}
+  .hero__sub{max-width:33ch}
+  .stage{z-index:1}
+  .stage__f::before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
+    background:linear-gradient(to left,rgba(7,7,10,.9) 0%,rgba(7,7,10,.42) 22%,rgba(7,7,10,.08) 46%,transparent 64%)}
+  .stage__gl{inset:-12% -6% -10%}
+  .chip{bottom:11%}
+}
 </style>
 </head>
 <body>
+<div class="iab" id="iab">
+  <button class="iab__x" aria-label="סגירה">&times;</button>
+  פתחתם מתוך אפליקציה — <b>המיקרופון חסום כאן</b>. כדי לדבר עם מיטל פתחו את הדף בדפדפן (⋯ ← פתיחה בדפדפן). לכתוב לה אפשר כבר עכשיו.
+</div>
 
+<a href="#work" style="position:absolute;inset-inline-start:-9999px">דילוג לתוכן</a>
 <nav class="nav" id="nav"><div class="w">
   <div class="nav__b"><span class="logo">פרונט<b>.</b></span><i>שוכרים לכם פנים</i></div>
   <a class="btn" href="#talk">דברו איתה</a>
 </div></nav>
 
-<!-- ══ HERO ══ -->
+<main>
 <header class="hero">
   <div class="grain"></div>
   <div class="w">
@@ -490,7 +539,6 @@ footer a:hover{color:var(--y)}
   </div>
   <div class="mq" aria-hidden="true"><div class="mq__t" id="mq"></div></div>
 </header>
-
 <!-- ══ WORK ══ -->
 <section id="work">
   <div class="w">
@@ -523,23 +571,23 @@ footer a:hover{color:var(--y)}
 <!-- ══ PROBLEM ══ -->
 <section class="paper">
   <div class="w">
-    <div class="kick rv">למה זה לא קורה</div>
-    <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:15ch">אתם יודעים שצריך סרטון.<br>אתם פשוט לא מגיעים לזה.</h2>
+    <div class="kick rv">שלוש נקודות כשל</div>
+    <h2 class="h2 rv" data-d="1" style="margin-top:18px;max-width:16ch">איפה זה מת<br>בכל פעם.</h2>
     <div class="pr">
       <div class="pr__i rv">
-        <div class="pr__n">01 — התסריט</div>
+        <div class="pr__n"><i>✕</i>התסריט</div>
         <h3>יש לך פתק בטלפון. יש בו שורה אחת.</h3>
         <p>היא מ־2024. פתחת מסמך, כתבת ״היי חברים!״, מחקת, כתבת ״מה קורה חברים?״, וסגרת את המחשב. מאז לא חזרת לשם.</p>
         <div class="pr__q">לכתוב פרסומת זה מקצוע. לא משהו שעושים בין לקוח ללקוח.</div>
       </div>
       <div class="pr__i rv" data-d="1">
-        <div class="pr__n">02 — ההקלטה</div>
+        <div class="pr__n"><i>✕</i>ההקלטה</div>
         <h3>הטייק השלישי כבר לא מצחיק</h3>
         <p>מקליטים, שומעים את עצמכם, מוחקים. הידיים לא יודעות איפה לשבת, הקול נשמע כמו של מישהו אחר, ובסוף מוותרים.</p>
         <div class="pr__q">לצלם את עצמכם מנקים פילטר זה כמו לשדר את עצמכם מצחצחים שיניים.</div>
       </div>
       <div class="pr__i rv" data-d="2">
-        <div class="pr__n">03 — מה שיוצא</div>
+        <div class="pr__n"><i>✕</i>ההעלאה</div>
         <h3>מעלים משהו. אף אחד לא עוצר.</h3>
         <p>בסוף מצלמים מהרכב, מעלים, ומקבלים שבע צפיות — חמש מהן שלכם. וזה בדיוק הרגע שבו מחליטים שסרטונים לא עובדים.</p>
         <div class="pr__q">לקהל יש זיכרון של דג. לא הסרטון נכשל — שלוש השניות הראשונות נכשלו.</div>
@@ -681,7 +729,7 @@ footer a:hover{color:var(--y)}
           <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>הלוגו שלכם משולב בפנים, לא מודבק מעל</li>
           <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>סבב תיקונים אחד מרוכז · שבעה ימי עסקים</li>
         </ul>
-        <a class="btn" href="https://www.paypal.com/ncp/payment/PLB-PG8Z77J7ETCU" target="_blank" rel="noopener">מתחילים בסטוץ</a>
+        <a class="btn" href="https://www.paypal.com/ncp/payment/PLB-AW3EHPSHP9PK" target="_blank" rel="noopener">מתחילים בסטוץ</a>
         <a class="pc__alt" href="#talk">יש שאלה? דברו עם מיטל קודם</a></div>
       <div class="pc pc--fast rv" data-d="1"><span class="pc__tag pc__tag--o">הכי מהיר</span>
         <h3>טייק אחד</h3>
@@ -694,7 +742,7 @@ footer a:hover{color:var(--y)}
           <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>הקובץ שלכם, בלי סימן מים</li>
         </ul>
         <div class="pc__x"><b>בלי סבב תיקונים ובלי מחקר מתחרים.</b> לא בגלל קמצנות — בגלל שבעים ושתיים שעות. פשוט אין בהן מקום לסבב.</div>
-        <a class="btn btn--o" href="https://www.paypal.com/ncp/payment/PLB-S5BMLEAPA7CF" target="_blank" rel="noopener">מתחילים בטייק</a>
+        <a class="btn btn--o" href="https://www.paypal.com/ncp/payment/PLB-CN2MN2582ETR" target="_blank" rel="noopener">מתחילים בטייק</a>
         <a class="pc__alt" href="#talk">יש שאלה? דברו עם מיטל קודם</a></div>
     </div>
     <div class="pl" id="pl1" role="tabpanel" hidden>
@@ -710,7 +758,7 @@ footer a:hover{color:var(--y)}
           <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>קמים והולכים מתי שרוצים</li>
         </ul>
         <a class="btn" href="#talk">לדבר על חבילה</a>
-        <a class="pc__alt" href="https://www.paypal.com/ncp/payment/PLB-YQZUPHZ86MB8" target="_blank" rel="noopener">או להתחיל את החודש הראשון עכשיו</a></div>
+        <a class="pc__alt" href="https://www.paypal.com/ncp/payment/PLB-Q3W49SMPAQZB" target="_blank" rel="noopener">או להתחיל את החודש הראשון עכשיו</a></div>
       <div class="pc pc--fast"><span class="pc__tag pc__tag--o">הכי משתלם לסרטון</span>
         <h3>טייק אחד בשבוע</h3>
         <p class="pc__d">ארבעה טייקים בחודש. מי שרואה אתכם פעם בשבוע זוכר אתכם — וזה יוצא פחות מחמש מאות לסרטון.</p>
@@ -724,7 +772,7 @@ footer a:hover{color:var(--y)}
         </ul>
         <div class="pc__x"><b>בלי תסריט מותאם ובלי תיקונים.</b> אותה מערכת, אותה מהירות — ההבדל הוא מי כתב את התסריט.</div>
         <a class="btn btn--o" href="#talk">לדבר על חבילה</a>
-        <a class="pc__alt" href="https://www.paypal.com/ncp/payment/PLB-KCD6F5KS8ZA6" target="_blank" rel="noopener">או להתחיל את החודש הראשון עכשיו</a></div>
+        <a class="pc__alt" href="https://www.paypal.com/ncp/payment/PLB-BX8HAKCST35L" target="_blank" rel="noopener">או להתחיל את החודש הראשון עכשיו</a></div>
     </div>
     <div class="fine rv">
       <div><b>תקציב פרסום לא כלול.</b> משולם ישירות לפייסבוק, מתחיל מאלף שקלים לחודש, ופרונט לא נוגעת בכסף הזה. הסרטון גם לא חייב לרוץ בממומן — הוא יושב בעמוד, בסטטוס ובגוגל, ונשלח לכל מי שמתעניין.</div>
@@ -794,13 +842,13 @@ footer a:hover{color:var(--y)}
       <h2 class="h2 rv" data-d="1" style="margin-top:18px">מיטל אצלנו<br>בהתלמדות.</h2>
       <p class="rv" data-d="2">היא התחילה לפני חודש והיא לוקחת את זה יותר מדי ברצינות. עובדת מסביב לשעון, מסרבת בתוקף לקחת הפסקה, ולפעמים בשתיים בלילה שומעים את זה — היא נבלעת באמצע מילה מרוב התלהבות ומיד מתקנת את עצמה. אם היא הוגה את שם העסק שלכם קצת יצירתי בפעם הראשונה, תנו לה עוד ניסיון. בשנייה היא כבר קולעת.</p>
       <div class="mt rv" data-d="3">
-        <div class="mt__c"><h4>מה מיטל כבר יודעת</h4><ul>
+        <div class="mt__c"><p class="mt__h">מה מיטל כבר יודעת</p><ul>
           <li>כמה כל דבר עולה. בדיוק. בעל פה.</li>
           <li>מה ההבדל בין טייק אחד לסטוץ, בלי לגמגם</li>
           <li>להגיד לכם שמוצר לא מתאים לכם, גם כשזה עולה לנו כסף</li>
           <li>לפתוח לכם את התשלום באמצע השיחה</li>
         </ul></div>
-        <div class="mt__c mt__c--b"><h4>מה מיטל עדיין לומדת</h4><ul>
+        <div class="mt__c mt__c--b"><p class="mt__h">מה מיטל עדיין לומדת</p><ul>
           <li>להתווכח על מחיר. ניסינו ללמד אותה. היא לא קולטת את הרעיון.</li>
           <li>לתת הנחות. אותו סיפור.</li>
           <li>להגות ״אינסטלציה״ בניסיון הראשון. גם אנחנו לא.</li>
@@ -833,7 +881,17 @@ footer a:hover{color:var(--y)}
     <h2 class="h2 rv">ספרו לנו מה העסק עושה.<br>את הריקוד נעשה אנחנו.</h2>
     <p class="lead rv" data-d="1">אין טפסים, אין הצעת מחיר בחמישה ימי עסקים, ואין פגישת היכרות.</p>
     <div class="rv" data-d="2" style="margin-top:32px">
-      <a class="btn" data-wa="היי, ראיתי את הדף של פרונט ואני רוצה לשמוע על סרטון לעסק שלי." href="https://wa.me/972559501280" target="_blank" rel="noopener">תכתבו לנו בוואטסאפ</a>
+      <div class="cta2">
+        <button class="btn" data-open="voice">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v10M8 7v4M16 7v4M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          יאללה, מדברים
+        </button>
+        <button class="btn btn--o" data-open="text">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M8 14h8"/></svg>
+          לא בא לי לדבר, אני אכתוב
+        </button>
+      </div>
+      <p class="cta2__h">אפשר לקטוע אותה באמצע. היא תעצור. <a class="walink" data-wa="היי, ראיתי את הדף של פרונט ואני רוצה לשמוע על סרטון לעסק שלי." href="https://wa.me/972559501280" target="_blank" rel="noopener">או בוואטסאפ, אם ככה נוח לכם.</a></p>
     </div>
     <div class="gate rv" data-d="3">
       <h3>אנחנו נגיד לכם אם לא כדאי.</h3>
@@ -847,10 +905,34 @@ footer a:hover{color:var(--y)}
   <div><span class="logo">פרונט<b>.</b></span> <span style="margin-inline-start:12px">להשפיל את עצמכם ברשת זה לא מודל עסקי.</span></div>
   <div><a href="#pricing">מחירים</a> · <a data-wa="היי, ראיתי את הדף של פרונט ואני רוצה לשמוע על סרטון לעסק שלי." href="https://wa.me/972559501280" target="_blank" rel="noopener">וואטסאפ</a> · <a href="https://frontvid.netlify.app/privacy" target="_blank" rel="noopener">פרטיות</a> · <span class="num" dir="ltr">055-950-1280</span> · <span class="num">© 2026</span></div>
 </div></footer>
+</main>
 
 <elevenlabs-convai agent-id="agent_9801kzrfd8k2e0hr5g95brg049yv"></elevenlabs-convai>
-<script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+<script defer src="/_vercel/insights/script.js"></script>
 <script>
+/* ─── מזהי מדידה: למלא כאן בלבד ─── */
+window.FRONT_IDS={ clarity:"", pixel:"" };
+(function(){
+  var C=window.FRONT_IDS.clarity, P=window.FRONT_IDS.pixel;
+  if(C){(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script",C);}
+  if(P){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+    (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init',P); fbq('track','PageView');}
+})();
+window.frontEvents=[];
+function ev(name,props){
+  props=props||{};
+  window.frontEvents.push({e:name,p:props,t:Date.now()});
+  try{ if(window.clarity) window.clarity('event',name); }catch(e){}
+  try{ if(window.fbq) window.fbq('trackCustom',name,props); }catch(e){}
+  try{ if(window.va) window.va('event',{name:name,data:props}); }catch(e){}
+}
+window.frontEv=ev;
 (function(){"use strict";
 var RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 var io=new IntersectionObserver(function(es){es.forEach(function(e){
@@ -1093,6 +1175,44 @@ var WA='972559501280', WAD='055-950-1280';
             try{document.execCommand('copy');}catch(e){} t.remove(); done();}
     };
   }
+
+/* --- in-app browser (Messenger/FB/Instagram) detection --- */
+var UA = navigator.userAgent || '';
+var IAB = /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|MicroMessenger|Line\/|Twitter|TikTok/i.test(UA);
+window.__FRONT_IAB = IAB;
+if (IAB) {
+  var b = document.getElementById('iab');
+  if (b) {
+    b.classList.add('on');
+    var x = b.querySelector('.iab__x');
+    if (x) x.addEventListener('click', function(){ b.classList.remove('on'); });
+  }
+}
+
+  function openAgent(mode){
+    if(window.__FRONT_IAB) mode='text';
+    var want=(mode==='text')?['לכתוב','הקליד','כתבו']:['לדבר','דברו'];
+    var tries=0,opened=false;
+    (function poll(){
+      var w=document.querySelector('elevenlabs-convai'),sr=w&&w.shadowRoot;
+      if(sr){
+        var btns=[].slice.call(sr.querySelectorAll('button')),hit=null;
+        for(var i=0;i<btns.length&&!hit;i++){
+          var t=(btns[i].innerText||'')+' '+(btns[i].getAttribute('aria-label')||'');
+          for(var j=0;j<want.length;j++) if(t.indexOf(want[j])>-1){hit=btns[i];break;}
+        }
+        if(hit){hit.click();return;}
+        if(!opened&&btns.length){btns[0].click();opened=true;}
+      }
+      if(++tries<45)setTimeout(poll,150);
+    })();
+  }
+  document.querySelectorAll('[data-open]').forEach(function(b){
+    b.addEventListener('click',function(){
+      openAgent(b.dataset.open);
+      try{ev('agent_open',{mode:b.dataset.open});}catch(e){}
+    });
+  });
   document.querySelectorAll('[data-wa]').forEach(function(a){
     var url='https://wa.me/'+WA+'?text='+encodeURIComponent(a.dataset.wa);
     a.href=url;
@@ -1114,19 +1234,19 @@ var WA='972559501280', WAD='055-950-1280';
 
 /* ══ MEITAL → payment ══ */
 var PAY={
- 'take1':'https://www.paypal.com/ncp/payment/PLB-S5BMLEAPA7CF',
- 'stotz':'https://www.paypal.com/ncp/payment/PLB-PG8Z77J7ETCU',
- 'weekly':'https://www.paypal.com/ncp/payment/PLB-KCD6F5KS8ZA6',
- 'retainer':'https://www.paypal.com/ncp/payment/PLB-YQZUPHZ86MB8'
+ 'take1':'https://www.paypal.com/ncp/payment/PLB-CN2MN2582ETR',
+ 'stotz':'https://www.paypal.com/ncp/payment/PLB-AW3EHPSHP9PK',
+ 'weekly':'https://www.paypal.com/ncp/payment/PLB-BX8HAKCST35L',
+ 'retainer':'https://www.paypal.com/ncp/payment/PLB-Q3W49SMPAQZB'
 };
-function openPayment(p){
+function openPayment(p){ ev('agent_opened_payment',{product:p||'unknown'});
   var u=PAY[(p||'').toLowerCase()]; if(!u){location.hash='#pricing';return 'showed pricing';}
   var w=window.open(u,'_blank','noopener');
   if(!w){location.href=u;}
   return 'opened '+p;
 }
 window.frontOpenPayment=openPayment;
-function openWhatsapp(){
+function openWhatsapp(){ ev('agent_sent_whatsapp',{});
   var a=document.querySelector('[data-wa]');
   if(a){a.scrollIntoView({behavior:'smooth',block:'center'});
         a.style.transition='box-shadow .4s';a.style.boxShadow='0 0 0 6px rgba(255,212,0,.35)';
@@ -1147,7 +1267,57 @@ window.frontOpenWhatsapp=openWhatsapp;
   });
 })();
 
+/* lazy-load the agent widget only on intent */
+(function(){
+  var loaded=false;
+  function load(){ if(loaded)return; loaded=true;
+    var t=document.createElement('script');
+    t.src='https://unpkg.com/@elevenlabs/convai-widget-embed';
+    t.async=true; document.head.appendChild(t);
+    ['scroll','pointerdown','keydown'].forEach(function(e){removeEventListener(e,load);});
+  }
+  ['scroll','pointerdown','keydown'].forEach(function(e){addEventListener(e,load,{once:true,passive:true});});
+  setTimeout(load,7000);
+  window.frontLoadAgent=load;
+})();
+
+/* ══ event layer ══ */
+(function(){
+  var seen={};
+  function once(k){ if(seen[k])return false; seen[k]=1; return true; }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a,button'); if(!a)return;
+    var h=a.getAttribute('href')||'';
+    if(h.indexOf('paypal.com')>-1){
+      var m=h.match(/PLB-[A-Z0-9]+/), map={'PLB-CN2MN2582ETR':'take1','PLB-AW3EHPSHP9PK':'stotz',
+        'PLB-BX8HAKCST35L':'weekly','PLB-Q3W49SMPAQZB':'retainer'};
+      ev('pay_click',{product:map[m&&m[0]]||'unknown'});
+    }
+    else if(a.hasAttribute('data-wa')) ev('whatsapp_click',{where:a.closest('footer')?'footer':'final'});
+    else if(h==='#pricing') ev('cta_pricing',{label:(a.textContent||'').trim().slice(0,40)});
+    else if(h==='#talk'||a.id==='talkBtn') ev('cta_agent',{label:(a.textContent||'').trim().slice(0,40)});
+    else if(a.closest('#cmpPick')) ev('compare_pick',{industry:(a.textContent||'').trim()});
+    else if(a.closest('.note')) ev('wall_click',{});
+    else if(a.classList.contains('cq')) ev('faq_open',{q:(a.textContent||'').replace('+','').trim().slice(0,50)});
+    else if(a.closest('.tg')) ev('pricing_toggle',{tab:(a.textContent||'').trim()});
+  },true);
+  var marks=[25,50,75,95];
+  addEventListener('scroll',function(){
+    var d=document.documentElement, p=(scrollY+innerHeight)/d.scrollHeight*100;
+    marks.forEach(function(m){ if(p>=m&&once('d'+m)) ev('scroll_depth',{pct:m}); });
+  },{passive:true});
+  [['#work','sec_work'],['#hooks','sec_compare'],['#pricing','sec_pricing'],
+   ['#delays','sec_wall'],['#about','sec_about'],['#talk','sec_agent']].forEach(function(x){
+    var el=document.querySelector(x[0]); if(!el)return;
+    new IntersectionObserver(function(es,o){es.forEach(function(e){
+      if(e.isIntersecting&&once(x[1])){ ev('section_view',{section:x[1]}); o.unobserve(e.target);} });},
+      {threshold:.3}).observe(el);
+  });
+  addEventListener('pagehide',function(){ ev('session_end',{events:window.frontEvents.length}); });
+})();
+
 document.getElementById('talkBtn').addEventListener('click',function(){
+  if(window.frontLoadAgent)window.frontLoadAgent();
   var w=document.querySelector('elevenlabs-convai');
   if(w&&w.shadowRoot){var btn=w.shadowRoot.querySelector('button');if(btn){btn.click();return;}}
   document.getElementById('pricing').scrollIntoView({behavior:'smooth'});
