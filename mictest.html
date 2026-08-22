@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>בדיקת מיקרופון — פרונט</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#07070a">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#07070a;color:#fff;font-family:Heebo,system-ui,-apple-system,sans-serif;
+ padding:26px 20px 60px;line-height:1.6;font-size:16px}
+h1{font-size:26px;font-weight:900;letter-spacing:-.03em;margin-bottom:6px}
+.sub{color:#98979f;font-size:14.5px;margin-bottom:24px}
+.card{border:1px solid #24252b;background:#121317;border-radius:12px;padding:18px;margin-bottom:14px}
+.k{font-size:12px;font-weight:900;letter-spacing:.14em;color:#98979f;margin-bottom:6px}
+.v{font-size:17px;font-weight:700;word-break:break-word}
+.big{font-size:30px;font-weight:900;letter-spacing:-.03em;line-height:1.15}
+.ok{color:#4ade80}.bad{color:#ff5c5c}.warn{color:#ffd400}
+button{background:#ffd400;color:#0a0a0c;border:0;border-radius:6px;font-weight:900;font-size:17px;
+ padding:16px 26px;width:100%;cursor:pointer;margin-bottom:14px;font-family:inherit}
+pre{white-space:pre-wrap;word-break:break-all;font-size:12px;color:#98979f;
+ background:#0d0e12;border:1px solid #24252b;border-radius:8px;padding:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<h1>בדיקת מיקרופון</h1>
+<p class="sub">פתחו את הדף הזה מכל מקום שאתם רוצים לבדוק — פייסבוק, אינסטגרם, וואטסאפ, או דפדפן רגיל. לחצו על הכפתור ושלחו צילום מסך.</p>
+
+<button id="go">בדוק מיקרופון עכשיו</button>
+
+<div class="card"><div class="k">תוצאה</div><div class="v big" id="res">— לא נבדק —</div></div>
+<div class="card"><div class="k">איפה אתם</div><div class="v" id="env">…</div></div>
+<div class="card"><div class="k">API זמין?</div><div class="v" id="api">…</div></div>
+<div class="card"><div class="k">פרטים טכניים</div><pre id="ua"></pre></div>
+
+<script>
+(function(){
+ var UA = navigator.userAgent||'';
+ var IAB = /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|MicroMessenger|Line\/|TikTok|Twitter/i.test(UA);
+ var WA  = /WhatsApp/i.test(UA);
+ var iOS = /iPhone|iPad|iPod/i.test(UA);
+ var env = IAB ? 'דפדפן בתוך אפליקציה (פייסבוק/אינסטגרם/מסנג׳ר)'
+        : WA  ? 'נפתח מוואטסאפ'
+        : 'דפדפן רגיל';
+ document.getElementById('env').textContent = env + ' · ' + (iOS?'iOS':'Android/אחר');
+ var has = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+ var a = document.getElementById('api');
+ a.textContent = has ? 'כן — getUserMedia קיים' : 'לא — getUserMedia לא קיים בכלל';
+ a.className = 'v ' + (has?'ok':'bad');
+ document.getElementById('ua').textContent =
+   'secure: '+window.isSecureContext+'\nhost: '+location.host+'\n\n'+UA;
+
+ document.getElementById('go').addEventListener('click', function(){
+   var r = document.getElementById('res');
+   r.textContent='בודק…'; r.className='v big warn';
+   if(!has){ r.textContent='❌ נכשל — אין API'; r.className='v big bad'; return; }
+   navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){
+     s.getTracks().forEach(function(t){t.stop();});
+     r.textContent='✅ עובד — מיקרופון נפתח'; r.className='v big ok';
+   }).catch(function(e){
+     r.textContent='❌ נחסם — '+(e && e.name ? e.name : 'שגיאה');
+     r.className='v big bad';
+     document.getElementById('ua').textContent += '\n\nERROR: '+(e&&e.name)+' / '+(e&&e.message);
+   });
+ });
+})();
+</script>
+</body>
+</html>
