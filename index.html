@@ -728,7 +728,7 @@ footer a:hover{color:var(--y)}
           <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>הלוגו שלכם משולב בפנים, לא מודבק מעל</li>
           <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>סבב תיקונים אחד מרוכז · שבעה ימי עסקים</li>
         </ul>
-        <a class="btn" href="https://www.paypal.com/ncp/payment/PLB-AW3EHPSHP9PK" target="_blank" rel="noopener">מתחילים בסטוץ</a>
+        <a class="btn" href="https://www.paypal.com/ncp/payment/34EKGFHER5V6W" target="_blank" rel="noopener">מתחילים בסטוץ</a>
         <a class="pc__alt" href="#talk">יש שאלה? דברו עם מיטל קודם</a></div>
       <div class="pc pc--fast rv" data-d="1"><span class="pc__tag pc__tag--o">הכי מהיר</span>
         <h3>טייק אחד</h3>
@@ -741,7 +741,7 @@ footer a:hover{color:var(--y)}
           <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>הקובץ שלכם, בלי סימן מים</li>
         </ul>
         <div class="pc__x"><b>בלי סבב תיקונים ובלי מחקר מתחרים.</b> לא בגלל קמצנות — בגלל שבעים ושתיים שעות. פשוט אין בהן מקום לסבב.</div>
-        <a class="btn btn--o" href="https://www.paypal.com/ncp/payment/PLB-CN2MN2582ETR" target="_blank" rel="noopener">מתחילים בטייק</a>
+        <a class="btn btn--o" href="https://www.paypal.com/ncp/payment/KHF3TH4CZJ9AE" target="_blank" rel="noopener">מתחילים בטייק</a>
         <a class="pc__alt" href="#talk">יש שאלה? דברו עם מיטל קודם</a></div>
     </div>
     <div class="pl" id="pl1" role="tabpanel" hidden>
@@ -757,7 +757,7 @@ footer a:hover{color:var(--y)}
           <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 7"/></svg>קמים והולכים מתי שרוצים</li>
         </ul>
         <a class="btn" href="#talk">לדבר על חבילה</a>
-        <a class="pc__alt" href="https://www.paypal.com/ncp/payment/PLB-Q3W49SMPAQZB" target="_blank" rel="noopener">או להתחיל את החודש הראשון עכשיו</a></div>
+        <a class="pc__alt" href="https://www.paypal.com/ncp/payment/Y628HMLYHFH2G" target="_blank" rel="noopener">או להתחיל את החודש הראשון עכשיו</a></div>
       <div class="pc pc--fast"><span class="pc__tag pc__tag--o">הכי משתלם לסרטון</span>
         <h3>טייק אחד בשבוע</h3>
         <p class="pc__d">ארבעה טייקים בחודש. מי שרואה אתכם פעם בשבוע זוכר אתכם — וזה יוצא פחות מחמש מאות לסרטון.</p>
@@ -771,7 +771,7 @@ footer a:hover{color:var(--y)}
         </ul>
         <div class="pc__x"><b>בלי תסריט מותאם ובלי תיקונים.</b> אותה מערכת, אותה מהירות — ההבדל הוא מי כתב את התסריט.</div>
         <a class="btn btn--o" href="#talk">לדבר על חבילה</a>
-        <a class="pc__alt" href="https://www.paypal.com/ncp/payment/PLB-BX8HAKCST35L" target="_blank" rel="noopener">או להתחיל את החודש הראשון עכשיו</a></div>
+        <a class="pc__alt" href="https://www.paypal.com/ncp/payment/JG9S8B3G7S6R6" target="_blank" rel="noopener">או להתחיל את החודש הראשון עכשיו</a></div>
     </div>
     <div class="fine rv">
       <div><b>תקציב פרסום לא כלול.</b> משולם ישירות לפייסבוק, מתחיל מאלף שקלים לחודש, ופרונט לא נוגעת בכסף הזה. הסרטון גם לא חייב לרוץ בממומן — הוא יושב בעמוד, בסטטוס ובגוגל, ונשלח לכל מי שמתעניין.</div>
@@ -1263,10 +1263,10 @@ var WA='972559501280', WAD='055-950-1280';
 
 /* ══ MEITAL → payment ══ */
 var PAY={
- 'take1':'https://www.paypal.com/ncp/payment/PLB-CN2MN2582ETR',
- 'stotz':'https://www.paypal.com/ncp/payment/PLB-AW3EHPSHP9PK',
- 'weekly':'https://www.paypal.com/ncp/payment/PLB-BX8HAKCST35L',
- 'retainer':'https://www.paypal.com/ncp/payment/PLB-Q3W49SMPAQZB'
+ 'take1':'https://www.paypal.com/ncp/payment/KHF3TH4CZJ9AE',
+ 'stotz':'https://www.paypal.com/ncp/payment/34EKGFHER5V6W',
+ 'weekly':'https://www.paypal.com/ncp/payment/JG9S8B3G7S6R6',
+ 'retainer':'https://www.paypal.com/ncp/payment/Y628HMLYHFH2G'
 };
 function openPayment(p){ ev('agent_opened_payment',{product:p||'unknown'});
   var u=PAY[(p||'').toLowerCase()]; if(!u){location.hash='#pricing';return 'showed pricing';}
@@ -1318,9 +1318,9 @@ window.frontOpenWhatsapp=openWhatsapp;
     var a=e.target.closest('a,button'); if(!a)return;
     var h=a.getAttribute('href')||'';
     if(h.indexOf('paypal.com')>-1){
-      var m=h.match(/PLB-[A-Z0-9]+/), map={'PLB-CN2MN2582ETR':'take1','PLB-AW3EHPSHP9PK':'stotz',
-        'PLB-BX8HAKCST35L':'weekly','PLB-Q3W49SMPAQZB':'retainer'};
-      ev('pay_click',{product:map[m&&m[0]]||'unknown'});
+      var m=h.match(/ncp\/payment\/([A-Z0-9-]+)/), map={'KHF3TH4CZJ9AE':'take1','34EKGFHER5V6W':'stotz',
+        'JG9S8B3G7S6R6':'weekly','Y628HMLYHFH2G':'retainer'};
+      ev('pay_click',{product:map[m&&m[1]]||'unknown'});
     }
     else if(a.hasAttribute('data-wa')) ev('whatsapp_click',{where:a.closest('footer')?'footer':'final'});
     else if(h==='#pricing') ev('cta_pricing',{label:(a.textContent||'').trim().slice(0,40)});
