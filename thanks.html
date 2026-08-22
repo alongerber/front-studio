@@ -95,13 +95,6 @@ footer{border-top:1px solid var(--line);padding:26px 0;font-size:14px;color:var(
  animation:pl 2s infinite}
 @keyframes pl{70%{box-shadow:0 0 0 9px rgba(255,212,0,0)}100%{box-shadow:0 0 0 0 rgba(255,212,0,0)}}
 
-/* in-app browser notice */
-.iab{display:none;position:relative;z-index:60;background:#ffd400;color:#0a0a0c;padding:12px 18px;
- font-size:14.5px;font-weight:700;line-height:1.45;text-align:center}
-.iab b{font-weight:900}
-.iab.on{display:block}
-.iab__x{position:absolute;inset-inline-end:10px;inset-block-start:8px;background:none;border:0;
- font-size:19px;line-height:1;cursor:pointer;color:#0a0a0c;opacity:.55;padding:4px}
 /* cta pair */
 .cta{margin-top:36px;display:flex;flex-wrap:wrap;gap:11px;align-items:center}
 .btn svg{width:19px;height:19px;flex:none}
@@ -109,6 +102,17 @@ footer{border-top:1px solid var(--line);padding:26px 0;font-size:14px;color:var(
  text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line2)}
 .walink:hover{color:var(--y);text-decoration-color:var(--y)}
 .walink svg{width:15px;height:15px;opacity:.8}
+/* mic fallback toast */
+.mict{position:fixed;inset-inline:14px;bottom:16px;z-index:70;max-width:520px;
+ margin-inline:auto;background:#121317;border:1px solid #2b2c33;border-radius:12px;
+ padding:15px 40px 15px 16px;box-shadow:0 18px 50px rgba(0,0,0,.55);
+ display:none;gap:12px;align-items:center;flex-wrap:wrap;font-size:14.5px;line-height:1.5;color:#fff}
+.mict.on{display:flex}
+.mict span{flex:1 1 200px}
+.mict__b{background:#ffd400;color:#0a0a0c;border:0;border-radius:4px;font-weight:800;
+ font-size:14px;padding:10px 16px;cursor:pointer;font-family:inherit;flex:none}
+.mict__x{position:absolute;inset-inline-end:10px;inset-block-start:9px;background:none;border:0;
+ color:#8d8c95;font-size:19px;line-height:1;cursor:pointer;padding:4px}
 .hint{margin-top:14px;font-size:13.5px;color:#6d6c74}
 /* steps spine */
 .steps{position:relative}
@@ -124,10 +128,6 @@ footer{border-top:1px solid var(--line);padding:26px 0;font-size:14px;color:var(
 <body>
 <div class="grain"></div>
 <header><div class="w"><span class="logo">פרונט<b>.</b></span></div></header>
-<div class="iab" id="iab">
-  <button class="iab__x" aria-label="סגירה">&times;</button>
-  פתחתם מתוך אפליקציה — <b>המיקרופון חסום כאן</b>. כדי לדבר עם מיטל פתחו את הדף בדפדפן (⋯ ← פתיחה בדפדפן). לכתוב לה אפשר כבר עכשיו.
-</div>
 <div class="mq" aria-hidden="true"><div class="mq__t" id="mq"></div></div>
 <main><div class="w">
  <div class="hg">
@@ -191,19 +191,6 @@ footer{border-top:1px solid var(--line);padding:26px 0;font-size:14px;color:var(
 <elevenlabs-convai agent-id="agent_1101m0a412w3ena8etkz8arhbhxt"></elevenlabs-convai>
 <script>
 (function(){"use strict";
-/* --- in-app browser (Messenger/FB/Instagram) detection --- */
-var UA = navigator.userAgent || '';
-var IAB = /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|MicroMessenger|Line\/|Twitter|TikTok/i.test(UA);
-window.__FRONT_IAB = IAB;
-if (IAB) {
-  var b = document.getElementById('iab');
-  if (b) {
-    b.classList.add('on');
-    var x = b.querySelector('.iab__x');
-    if (x) x.addEventListener('click', function(){ b.classList.remove('on'); });
-  }
-}
-
 var P={take1:['טייק אחד','סרטון בודד · ₪590','תוך 72 שעות'],
        stotz:['סטוץ','סרטון בודד · ₪1,290','תוך שבעה ימי עסקים'],
        weekly:['טייק אחד בשבוע','ארבעה סרטונים · ₪1,790 לחודש','הראשון תוך 72 שעות'],
@@ -225,9 +212,50 @@ function load(){if(loaded)return;loaded=true;
   var t=document.createElement('script');t.src='https://unpkg.com/@elevenlabs/convai-widget-embed';
   t.async=true;document.head.appendChild(t);}
 setTimeout(load,1200);
+
+function micToast(msg){
+  var t=document.getElementById('mict');
+  if(!t){t=document.createElement('div');t.id='mict';t.className='mict';document.body.appendChild(t);}
+  t.innerHTML='<span>'+msg+'</span>'+
+    '<button class="mict__b" type="button">\u05dc\u05db\u05ea\u05d5\u05d1 \u05dc\u05de\u05d9\u05d8\u05dc</button>'+
+    '<button class="mict__x" type="button" aria-label="\u05e1\u05d2\u05d9\u05e8\u05d4">&times;</button>';
+  t.classList.add('on');
+  t.querySelector('.mict__b').onclick=function(){t.classList.remove('on');openWidgetRaw('text');};
+  t.querySelector('.mict__x').onclick=function(){t.classList.remove('on');};
+  clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('on');},14000);
+}
+function micBlocked(cb){
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){cb(true);return;}
+  if(navigator.permissions&&navigator.permissions.query){
+    try{navigator.permissions.query({name:'microphone'})
+          .then(function(s){cb(s&&s.state==='denied');},function(){cb(false);});return;}catch(e){}
+  }
+  cb(false);
+}
+function watchAgentError(){
+  var tries=0;
+  (function poll(){
+    var w=document.querySelector('elevenlabs-convai'),sr=w&&w.shadowRoot;
+    if(sr&&(sr.textContent||'').indexOf('\u05de\u05e9\u05d4\u05d5 \u05d4\u05e9\u05ea\u05d1\u05e9')>-1){
+      micToast('\u05d4\u05de\u05d9\u05e7\u05e8\u05d5\u05e4\u05d5\u05df \u05dc\u05d0 \u05e0\u05e4\u05ea\u05d7 \u05db\u05d0\u05df. \u05d0\u05e4\u05e9\u05e8 \u05dc\u05db\u05ea\u05d5\u05d1 \u05dc\u05d4 \u05d1\u05de\u05e7\u05d5\u05dd \u2014 \u05d0\u05d5\u05ea\u05d4 \u05de\u05d9\u05d8\u05dc, \u05d0\u05d5\u05ea\u05df \u05ea\u05e9\u05d5\u05d1\u05d5\u05ea.');
+      return;
+    }
+    if(++tries<60) setTimeout(poll,500);
+  })();
+}
 function openWidget(mode){
   load();
-  if(window.__FRONT_IAB) mode='text';
+  if(mode!=='voice'){ openWidgetRaw(mode); return; }
+  micBlocked(function(blocked){
+    if(blocked){
+      openWidgetRaw('text');
+      micToast('\u05d4\u05de\u05d9\u05e7\u05e8\u05d5\u05e4\u05d5\u05df \u05d7\u05e1\u05d5\u05dd \u05d1\u05d3\u05e4\u05d3\u05e4\u05df \u05d4\u05d6\u05d4. \u05e4\u05ea\u05d7\u05e0\u05d5 \u05dc\u05db\u05dd \u05de\u05e7\u05dc\u05d3\u05ea \u2014 \u05de\u05d9\u05d8\u05dc \u05e2\u05d5\u05e0\u05d4 \u05d1\u05d3\u05d9\u05d5\u05e7 \u05d0\u05d5\u05ea\u05d5 \u05d3\u05d1\u05e8.');
+    } else { openWidgetRaw('voice'); watchAgentError(); }
+  });
+}
+
+function openWidgetRaw(mode){
+  load();
   var want = (mode==='text') ? ['לכתוב','הקליד','כתבו'] : ['לדבר','דברו'];
   var tries=0, opened=false;
   (function poll(){
