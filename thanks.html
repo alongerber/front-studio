@@ -202,6 +202,21 @@ if(r){var b=document.getElementById('prod');b.hidden=false;
   document.getElementById('clock').textContent='— '+r[2];}
 else{document.getElementById('clock').textContent='';}
 try{if(window.va)window.va('event',{name:'purchase_return',data:{product:k||'unknown'}});}catch(e){}
+/* ── התראת תשלום ל-Make ── */
+(function(){
+  if(!r) return;
+  var AMT={take1:590,stotz:1290,weekly:1790,retainer:3890};
+  var key='front-paid-'+k;
+  try{ if(sessionStorage.getItem(key)) return; sessionStorage.setItem(key,'1'); }catch(e){}
+  try{
+    fetch('https://hook.eu1.make.com/5ynh3pyl99rt9deuf46rlbf6grn86f6x',{
+      method:'POST', mode:'no-cors', keepalive:true,
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({product:k, product_label:r[0], amount:AMT[k]||'', due:r[2],
+        ts:new Date().toLocaleString('he-IL',{timeZone:'Asia/Jerusalem'})})
+    }).catch(function(){});
+  }catch(e){}
+})();
 var biz=['מוסכים','מספרות','קליניקות','אולמות','מסעדות','חדרי כושר','נגריות','שיפוצניקים','סטודיו לפילאטיס','חנויות שכונתיות','עורכי דין','קוסמטיקאיות','גני ילדים','מדריכי טיולים','וטרינרים','מאמנים אישיים'];
 var mq=document.getElementById('mq');
 if(mq)mq.innerHTML=biz.concat(biz).map(function(b){return '<span>'+b+'</span>';}).join('');
