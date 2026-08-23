@@ -190,6 +190,21 @@ footer{border-top:1px solid var(--line);padding:26px 0;font-size:14px;color:var(
 
 <elevenlabs-convai agent-id="agent_1101m0a412w3ena8etkz8arhbhxt"></elevenlabs-convai>
 <script>
+/* ─── פיקסל + ייחוס ─── */
+window.FRONT_IDS={ clarity:"xdrn5fa9p1", pixel:"871649018702910" };
+window.FRONT_ATTR=(function(){var a={};try{var raw=localStorage.getItem('front_attr');
+  if(raw){var o=JSON.parse(raw); if(o&&Date.now()-(o.ts||0)<2592000000) a=o;}}catch(e){}return a;})();
+(function(){var C=window.FRONT_IDS.clarity,P=window.FRONT_IDS.pixel;
+  if(C){(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script",C);}
+  if(P){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+    (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init',P); fbq('track','PageView');}
+})();
 (function(){"use strict";
 var P={take1:['טייק אחד','סרטון בודד · ₪590','תוך 72 שעות'],
        stotz:['סטוץ','סרטון בודד · ₪1,290','תוך שבעה ימי עסקים'],
@@ -201,11 +216,21 @@ if(r){var b=document.getElementById('prod');b.hidden=false;
   document.getElementById('prodMeta').textContent=r[1];
   document.getElementById('clock').textContent='— '+r[2];}
 else{document.getElementById('clock').textContent='';}
+var AMT={take1:590,stotz:1290,weekly:1790,retainer:3890};
+var FIRED=false;
+try{ var gk='front-paid-'+k; FIRED=!!sessionStorage.getItem(gk); }catch(e){}
 try{if(window.va)window.va('event',{name:'purchase_return',data:{product:k||'unknown'}});}catch(e){}
+/* ── Purchase לפיקסל — פעם אחת בלבד, עם ערך ומטבע ── */
+(function(){
+  if(!r||FIRED) return;
+  var pr={value:AMT[k]||0, currency:'ILS', content_name:r[0], content_ids:[k], content_type:'product'};
+  try{ var A=window.FRONT_ATTR||{}; for(var ak in A){ if(ak!=='ts') pr[ak]=A[ak]; } }catch(e){}
+  try{ if(window.fbq){ window.fbq('track','Purchase',pr); } }catch(e){}
+  try{ if(window.clarity) window.clarity('event','purchase'); }catch(e){}
+})();
 /* ── התראת תשלום ל-Make ── */
 (function(){
   if(!r) return;
-  var AMT={take1:590,stotz:1290,weekly:1790,retainer:3890};
   var key='front-paid-'+k;
   try{ if(sessionStorage.getItem(key)) return; sessionStorage.setItem(key,'1'); }catch(e){}
   try{
@@ -213,6 +238,9 @@ try{if(window.va)window.va('event',{name:'purchase_return',data:{product:k||'unk
       method:'POST', mode:'no-cors', keepalive:true,
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({product:k, product_label:r[0], amount:AMT[k]||'', due:r[2],
+        creative:(window.FRONT_ATTR&&window.FRONT_ATTR.utm_content)||'ישיר',
+        campaign:(window.FRONT_ATTR&&window.FRONT_ATTR.utm_campaign)||'',
+        source:(window.FRONT_ATTR&&window.FRONT_ATTR.utm_source)||'אורגני',
         ts:new Date().toLocaleString('he-IL',{timeZone:'Asia/Jerusalem'})})
     }).catch(function(){});
   }catch(e){}

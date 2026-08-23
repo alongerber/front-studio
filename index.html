@@ -911,7 +911,20 @@ footer a:hover{color:var(--y)}
 <script defer src="/_vercel/insights/script.js"></script>
 <script>
 /* ─── מזהי מדידה: למלא כאן בלבד ─── */
-window.FRONT_IDS={ clarity:"", pixel:"" };
+window.FRONT_IDS={ clarity:"xdrn5fa9p1", pixel:"871649018702910" };
+/* ─── ייחוס: איזה קריאייטיב הביא את האדם ─── */
+window.FRONT_ATTR=(function(){
+  var q=new URLSearchParams(location.search),
+      K=['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'],
+      a={},got=false;
+  K.forEach(function(k){var v=q.get(k); if(v){a[k]=v.slice(0,80); got=true;}});
+  try{
+    if(got){ a.ts=Date.now(); localStorage.setItem('front_attr',JSON.stringify(a)); }
+    else{ var raw=localStorage.getItem('front_attr');
+      if(raw){ var o=JSON.parse(raw); if(o&&Date.now()-(o.ts||0)<2592000000) a=o; } }
+  }catch(e){}
+  return a;
+})();
 (function(){
   var C=window.FRONT_IDS.clarity, P=window.FRONT_IDS.pixel;
   if(C){(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -925,11 +938,15 @@ window.FRONT_IDS={ clarity:"", pixel:"" };
     fbq('init',P); fbq('track','PageView');}
 })();
 window.frontEvents=[];
+var FRONT_STD={agent_open:'Lead', pay_click:'InitiateCheckout', whatsapp_click:'Contact'};
 function ev(name,props){
   props=props||{};
+  try{ var A=window.FRONT_ATTR||{};
+    for(var ak in A){ if(ak!=='ts' && props[ak]===undefined) props[ak]=A[ak]; } }catch(e){}
   window.frontEvents.push({e:name,p:props,t:Date.now()});
   try{ if(window.clarity) window.clarity('event',name); }catch(e){}
-  try{ if(window.fbq) window.fbq('trackCustom',name,props); }catch(e){}
+  try{ if(window.fbq){ window.fbq('trackCustom',name,props);
+    if(FRONT_STD[name]) window.fbq('track',FRONT_STD[name],props); } }catch(e){}
   try{ if(window.va) window.va('event',{name:name,data:props}); }catch(e){}
 }
 window.frontEv=ev;
