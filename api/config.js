@@ -8,6 +8,8 @@ export const GET = handle(async () => json({
   paypal_client_id: cfg.paypal.clientId || null,      // client id is public by design; the secret never leaves the server
   paypal_env: cfg.paypal.env,
   test_mode: cfg.environment !== 'production',        // preview/test: no real money (no Bit, PayPal sandbox only)
+  delivery_time: cfg.deliveryTime || null,
+  checkout_open: cfg.checkoutOpen,                    // false in production until a delivery time is approved
   currency: cfg.product.currency,
   amount: cfg.product.amount,
   consent_mode: cfg.consentMode,

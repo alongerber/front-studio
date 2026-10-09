@@ -3,10 +3,13 @@ import { q } from '../../lib/db.js';
 import { json, handle, readJson, httpError } from '../../lib/util.js';
 import { ownedOrder, serverEvent, rateLimit } from '../../lib/store.js';
 import { createPaypalOrder } from '../../lib/paypal.js';
+import { cfg } from '../../lib/config.js';
 
 export const config = { maxDuration: 15 };
 
 export const POST = handle(async (request) => {
+  // Launch blocker: no payment in production before the customer can see an approved delivery time.
+  if (!cfg.checkoutOpen) throw httpError(409, 'checkout_closed_delivery_time');
   const b = await readJson(request, 2 * 1024);
   const o = await ownedOrder(b.order_id, b.token);
   if (o.paid_at) throw httpError(409, 'already_paid');

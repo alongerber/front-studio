@@ -227,6 +227,26 @@ test('F9. outside production PayPal is always sandbox and the browser is told it
   } finally { process.env.FRONT_ENV = saved.env; process.env.PAYPAL_ENV = saved.pp; }
 });
 
+test('F10. production takes no PayPal payment until a delivery time is approved; preview stays open', async () => {
+  const saved = { env: process.env.FRONT_ENV, d: process.env.DELIVERY_TIME_TEXT };
+  try {
+    delete process.env.DELIVERY_TIME_TEXT;
+    const o = await newOrder();
+    process.env.FRONT_ENV = 'production';
+    assert.equal((await call(configApi.GET, 'GET', '/api/config')).data.checkout_open, false);
+    const before = mock.count(/paypal/);
+    const r = await call(ppCreate.POST, 'POST', '/api/paypal/create', { body: { order_id: o.order_id, token: o.token } });
+    assert.equal(r.status, 409); assert.equal(r.data.error, 'checkout_closed_delivery_time');
+    assert.equal(mock.count(/paypal/), before, 'PayPal never called');
+    process.env.DELIVERY_TIME_TEXT = 'עד 10 ימי עבודה מאישור התסריט';
+    const c = (await call(configApi.GET, 'GET', '/api/config')).data;
+    assert.equal(c.checkout_open, true); assert.equal(c.delivery_time, 'עד 10 ימי עבודה מאישור התסריט');
+    process.env.FRONT_ENV = 'test'; delete process.env.DELIVERY_TIME_TEXT;
+    const ok = await call(ppCreate.POST, 'POST', '/api/paypal/create', { body: { order_id: o.order_id, token: o.token } });
+    assert.equal(ok.status, 200, 'preview/test: sandbox checkout stays open without a delivery time');
+  } finally { process.env.FRONT_ENV = saved.env; if (saved.d === undefined) delete process.env.DELIVERY_TIME_TEXT; else process.env.DELIVERY_TIME_TEXT = saved.d; }
+});
+
 /* ── 4. consent changes follow the order and are checked at send time ── */
 test('F4a. ads consent withdrawn after payment (Purchase still queued) → nothing is sent, matching data removed', async () => {
   mock.metaFail = true;

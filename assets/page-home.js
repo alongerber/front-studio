@@ -87,7 +87,7 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
 (function(){
   var F=window.FRONT, sheet=document.getElementById('pay'), where='offer', lastFocus=null;
   function open(w){ where=w||'offer'; lastFocus=document.activeElement; sheet.hidden=false; document.body.style.overflow='hidden';
-    F.renderCheckout({buttons:document.getElementById('ppButtons'), msg:document.getElementById('payMsg'), where:function(){return where;}});
+    F.renderCheckout({buttons:document.getElementById('ppButtons'), msg:document.getElementById('payMsg'), delivery:document.getElementById('payDelivery'), where:function(){return where;}});
     document.getElementById('payX').focus(); }
   function close(){ sheet.hidden=true; document.body.style.overflow=''; if(lastFocus&&lastFocus.focus) lastFocus.focus(); }
   F.openCheckoutSheet=open;
@@ -96,7 +96,7 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
   addEventListener('keydown',function(e){ if(e.key==='Escape'&&!sheet.hidden) close(); });
   document.querySelectorAll('[data-checkout]').forEach(function(b){ b.addEventListener('click',function(){ open(b.getAttribute('data-checkout')); }); });
   document.querySelectorAll('[data-bit]').forEach(function(b){ b.addEventListener('click',function(){
-    if(!F.live) return;                                   // test environment: Bit is hidden and does nothing
+    if(!F.live||!F.checkoutOpen) return;                  // test environment or checkout closed: Bit does nothing
     var t=b.textContent; b.disabled=true; b.textContent='פותחים וואטסאפ…';
     F.payWithBit(b.getAttribute('data-bit')).catch(function(e){ b.disabled=false; b.textContent=t;
       if(!F.live||(e&&e.message==='bit_disabled_in_test')) return;

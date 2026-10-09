@@ -327,7 +327,8 @@
     var dv = Object.assign({}, vars, {
       front_link: LINK, anonymous_id: ids.anonymous_id || '', session_id: ids.session_id || '', order_id: F.order ? F.order.order_id : '', site_version: CFG.version,
       // What the agent may offer. Until the server confirms production: PayPal sandbox only, never Bit.
-      payment_methods: F.live ? 'פייפאל (גם בכרטיס אשראי בלי חשבון) או ביט'
+      payment_methods: !F.checkoutOpen ? 'ההזמנה עוד לא פתוחה לתשלום. אל תפעילי open_payment; הציעי וואטסאפ.'
+        : F.live ? 'פייפאל (גם בכרטיס אשראי בלי חשבון) או ביט'
         : 'סביבת בדיקה: רק תשלום בדיקה בפייפאל, בלי כסף אמיתי. אין ביט.'
     });
     var w = document.createElement('elevenlabs-convai');
@@ -358,11 +359,14 @@
     if (!cfgReady) { cfgReady = api('/api/config'); cfgReady.catch(function () { cfgReady = null; }); }
     return cfgReady;
   };
-  F.live = false;
+  F.live = false; F.checkoutOpen = true; F.deliveryTime = null;
   function markEnv() {
     F.config().then(function (c) {
       F.live = c.test_mode === false && c.environment === 'production';
+      F.checkoutOpen = c.checkout_open !== false;
+      F.deliveryTime = c.delivery_time || null;
       document.documentElement.classList.toggle('env-live', F.live);
+      document.documentElement.classList.toggle('checkout-closed', !F.checkoutOpen);
       if (F.live || document.getElementById('testBar')) return;
       var bar = document.createElement('div');
       bar.id = 'testBar'; bar.setAttribute('role', 'status');
@@ -397,7 +401,13 @@
     var say = function (t, cls) { ui.msg.hidden = !t; ui.msg.className = 'paymsg' + (cls ? ' ' + cls : ''); ui.msg.textContent = t || ''; };
     if (rendered) return;
     say('טוענים את אפשרויות התשלום…');
-    loadPaypal().then(function (paypal) {
+    F.config().then(function (c) {
+      // Delivery time is part of the offer and must be visible before paying.
+      if (ui.delivery) ui.delivery.textContent = c.delivery_time ? 'זמן אספקה: ' + c.delivery_time
+        : 'זמן אספקה: טרם נקבע' + (c.test_mode ? ' (חסם להשקה; בסביבת הבדיקה התשלום פתוח)' : '');
+      if (c.checkout_open === false) { var e = new Error('checkout_closed'); e.closed = true; throw e; }
+      return loadPaypal();
+    }).then(function (paypal) {
       say('');
       rendered = true;
       return paypal.Buttons({
@@ -436,6 +446,7 @@
         io.observe(ui.buttons);
       });
     }).catch(function (e) {
+      if (e && e.closed) return say('ההזמנה עוד לא פתוחה: זמן האספקה טרם נקבע. אפשר לדבר עם מיטל או לכתוב לנו בוואטסאפ.', 'err');
       report('paypal_load', e);
       if (!F.live) return say(e && e.message === 'paypal_not_configured' ? 'סביבת בדיקה — אין להעביר כסף. תשלום הבדיקה (PayPal Sandbox) עדיין לא מחובר.' : 'סביבת בדיקה — אין להעביר כסף. לא הצלחנו לטעון את PayPal Sandbox.', 'err');
       say(e && e.message === 'paypal_not_configured' ? 'תשלום בפייפאל לא זמין כרגע. אפשר לשלם בביט.' : 'לא הצלחנו לטעון את פייפאל בדפדפן הזה. אפשר לפתוח את האתר בדפדפן רגיל, או לשלם בביט.', 'err');
@@ -443,7 +454,8 @@
   };
   // Bit: we create the order first so the WhatsApp message carries its number for manual verification.
   F.payWithBit = function (where) {
-    if (!F.live) return Promise.reject(new Error('bit_disabled_in_test'));   // never route a test visitor to a real transfer
+    if (!F.live) return Promise.reject(new Error('bit_disabled_in_test'));
+    if (!F.checkoutOpen) return Promise.reject(new Error('checkout_closed_delivery_time'));   // never route a test visitor to a real transfer
     return F.ensureOrder(true).then(function (o) {
       var text = 'היי, אני רוצה לשלם בביט על פרסומת ב-1,290 ₪. מספר הזמנה ' + o.order_id;
       var id = track('whatsapp_click', {}, { cta: where || 'bit' }); F.pixel('Contact', {}, id);

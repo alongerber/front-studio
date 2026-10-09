@@ -286,6 +286,31 @@ with sync_playwright() as p:
     page.wait_for_function('window.__dv', timeout=4000); pm = page.evaluate('window.__dv.payment_methods') or ''
     check('T6 in production the agent may offer PayPal or Bit', 'ביט' in pm and 'בדיקה' not in pm, pm)
     ctx.close()
+    # production with no approved delivery time: every order path is closed (launch blocker)
+    ctx = new_ctx(browser)
+    def closed_cfg(r):
+        resp = r.fetch(); j = resp.json(); j.update({'environment': 'production', 'test_mode': False, 'checkout_open': False, 'delivery_time': None})
+        r.fulfill(response=resp, json=j)
+    ctx.route(re.compile(r'.*/api/config$'), closed_cfg)
+    page = ctx.new_page(); creates = []
+    page.on('request', lambda r: creates.append(r.url) if '/api/paypal/create' in r.url or 'wa.me' in r.url else None)
+    page.goto(BASE + '/'); page.wait_for_timeout(400); page.click('#cbNone')
+    page.wait_for_function("document.documentElement.classList.contains('checkout-closed')", timeout=4000)
+    page.locator('[data-checkout=hero]').first.evaluate('el => el.click()'); page.wait_for_timeout(600)
+    msg = page.locator('#payMsg').inner_text()
+    check('T7 direct order closed without a delivery time: no PayPal, no Bit, clear message',
+          'זמן האספקה טרם נקבע' in msg and page.locator('#fakepp').count() == 0 and not page.locator('[data-bit]').first.is_visible() and not creates, (msg, creates))
+    err = page.evaluate("FRONT.payWithBit('x').then(() => 'resolved', e => e.message)")
+    page.evaluate("document.getElementById('payX').click()")
+    page.evaluate('window.__dv = null'); page.locator('[data-open]').first.evaluate('el => el.click()')
+    page.wait_for_function('window.__dv', timeout=4000); pm = page.evaluate('window.__dv.payment_methods') or ''
+    check('T8 closed checkout: Bit refused and the agent is told not to open payment', err == 'checkout_closed_delivery_time' and 'לא פתוחה' in pm, (err, pm))
+    ctx.close()
+    # test environment: delivery time shown as missing, sandbox checkout still open
+    ctx = new_ctx(browser); page = ctx.new_page(); page.goto(BASE + '/'); page.wait_for_timeout(400); page.click('#cbNone')
+    page.locator('[data-checkout=hero]').first.evaluate('el => el.click()'); page.wait_for_selector('#fakepp', state='attached', timeout=5000)
+    check('T9 preview: delivery time marked as launch blocker, test checkout still renders', 'חסם להשקה' in page.locator('#payDelivery').inner_text())
+    ctx.close()
 
     ctx = new_ctx(browser); ctx.close()
     mctx = browser.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
