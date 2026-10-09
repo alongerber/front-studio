@@ -1,4 +1,4 @@
-== npm test (2026-10-09T20:28:28Z) ==
+== npm test (2026-10-09T21:35:09Z) ==
 ok 1 - 1. visiting thanks / returning without a verified capture creates no purchase
 ok 2 - 2. approved payment is captured by the webhook alone (buyer closed the tab)
 ok 3 - 3. duplicate webhooks + capture endpoint → exactly one purchase
@@ -16,65 +16,26 @@ ok 14 - 10. rate limiting and input validation
 ok 15 - 11. refunds mark the order refunded and are reported
 ok 16 - F1a. finishing without payment is refused; notes before payment are still saved
 ok 17 - F1b. finishing a paid order with no content is refused and says what is missing
-#     at file:///home/user/front-studio/test/helpers.js:27:96
-#     at q (file:///home/user/front-studio/lib/db.js:52:10)
-#     at async one (file:///home/user/front-studio/lib/db.js:56:16)
-#     at async applyCapture (file:///home/user/front-studio/lib/payment.js:93:18)
-#     at async file:///home/user/front-studio/api/paypal/capture.js:24:34
-#     at async file:///home/user/front-studio/lib/util.js:67:18
-#     at async call (file:///home/user/front-studio/test/helpers.js:98:13)
-#     at async TestContext.<anonymous> (file:///home/user/front-studio/test/fixes.test.js:76:14)
-#     at async Test.run (node:internal/test_runner/test:1054:7)
-#     at async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
 ok 18 - F2a. Meta queue insert fails → nothing is marked paid; the retry stores paid AND the queue
-#     at file:///home/user/front-studio/test/helpers.js:27:96
-#     at q (file:///home/user/front-studio/lib/db.js:52:10)
-#     at async one (file:///home/user/front-studio/lib/db.js:56:16)
-#     at async applyCapture (file:///home/user/front-studio/lib/payment.js:93:18)
-#     at async file:///home/user/front-studio/api/paypal/capture.js:24:34
-#     at async file:///home/user/front-studio/lib/util.js:67:18
-#     at async call (file:///home/user/front-studio/test/helpers.js:98:13)
-#     at async TestContext.<anonymous> (file:///home/user/front-studio/test/fixes.test.js:97:17)
-#     at async Test.run (node:internal/test_runner/test:1054:7)
-#     at async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
 ok 19 - F2b. the stored capture alone is enough: the recovery sweep marks the order paid without any webhook
 ok 20 - F2c. rows lost by any other path are re-created by the sweep (and Purchase still sent once)
 ok 21 - F3. a full refund makes the order not paid, cancels an unsent Purchase, and blocks production
 ok 22 - F3b. a partial refund keeps the order paid and shows it
 ok 23 - F3c. partial refunds that add up to the full amount end the order like a full refund
 ok 24 - F3d. a refund without custom_id is matched to the order through its capture
-ok 25 - F4a. ads consent withdrawn after payment (Purchase still queued) → nothing is sent, matching data removed
-ok 26 - F4b. ads consent given after payment → the queued Purchase is sent with the new matching data
-ok 27 - F4c. analytics consent withdrawn → ids and attribution removed from the order
-#     at file:///home/user/front-studio/test/helpers.js:27:96
-#     at q (file:///home/user/front-studio/lib/db.js:52:10)
-#     at async processElevenEvent (file:///home/user/front-studio/api/elevenlabs/webhook.js:63:3)
-#     at async file:///home/user/front-studio/api/elevenlabs/webhook.js:127:17
-#     at async file:///home/user/front-studio/lib/util.js:67:18
-#     at async call (file:///home/user/front-studio/test/helpers.js:98:13)
-#     at async TestContext.<anonymous> (file:///home/user/front-studio/test/fixes.test.js:210:13)
-#     at async Test.run (node:internal/test_runner/test:1054:7)
-#     at async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
-ok 28 - F5a. processing fails → 200, the delivery is kept and replayed by the sweep
-#     at file:///home/user/front-studio/test/helpers.js:27:96
-#     at q (file:///home/user/front-studio/lib/db.js:52:10)
-#     at async file:///home/user/front-studio/api/elevenlabs/webhook.js:115:17
-#     at async file:///home/user/front-studio/lib/util.js:67:18
-#     at async call (file:///home/user/front-studio/test/helpers.js:98:13)
-#     at async TestContext.<anonymous> (file:///home/user/front-studio/test/fixes.test.js:224:17)
-#     at async Test.run (node:internal/test_runner/test:1054:7)
-#     at async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
-ok 29 - F5b. storing the delivery fails → 500 so ElevenLabs retries; the retry is processed once
-ok 30 - F6. Make down at finish → brief saved, email queued, delivered later; "Accepted" without a route is not a delivery
-ok 31 - F7. scripts/migrate.js applies all migrations, is idempotent, and fails clearly without DATABASE_URL
-# tests 31
-# suites 0
-# pass 31
+ok 25 - F3e. a queued "go to production" email is not sent after a full refund
+ok 26 - F3f. partial refunds that add up to the full amount also cancel a queued production email
+ok 27 - F8. outside production a Purchase is never sent to Meta without a test event code
+ok 28 - F4a. ads consent withdrawn after payment (Purchase still queued) → nothing is sent, matching data removed
+ok 29 - F4b. ads consent given after payment → the queued Purchase is sent with the new matching data
+ok 30 - F4c. analytics consent withdrawn → ids and attribution removed from the order
+ok 31 - F5a. processing fails → 200, the delivery is kept and replayed by the sweep
+ok 32 - F5b. storing the delivery fails → 500 so ElevenLabs retries; the retry is processed once
+ok 33 - F6. Make down at finish → brief saved, email queued, delivered later; "Accepted" without a route is not a delivery
+ok 34 - F7. scripts/migrate.js applies all migrations, is idempotent, and fails clearly without DATABASE_URL
+# tests 34
+# pass 34
 # fail 0
-# cancelled 0
-# skipped 0
-# todo 0
-# duration_ms 30033.773323
 
 == e2e ==
 PASS A1 consent banner shown on first visit
@@ -130,4 +91,16 @@ PASS J5 no JS errors (order page)
 PASS H1 wrong password refused
 PASS H2 funnel shows absolute numbers next to rates
 PASS H3 order detail opens (brief visible to production)
-53/53 passed
+PASS K1 every "talk" button opens the agent
+PASS K2 agent opens with the one first question
+PASS K3 every "order" button opens checkout
+PASS K4 price on page and in checkout is 1,290 and labelled final
+PASS K5 no banned words in the marketing copy
+PASS K6 no JS errors (landing)
+PASS M1 consent banner up → mobile bar hidden
+PASS M2 hero buttons off screen → mobile bar shown, page padded by its height
+PASS M3 the bar does not cover the end of the page
+PASS M4 no sideways scroll on mobile
+PASS M5 agent open → mobile bar hidden
+PASS R1 reduced motion: hero loop does not autoplay, pause/play control shown
+PASS R2 reduced motion: content is visible without scrolling effects

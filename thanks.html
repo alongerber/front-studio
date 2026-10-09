@@ -9,57 +9,55 @@
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#050403">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500&family=Frank+Ruhl+Libre:wght@300;400;500&family=Heebo:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap">
 <style>
-:root{--bg:#050403;--card:#100d0a;--line:rgba(227,198,140,.18);--line2:rgba(245,238,226,.10);--ink:#F5EEE2;--ink2:rgba(245,238,226,.66);--ink3:rgba(245,238,226,.44);--gold:#E3C68C;--ok:#9fd3a8;--err:#f0a090;--ease:cubic-bezier(.22,.9,.28,1)}
+:root{--bg:#141210;--card:#1b1916;--line:rgba(244,239,230,.12);--line2:rgba(244,239,230,.07);--ink:#F4EFE6;--ink2:rgba(244,239,230,.74);--ink3:rgba(244,239,230,.56);--gold:#FF6A3D;--ok:#9fd3a8;--err:#f0a090;--ease:cubic-bezier(.22,.9,.28,1)}
 *{box-sizing:border-box;margin:0;padding:0}[hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font-family:Heebo,system-ui,sans-serif;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(120,86,40,.22),rgba(0,0,0,0) 70%)}
+body{background:var(--bg);color:var(--ink);font-family:Heebo,system-ui,sans-serif;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}button,input{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer}
-:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 .w{max-width:680px;margin-inline:auto;padding:64px 20px 120px}
-.brand{direction:ltr;text-align:center;font-family:"Bodoni Moda",serif;font-size:21px;letter-spacing:.34em;padding-left:.34em;
-  background:linear-gradient(100deg,#8E6C38,#C9A766 25%,#F1DDAE 45%,#FFF6DF 52%,#E9D3A1 62%,#B8955A);-webkit-background-clip:text;background-clip:text;color:transparent}
-.rule{height:1px;width:200px;margin:20px auto 26px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-h1{font-family:"Frank Ruhl Libre",serif;font-weight:400;font-size:clamp(30px,6vw,44px);line-height:1.15;text-align:center;text-wrap:balance}
+.brand{direction:ltr;text-align:center;font-weight:900;font-size:20px;letter-spacing:.14em}
+.rule{height:3px;width:40px;margin:18px auto 26px;border-radius:3px;background:var(--gold)}
+h1{font-weight:900;letter-spacing:-.02em;font-size:clamp(30px,6vw,44px);line-height:1.15;text-align:center;text-wrap:balance}
 .lead{margin:12px auto 0;max-width:520px;text-align:center;color:var(--ink2);text-wrap:balance}
 .ord{margin:18px auto 0;display:flex;justify-content:center;gap:10px;align-items:center;flex-wrap:wrap;font-size:15px;color:var(--ink3)}
-.ord b{direction:ltr;font-family:"Bodoni Moda",serif;font-weight:500;letter-spacing:.08em;color:var(--gold);font-size:17px}
+.ord b{direction:ltr;font-weight:700;letter-spacing:.08em;color:var(--gold);font-size:17px}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;padding:3px 10px;border:1px solid var(--line);border-radius:20px;color:var(--ink2)}
 .pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ink3)}
 .pill.warn{color:#f0c890;border-color:rgba(240,200,144,.35)}.pill.warn::before{background:#f0c890}
 .pill.ok{color:var(--ok);border-color:rgba(159,211,168,.35)}.pill.ok::before{background:var(--ok)}
-.card{margin-top:28px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(227,198,140,.05),rgba(227,198,140,0) 50%);padding:24px}
-.card h2{font-family:"Frank Ruhl Libre",serif;font-weight:500;font-size:21px;display:flex;gap:12px;align-items:baseline}
-.card h2 i{font-style:normal;font-family:"Bodoni Moda",serif;font-size:15px;color:var(--gold);direction:ltr}
+.card{margin-top:24px;border-radius:18px;background:var(--card);padding:24px}
+.card h2{font-weight:800;font-size:21px;display:flex;gap:12px;align-items:baseline}
+.card h2 i{font-style:normal;font-weight:900;font-size:15px;color:var(--gold);direction:ltr}
 .card p{color:var(--ink2);margin-top:6px;font-size:16px}
 .card.off{opacity:.45;pointer-events:none}
 .f{display:grid;gap:12px;margin-top:16px}
 @media(min-width:620px){.f{grid-template-columns:1fr 1fr}.f .full{grid-column:1/-1}}
 .f label{display:grid;gap:5px;font-size:14px;color:var(--ink2)}
-.f input{width:100%;min-height:50px;padding:0 14px;background:#0b0907;border:1px solid var(--line);border-radius:2px;font-size:17px;color:var(--ink)}
+.f input{width:100%;min-height:50px;padding:0 14px;background:#141210;border:1px solid var(--line);border-radius:12px;font-size:17px;color:var(--ink)}
 .f input:focus{border-color:var(--gold);outline:none}
 .f input[dir=ltr]{text-align:right}
 .btns{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:0 28px;font-family:"Frank Ruhl Libre",serif;font-size:19px;font-weight:500;color:#120d06;
-  background:linear-gradient(100deg,#B8955A,#E9D3A1 45%,#F6E7C4 52%,#D5B477);border-radius:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:0 28px;font-size:18px;font-weight:700;color:#1a0e08;
+  background:var(--gold);border-radius:999px}
 .btn[disabled]{opacity:.5;cursor:default}
-.lnk{color:var(--ink2);border-bottom:1px solid var(--line);font-size:15px}
+.lnk{color:var(--ink);border-bottom:1.5px solid var(--gold);font-size:15px}
 .saved{margin-top:12px;color:var(--ink2);font-size:15.5px}.saved b{color:var(--ink);font-weight:400}
 .msg{margin-top:12px;font-size:15px}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
 .known{margin-top:16px;border-top:1px solid var(--line2);padding-top:14px}
-.known h3{font-size:13.5px;letter-spacing:.06em;color:var(--gold);font-weight:400}
+.known h3{font-size:13.5px;letter-spacing:.06em;color:var(--gold);font-weight:700}
 .known ul{list-style:none;margin-top:6px;display:grid;gap:4px}
 .known li{color:var(--ink2);font-size:15px}.known li b{color:var(--ink);font-weight:400}
 .resume{margin-top:14px;font-size:14.5px;color:var(--ink3)}
 .resume button{color:var(--ink2);border-bottom:1px solid var(--line)}
-.fin{margin-top:28px;border:1px solid rgba(159,211,168,.35);padding:24px;background:rgba(159,211,168,.04)}
-.fin h2{font-family:"Frank Ruhl Libre",serif;font-weight:500;font-size:24px}
+.fin{margin-top:24px;border-radius:18px;border:1px solid rgba(159,211,168,.35);padding:24px;background:rgba(159,211,168,.05)}
+.fin h2{font-weight:800;font-size:24px}
 .fin p{color:var(--ink2);margin-top:8px}
 .steps{margin-top:34px;list-style:none;border-top:1px solid var(--line2)}
 .steps li{display:grid;grid-template-columns:46px 1fr;gap:12px;padding:16px 0;border-bottom:1px solid var(--line2)}
-.steps i{font-style:normal;font-family:"Bodoni Moda",serif;font-size:24px;color:var(--gold);direction:ltr;line-height:1.2}
-.steps b{font-family:"Frank Ruhl Libre",serif;font-weight:500;font-size:18px;display:block}.steps span{color:var(--ink2);font-size:15px}
+.steps i{font-style:normal;font-weight:900;font-size:22px;color:var(--gold);direction:ltr;line-height:1.2}
+.steps b{font-weight:700;font-size:18px;display:block}.steps span{color:var(--ink2);font-size:15px}
 footer{text-align:center;color:var(--ink3);font-size:13.5px;margin-top:36px}
 footer a{border-bottom:1px solid var(--line)}
 </style>

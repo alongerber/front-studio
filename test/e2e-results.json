@@ -57,7 +57,7 @@
  {
   "name": "B6 order paid in DB",
   "ok": true,
-  "detail": "[{'status': 'paid', 'paid_via': 'paypal', 'attribution': {'last': {'ts': '1791575502554', 'ad_id': '123', 'fbclid': 'IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "[{'status': 'paid', 'paid_via': 'paypal', 'attribution': {'last': {'ts': '1791581634039', 'ad_id': '123', 'fbclid': 'IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "B7 fbclid kept whole (194 chars) on the order",
@@ -67,7 +67,7 @@
  {
   "name": "B8 fbc built from the full fbclid",
   "ok": true,
-  "detail": "{'ip': '127.0.0.1', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791575502554.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "{'ip': '127.0.0.1', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791581634039.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "B9 exactly one purchase_verified",
@@ -82,27 +82,27 @@
  {
   "name": "B11 tracked landing_view",
   "ok": true,
-  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'section_view', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
  },
  {
   "name": "B11 tracked consent_updated",
   "ok": true,
-  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'section_view', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
  },
  {
   "name": "B11 tracked cta_click",
   "ok": true,
-  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'section_view', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
  },
  {
   "name": "B11 tracked checkout_presented",
   "ok": true,
-  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'section_view', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
  },
  {
   "name": "B11 tracked checkout_clicked",
   "ok": true,
-  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'section_view', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
  },
  {
   "name": "B12 no JS errors (checkout)",
@@ -127,7 +127,7 @@
  {
   "name": "D1 widget gets a link key, no token",
   "ok": true,
-  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'איזה עסק יש לכם, ומה הכי הייתם רוצים שיזמינו אצלכם?', 'front_link': 'kjC5E1n4gK-cMK7SzAM8_ESickIXOYv2', 'anonymous_id': 'ae190985-e007-4a85-8756-4b0dbefa0316', 'session_id': '737f9739-b9bb-40bf-8f8a"
+  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': '88MOGwG_l9hA22YdxH4w0wqM7LAd-1VU', 'anonymous_id': '92b7368c-a008-409b-a198-b2aae537f69b', 'session_id': '8c93687d-55cc-4777-8c12-fc3d3bc35e08', "
  },
  {
   "name": "D2 save_brief_note returns only after the server saved",
@@ -137,12 +137,12 @@
  {
   "name": "D3 note stored on the server before payment",
   "ok": true,
-  "detail": "{'brief': {'business_type': 'מספרה בחולון'}, 'agent_links': ['kjC5E1n4gK-cMK7SzAM8_ESickIXOYv2'], 'paid_at': None}"
+  "detail": "{'brief': {'business_type': 'מספרה בחולון'}, 'agent_links': ['88MOGwG_l9hA22YdxH4w0wqM7LAd-1VU'], 'paid_at': None}"
  },
  {
   "name": "D4 order carries this tab's link key",
   "ok": true,
-  "detail": "['kjC5E1n4gK-cMK7SzAM8_ESickIXOYv2']"
+  "detail": "['88MOGwG_l9hA22YdxH4w0wqM7LAd-1VU']"
  },
  {
   "name": "D5 not paid",
@@ -157,7 +157,7 @@
  {
   "name": "D7 checkout reused the pre-payment order (brief kept)",
   "ok": true,
-  "detail": "('FR-VPEB-VC9Q', 'FR-VPEB-VC9Q')"
+  "detail": "('FR-USEB-FYFX', 'FR-USEB-FYFX')"
  },
  {
   "name": "D8 known brief shown from the server",
@@ -177,7 +177,7 @@
  {
   "name": "D11 brief completed and stored",
   "ok": true,
-  "detail": "{'brief': {'promote': 'תספורת גברים', 'business_type': 'מספרה בחולון'}, 'brief_done_at': '2026-10-09T19:51:58.070Z', 'contact': {'name': 'דנה', 'email': 'dana@example.com', 'phone': '050-1234567'}}"
+  "detail": "{'brief': {'promote': 'תספורת גברים', 'business_type': 'מספרה בחולון'}, 'brief_done_at': '2026-10-09T21:34:07.468Z', 'contact': {'name': 'דנה', 'email': 'dana@example.com', 'phone': '050-1234567'}}"
  },
  {
   "name": "D12 no JS errors (agent + brief)",
@@ -212,7 +212,7 @@
  {
   "name": "I1 order created with ads consent and matching data",
   "ok": true,
-  "detail": "{'consent': {'ads': 'granted', 'analytics': 'granted'}, 'meta_user': {'ip': '127.0.0.1', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791575523643.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "{'consent': {'ads': 'granted', 'analytics': 'granted'}, 'meta_user': {'ip': '127.0.0.1', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791581652422.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "I2 withdrawing ads consent updates the order and drops matching data",
@@ -242,7 +242,7 @@
  {
   "name": "J4 completed with the minimum content",
   "ok": true,
-  "detail": "{'brief': {'promote': 'טיפול שנתי', 'business_type': 'מוסך'}, 'brief_done_at': '2026-10-09T19:52:10.609Z'}"
+  "detail": "{'brief': {'promote': 'טיפול שנתי', 'business_type': 'מוסך'}, 'brief_done_at': '2026-10-09T21:34:18.995Z'}"
  },
  {
   "name": "J5 no JS errors (order page)",
@@ -261,6 +261,71 @@
  },
  {
   "name": "H3 order detail opens (brief visible to production)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "K1 every \"talk\" button opens the agent",
+  "ok": true,
+  "detail": "[('hero', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('work', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('offer', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('final', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('checkout', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('dock', 'מה העסק שלכם, ומה הייתם רוצים לקדם?')]"
+ },
+ {
+  "name": "K2 agent opens with the one first question",
+  "ok": true,
+  "detail": "[('hero', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('work', 'מה העסק שלכם, ומה הייתם רוצים לקדם?')]"
+ },
+ {
+  "name": "K3 every \"order\" button opens checkout",
+  "ok": true,
+  "detail": "[('topbar', True), ('hero', True), ('work', True), ('offer', True), ('final', True), ('dock', True)]"
+ },
+ {
+  "name": "K4 price on page and in checkout is 1,290 and labelled final",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "K5 no banned words in the marketing copy",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "K6 no JS errors (landing)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "M1 consent banner up → mobile bar hidden",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "M2 hero buttons off screen → mobile bar shown, page padded by its height",
+  "ok": true,
+  "detail": "(True, 71, 71)"
+ },
+ {
+  "name": "M3 the bar does not cover the end of the page",
+  "ok": true,
+  "detail": "(773.234375, 773)"
+ },
+ {
+  "name": "M4 no sideways scroll on mobile",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "M5 agent open → mobile bar hidden",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "R1 reduced motion: hero loop does not autoplay, pause/play control shown",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "R2 reduced motion: content is visible without scrolling effects",
   "ok": true,
   "detail": ""
  }

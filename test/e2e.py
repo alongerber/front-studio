@@ -228,11 +228,66 @@ with sync_playwright() as p:
     check('H2 funnel shows absolute numbers next to rates', re.search(r'\d+ / \d+', funnel) is not None, funnel[:300])
     page.locator('#recent tr.click').first.click(); page.wait_for_selector('#detail:not([hidden])')
     check('H3 order detail opens (brief visible to production)', 'מספרה' in page.locator('#dcard').inner_text() or 'קיבלנו' in page.locator('#dcard').inner_text() or True)
-    page.screenshot(path='/home/claude/front-v5/test/out-admin.png', full_page=True)
+    page.screenshot(path='test/out-admin.png', full_page=True)
     ctx.close()
+    # ── K. landing page v5.1: every CTA works, mobile bar never covers, no sideways scroll, reduced motion ──
+    ctx = new_ctx(browser); page = ctx.new_page(); errs = []
+    page.on('pageerror', lambda e: errs.append(str(e)))
+    page.goto(BASE + '/'); page.wait_for_timeout(400); page.click('#cbNone')
+    opened = []
+    for b in page.query_selector_all('[data-open]'):
+        cta = b.get_attribute('data-cta')
+        page.evaluate('window.__dv = null')
+        b.evaluate('el => el.click()')
+        page.wait_for_function('window.__dv', timeout=4000)
+        opened.append((cta, page.evaluate('window.__dv.opening_line')))
+    check('K1 every "talk" button opens the agent', len(opened) >= 6 and all(o[1] for o in opened), opened)
+    check('K2 agent opens with the one first question', all(o[1] == 'מה העסק שלכם, ומה הייתם רוצים לקדם?' for o in opened), opened[:2])
+    sheets = []
+    for b in page.query_selector_all('[data-checkout]'):
+        b.evaluate('el => el.click()'); page.wait_for_timeout(150)
+        sheets.append((b.get_attribute('data-checkout'), page.locator('#pay').is_visible()))
+        page.evaluate("document.getElementById('payX').click()")
+    check('K3 every "order" button opens checkout', len(sheets) >= 6 and all(x[1] for x in sheets), sheets)
+    page.wait_for_selector('#fakepp', state='attached', timeout=5000)
+    check('K4 price on page and in checkout is 1,290 and labelled final', '1,290 ₪' in page.locator('#payH').inner_text() and 'המחיר הסופי' in page.content())
+    copy = page.locator('main').inner_text()
+    banned = [w for w in ['AI', 'בינה מלאכותית', 'דיגיטלי', 'פתרונות חדשניים', 'לשלב הבא', 'עוסק פטור'] if w in copy]
+    check('K5 no banned words in the marketing copy', not banned, banned)
+    check('K6 no JS errors (landing)', not errs, errs)
+    ctx.close()
+
+    ctx = new_ctx(browser); ctx.close()
+    mctx = browser.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
+    for pat in [r'https://unpkg\.com/@elevenlabs/.*', r'https://www\.paypal\.com/sdk/js.*']:
+        mctx.route(re.compile(pat), lambda r: r.fulfill(status=200, content_type='text/javascript', body=FAKE_WIDGET if 'unpkg' in r.request.url else FAKE_PAYPAL))
+    mctx.route(re.compile(r'https://(fonts\.|connect\.facebook|www\.clarity).*'), lambda r: r.abort())
+    page = mctx.new_page(); page.goto(BASE + '/'); page.wait_for_timeout(500)
+    check('M1 consent banner up → mobile bar hidden', page.locator('.cb').is_visible() and not page.locator('#dock').is_visible())
+    page.click('#cbNone'); page.evaluate('scrollTo(0, document.getElementById("work").offsetTop)'); page.wait_for_timeout(700)
+    dock_on = page.locator('#dock').is_visible()
+    pad = page.evaluate('parseFloat(getComputedStyle(document.body).paddingBottom)')
+    dh = page.evaluate('document.getElementById("dock").offsetHeight')
+    check('M2 hero buttons off screen → mobile bar shown, page padded by its height', dock_on and pad >= dh > 0, (dock_on, pad, dh))
+    page.evaluate('scrollTo({top: document.body.scrollHeight, behavior: "instant"})'); page.wait_for_timeout(800)
+    fb = page.evaluate('document.querySelector("footer").getBoundingClientRect().bottom')
+    db = page.evaluate('document.getElementById("dock").getBoundingClientRect().top')
+    check('M3 the bar does not cover the end of the page', fb <= db + 1 or not page.locator('#dock').is_visible(), (fb, db))
+    check('M4 no sideways scroll on mobile', page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
+    page.click('#dock [data-open]'); page.wait_for_function('window.__dv', timeout=4000); page.wait_for_timeout(300)
+    check('M5 agent open → mobile bar hidden', not page.locator('#dock').is_visible())
+    mctx.close()
+
+    rctx = browser.new_context(reduced_motion='reduce')
+    rctx.route(re.compile(r'https://.*'), lambda r: r.abort())
+    page = rctx.new_page(); page.goto(BASE + '/'); page.wait_for_timeout(1500)
+    check('R1 reduced motion: hero loop does not autoplay, pause/play control shown', page.evaluate('document.getElementById("loop").paused') and page.locator('#loopBtn').is_visible())
+    check('R2 reduced motion: content is visible without scrolling effects', page.evaluate('[...document.querySelectorAll(".rv")].every(e => getComputedStyle(e).opacity === "1")'))
+    rctx.close()
+
     browser.close()
 
 fails = [r for r in results if not r[1]]
 print(f"\n{len(results) - len(fails)}/{len(results)} passed")
-json.dump([{'name': n, 'ok': ok, 'detail': str(d)[:300]} for n, ok, d in results], open('/home/claude/front-v5/test/e2e-results.json', 'w'), ensure_ascii=False, indent=1)
+json.dump([{'name': n, 'ok': ok, 'detail': str(d)[:300]} for n, ok, d in results], open('test/e2e-results.json', 'w'), ensure_ascii=False, indent=1)
 sys.exit(1 if fails else 0)

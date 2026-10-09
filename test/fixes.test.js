@@ -195,6 +195,19 @@ test('F3f. partial refunds that add up to the full amount also cancel a queued p
   assert.equal((await sql(`SELECT status FROM notify_outbox WHERE id = $1`, ['finish:' + o2.order_id]))[0].status, 'cancelled_refund');
 });
 
+test('F8. outside production a Purchase is never sent to Meta without a test event code', async () => {
+  const saved = process.env.META_TEST_EVENT_CODE; delete process.env.META_TEST_EVENT_CODE;
+  try {
+    const before = mock.count(/graph\.facebook/);
+    const o = await newOrder(); await pay(o);
+    assert.equal(mock.count(/graph\.facebook/), before, 'nothing sent');
+    assert.equal((await sql(`SELECT last_error FROM meta_outbox WHERE order_id = $1`, [o.order_id]))[0].last_error, 'test_code_required');
+    process.env.META_TEST_EVENT_CODE = 'TEST123'; await dueNow(); await runCron();
+    const sent = mock.calls.filter(c => /graph\.facebook/.test(c.url)).pop();
+    assert.equal(JSON.parse(sent.body).test_event_code, 'TEST123', 'sent as a test event once the code exists');
+  } finally { process.env.META_TEST_EVENT_CODE = saved; }
+});
+
 /* ── 4. consent changes follow the order and are checked at send time ── */
 test('F4a. ads consent withdrawn after payment (Purchase still queued) → nothing is sent, matching data removed', async () => {
   mock.metaFail = true;

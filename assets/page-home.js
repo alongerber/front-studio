@@ -7,23 +7,37 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){
   if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12,rootMargin:'0px 0px -6% 0px'});
 document.querySelectorAll('.rv').forEach(function(e){ if(RM) e.classList.add('in'); else io.observe(e); });
 
-/* top bar + mobile dock appear once the hero is behind */
-var top=document.getElementById('top'),dock=document.getElementById('dock'),offer=document.getElementById('offer');
-function onScroll(){
-  var y=scrollY, past=y>innerHeight*.7;
-  top.classList.toggle('on',past);
-  var r=offer.getBoundingClientRect(), inOffer=r.top<innerHeight*.6&&r.bottom>innerHeight*.4;
-  dock.classList.toggle('on',past&&!inOffer);
+/* top bar + mobile dock. The dock shows only once the hero buttons are off screen and the offer is not in view,
+   never over the consent banner or the agent, and the page gets bottom padding so it covers nothing. */
+var top=document.getElementById('top'),dock=document.getElementById('dock'),offer=document.getElementById('offer'),heroCta=document.getElementById('heroCta');
+var heroVisible=true, offerVisible=false;
+function paintDock(){
+  var cb=!!document.querySelector('.cb'); document.body.classList.toggle('cb-on',cb);
+  var on=!heroVisible&&!offerVisible&&!cb&&!document.body.classList.contains('chat-on');
+  dock.classList.toggle('on',on);
+  document.documentElement.style.setProperty('--dockH',on&&innerWidth<900?dock.offsetHeight+'px':'0px');
 }
-addEventListener('scroll',onScroll,{passive:true}); onScroll();
+if('IntersectionObserver' in window){
+  new IntersectionObserver(function(es){es.forEach(function(e){heroVisible=e.isIntersecting;});paintDock();},{threshold:0}).observe(heroCta);
+  new IntersectionObserver(function(es){es.forEach(function(e){offerVisible=e.isIntersecting;});paintDock();},{rootMargin:'-30% 0px -30% 0px'}).observe(offer);
+}
+new MutationObserver(paintDock).observe(document.body,{childList:true,attributes:true,attributeFilter:['class']});
+addEventListener('resize',paintDock);
+addEventListener('scroll',function(){ top.classList.toggle('on',scrollY>innerHeight*.6); },{passive:true});
 
-/* the ad: load only when asked */
-var v=document.getElementById('adv'),pb=document.getElementById('advPlay');
-pb.addEventListener('click',function(){
-  if(!v.src){v.src=v.dataset.src;}
-  v.controls=true; pb.hidden=true; v.play().catch(function(){});
-});
-new IntersectionObserver(function(es){es.forEach(function(e){ if(!e.isIntersecting&&!v.paused) v.pause(); });},{threshold:.2}).observe(v);
+/* the work videos: load only when asked, one plays at a time */
+var vids=[];
+function wire(v,btn){
+  vids.push(v);
+  btn.addEventListener('click',function(){
+    vids.forEach(function(o){ if(o!==v&&!o.paused) o.pause(); });
+    if(!v.src){v.src=v.dataset.src;}
+    v.controls=true; btn.hidden=true; v.play().catch(function(){});
+  });
+  new IntersectionObserver(function(es){es.forEach(function(e){ if(!e.isIntersecting&&!v.paused) v.pause(); });},{threshold:.2}).observe(v);
+}
+var v=document.getElementById('adv'); wire(v,document.getElementById('advPlay'));
+document.querySelectorAll('[data-play]').forEach(function(b){ var x=b.parentNode.querySelector('video'); wire(x,b); });
 
 /* FAQ */
 document.querySelectorAll('.q button').forEach(function(b){
@@ -106,13 +120,13 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
     var timer=new Promise(function(r){ setTimeout(r,1500); });
     Promise.race([st,timer]).then(function(o){
       F.openAgent({ phase:o&&o.paid?'brief':'sales', known_context:known(o), payment_status:o?(o.paid?'verified':'pending'):'none',
-        opening_line:'איזה עסק יש לכם, ומה הכי הייתם רוצים שיזמינו אצלכם?' }, tools, w);
+        opening_line:'מה העסק שלכם, ומה הייתם רוצים לקדם?' }, tools, w);
     });
   }
   addEventListener('pointerdown',F.loadAgent,{once:true,passive:true}); setTimeout(F.loadAgent,8000);
   document.querySelectorAll('[data-open]').forEach(function(b){ b.addEventListener('click',function(){
     if(!sheet.hidden && sheet.contains(b)) close();
-    openAgent(b.closest('.dock')?'dock':b.closest('.h3')?'hero':b.closest('#offer')?'offer':'final'); }); });
+    openAgent(b.getAttribute('data-cta')||'final'); }); });
 
   /* returning buyer with an open brief */
   if(F.order) F.orderStatus().then(function(o){ if(!o||!o.paid||o.brief_done) return;
@@ -122,6 +136,7 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
 
   F.observeSections();
   F.observeVideo(document.getElementById('adv'),'ad');
+  document.querySelectorAll('video[data-video]').forEach(function(x){ F.observeVideo(x,x.getAttribute('data-video')); });
 })();
 
 /* ── hero video: muted, starts when visible, pausable; caption follows what he is holding ── */
