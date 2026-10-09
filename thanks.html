@@ -2,328 +2,134 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="front-build" content="hotfix-2026-10-09-no-unverified-purchase">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>קיבלנו — פרונט</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>פרונט · האפיון</title>
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#07070a">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap"></noscript>
+<meta name="front-build" content="v5.0.0">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#050403">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500&family=Frank+Ruhl+Libre:wght@300;400;500&family=Heebo:wght@300;400;500&display=swap">
 <style>
-:root{--bg:#07070a;--bg2:#0d0e12;--card:#121317;--line:#24252b;--line2:#34353c;
- --y:#ffd400;--tx:#fff;--tx2:#98979f;--txD:#0a0a0c;--ease:cubic-bezier(.22,.9,.28,1)}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--tx);font-family:Heebo,system-ui,sans-serif;font-size:17px;
- line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh;
- display:flex;flex-direction:column}
-a{color:inherit;text-decoration:none}
-.w{width:100%;max-width:1040px;margin-inline:auto;padding-inline:22px}
-.grain{position:fixed;inset:0;pointer-events:none;opacity:.35;mix-blend-mode:overlay;z-index:1;
- background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='.5'/></svg>")}
-header{padding:22px 0;border-bottom:1px solid var(--line);position:relative;z-index:3}
-.logo{font-weight:900;font-size:21px;letter-spacing:-.03em}.logo b{color:var(--y)}
-main{flex:1;padding-block:clamp(46px,7vw,86px);position:relative;z-index:3;
- background:radial-gradient(105% 62% at 72% 0%,#1d1f26 0%,var(--bg) 60%)}
-.stamp{display:inline-flex;align-items:center;gap:11px;border:1px solid #3a3520;background:rgba(255,212,0,.08);
- color:var(--y);font-size:12.5px;font-weight:900;letter-spacing:.16em;padding:9px 16px;border-radius:999px}
-.stamp i{width:8px;height:8px;border-radius:50%;background:#4ade80;display:block;animation:blip 1.8s infinite}
-@keyframes blip{0%,100%{opacity:1}50%{opacity:.3}}
-h1{font-size:clamp(34px,6.4vw,72px);font-weight:900;line-height:.98;letter-spacing:-.035em;margin-top:24px;text-wrap:balance}
-h1 em{font-style:normal;color:var(--y)}
-.lead{font-size:clamp(17px,2vw,20.5px);color:var(--tx2);margin-top:20px;max-width:48ch;line-height:1.55}
-.prod{margin-top:30px;display:inline-flex;align-items:baseline;gap:12px;border:1px solid var(--line2);
- background:var(--card);border-radius:10px;padding:15px 20px}
-.prod b{font-size:19px;font-weight:900;letter-spacing:-.02em}
-.prod span{font-size:14px;color:var(--tx2)}
-.steps{margin-top:44px;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.st{background:var(--card);padding:26px 24px;display:grid;gap:8px;position:relative}
-.st--now{background:linear-gradient(150deg,#1b1910,#111216)}
-.st__n{font-size:11.5px;font-weight:900;letter-spacing:.18em;color:var(--tx2)}
-.st--now .st__n{color:var(--y)}
-.st h3{font-size:clamp(19px,2.5vw,24px);font-weight:900;letter-spacing:-.025em;line-height:1.2}
-.st p{color:var(--tx2);font-size:15.5px;max-width:52ch}
-.st__tag{position:absolute;inset-block-start:26px;inset-inline-end:24px;font-size:11px;font-weight:900;
- letter-spacing:.12em;color:var(--txD);background:var(--y);padding:5px 11px;border-radius:3px}
-@media(max-width:640px){.st__tag{position:static;justify-self:start;margin-bottom:2px}}
-.cta{margin-top:36px;display:flex;flex-wrap:wrap;gap:11px;align-items:center}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--y);color:var(--txD);
- font-weight:900;font-size:16.5px;padding:0 30px;height:56px;border-radius:4px;border:0;cursor:pointer;
- transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
-.btn:hover{transform:translateY(-3px);box-shadow:0 14px 34px -12px rgba(255,212,0,.55)}
-.btn--o{background:transparent;color:var(--tx);border:1px solid var(--line2)}
-.btn--o:hover{border-color:var(--y);color:var(--y);box-shadow:none}
-.note{margin-top:26px;font-size:14.5px;color:var(--tx2);border-inline-start:2px solid var(--line2);padding-inline-start:14px;max-width:56ch}
-footer{border-top:1px solid var(--line);padding:26px 0;font-size:14px;color:var(--tx2);position:relative;z-index:3}
-.ft{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center}
-.rv{opacity:0;transform:translateY(20px);animation:up .7s var(--ease) forwards}
-.rv:nth-child(2){animation-delay:.06s}.rv:nth-child(3){animation-delay:.12s}
-@keyframes up{to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.rv{animation:none;opacity:1;transform:none}}
-
-/* marquee */
-.mq{border-block:1px solid var(--line);padding:15px 0;overflow:hidden;background:var(--bg2);position:relative;z-index:3}
-.mq__t{display:flex;gap:44px;white-space:nowrap;width:max-content;animation:mqx 38s linear infinite}
-.mq__t span{font-size:13px;font-weight:800;letter-spacing:.08em;color:#5c5b63;flex:none}
-.mq__t span::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--y);
- opacity:.5;margin-inline-start:44px;vertical-align:middle}
-@keyframes mqx{to{transform:translateX(50%)}}
-/* hero grid */
-.hg{display:grid;gap:34px}
-.hg__c{display:none}
-@media(min-width:940px){
- .hg{grid-template-columns:1.08fr .92fr;gap:0;align-items:center}
- .hg__t{position:relative;z-index:6}
- .hg h1{margin-inline-end:-70px;position:relative;z-index:6;
-   text-shadow:0 14px 46px rgba(7,7,10,.95),0 3px 12px rgba(7,7,10,.85)}
- .hg .lead{max-width:34ch;position:relative;z-index:6}
- .hg__c{display:block;position:relative;z-index:1}
-}
-.mt{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line2);
- background:#101116;aspect-ratio:1/1;animation:up .9s var(--ease) .1s both}
-.mt img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.92) contrast(1.05)}
-.mt::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
- background:linear-gradient(to left,rgba(7,7,10,.92) 0%,rgba(7,7,10,.45) 26%,rgba(7,7,10,.06) 52%,transparent 70%)}
-.mt::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
- background:linear-gradient(to top,rgba(7,7,10,.72),transparent 42%)}
-.mt__gl{position:absolute;inset:-14%;z-index:0;pointer-events:none;
- background:radial-gradient(52% 46% at 62% 34%,rgba(255,212,0,.2),transparent 68%);filter:blur(24px)}
-.mt__b{position:absolute;z-index:4;inset-block-end:18px;inset-inline-start:18px;
- display:inline-flex;align-items:center;gap:9px;background:rgba(10,10,12,.82);backdrop-filter:blur(8px);
- border:1px solid var(--line2);border-radius:999px;padding:8px 15px;font-size:13px;font-weight:800}
-.mt__d{width:7px;height:7px;border-radius:50%;background:var(--y);box-shadow:0 0 0 0 rgba(255,212,0,.6);
- animation:pl 2s infinite}
-@keyframes pl{70%{box-shadow:0 0 0 9px rgba(255,212,0,0)}100%{box-shadow:0 0 0 0 rgba(255,212,0,0)}}
-
-/* cta pair */
-.cta{margin-top:36px;display:flex;flex-wrap:wrap;gap:11px;align-items:center}
-.btn svg{width:19px;height:19px;flex:none}
-.walink{display:inline-flex;align-items:center;gap:7px;color:var(--tx2);font-size:14.5px;
- text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line2)}
-.walink:hover{color:var(--y);text-decoration-color:var(--y)}
-.walink svg{width:15px;height:15px;opacity:.8}
-/* mic fallback toast */
-.mict{position:fixed;inset-inline:14px;bottom:16px;z-index:70;max-width:520px;
- margin-inline:auto;background:#121317;border:1px solid #2b2c33;border-radius:12px;
- padding:15px 40px 15px 16px;box-shadow:0 18px 50px rgba(0,0,0,.55);
- display:none;gap:12px;align-items:center;flex-wrap:wrap;font-size:14.5px;line-height:1.5;color:#fff}
-.mict.on{display:flex}
-.mict span{flex:1 1 200px}
-.mict__b{background:#ffd400;color:#0a0a0c;border:0;border-radius:4px;font-weight:800;
- font-size:14px;padding:10px 16px;cursor:pointer;font-family:inherit;flex:none}
-.mict__x{position:absolute;inset-inline-end:10px;inset-block-start:9px;background:none;border:0;
- color:#8d8c95;font-size:19px;line-height:1;cursor:pointer;padding:4px}
-.hint{margin-top:14px;font-size:13.5px;color:#6d6c74}
-/* steps spine */
-.steps{position:relative}
-.st{padding-inline-start:24px}
-@media(min-width:720px){
- .st{padding-inline-start:78px}
- .st::before{content:attr(data-n);position:absolute;inset-inline-start:26px;inset-block-start:26px;
-  font-size:34px;font-weight:900;line-height:1;color:#2a2b31;letter-spacing:-.04em}
- .st--now::before{color:rgba(255,212,0,.28)}
-}
+:root{--bg:#050403;--card:#100d0a;--line:rgba(227,198,140,.18);--line2:rgba(245,238,226,.10);--ink:#F5EEE2;--ink2:rgba(245,238,226,.66);--ink3:rgba(245,238,226,.44);--gold:#E3C68C;--ok:#9fd3a8;--err:#f0a090;--ease:cubic-bezier(.22,.9,.28,1)}
+*{box-sizing:border-box;margin:0;padding:0}[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:Heebo,system-ui,sans-serif;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(120,86,40,.22),rgba(0,0,0,0) 70%)}
+a{color:inherit;text-decoration:none}button,input{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.w{max-width:680px;margin-inline:auto;padding:64px 20px 120px}
+.brand{direction:ltr;text-align:center;font-family:"Bodoni Moda",serif;font-size:21px;letter-spacing:.34em;padding-left:.34em;
+  background:linear-gradient(100deg,#8E6C38,#C9A766 25%,#F1DDAE 45%,#FFF6DF 52%,#E9D3A1 62%,#B8955A);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rule{height:1px;width:200px;margin:20px auto 26px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+h1{font-family:"Frank Ruhl Libre",serif;font-weight:400;font-size:clamp(30px,6vw,44px);line-height:1.15;text-align:center;text-wrap:balance}
+.lead{margin:12px auto 0;max-width:520px;text-align:center;color:var(--ink2);text-wrap:balance}
+.ord{margin:18px auto 0;display:flex;justify-content:center;gap:10px;align-items:center;flex-wrap:wrap;font-size:15px;color:var(--ink3)}
+.ord b{direction:ltr;font-family:"Bodoni Moda",serif;font-weight:500;letter-spacing:.08em;color:var(--gold);font-size:17px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;padding:3px 10px;border:1px solid var(--line);border-radius:20px;color:var(--ink2)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ink3)}
+.pill.warn{color:#f0c890;border-color:rgba(240,200,144,.35)}.pill.warn::before{background:#f0c890}
+.pill.ok{color:var(--ok);border-color:rgba(159,211,168,.35)}.pill.ok::before{background:var(--ok)}
+.card{margin-top:28px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(227,198,140,.05),rgba(227,198,140,0) 50%);padding:24px}
+.card h2{font-family:"Frank Ruhl Libre",serif;font-weight:500;font-size:21px;display:flex;gap:12px;align-items:baseline}
+.card h2 i{font-style:normal;font-family:"Bodoni Moda",serif;font-size:15px;color:var(--gold);direction:ltr}
+.card p{color:var(--ink2);margin-top:6px;font-size:16px}
+.card.off{opacity:.45;pointer-events:none}
+.f{display:grid;gap:12px;margin-top:16px}
+@media(min-width:620px){.f{grid-template-columns:1fr 1fr}.f .full{grid-column:1/-1}}
+.f label{display:grid;gap:5px;font-size:14px;color:var(--ink2)}
+.f input{width:100%;min-height:50px;padding:0 14px;background:#0b0907;border:1px solid var(--line);border-radius:2px;font-size:17px;color:var(--ink)}
+.f input:focus{border-color:var(--gold);outline:none}
+.f input[dir=ltr]{text-align:right}
+.btns{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:0 28px;font-family:"Frank Ruhl Libre",serif;font-size:19px;font-weight:500;color:#120d06;
+  background:linear-gradient(100deg,#B8955A,#E9D3A1 45%,#F6E7C4 52%,#D5B477);border-radius:2px}
+.btn[disabled]{opacity:.5;cursor:default}
+.lnk{color:var(--ink2);border-bottom:1px solid var(--line);font-size:15px}
+.saved{margin-top:12px;color:var(--ink2);font-size:15.5px}.saved b{color:var(--ink);font-weight:400}
+.msg{margin-top:12px;font-size:15px}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
+.known{margin-top:16px;border-top:1px solid var(--line2);padding-top:14px}
+.known h3{font-size:13.5px;letter-spacing:.06em;color:var(--gold);font-weight:400}
+.known ul{list-style:none;margin-top:6px;display:grid;gap:4px}
+.known li{color:var(--ink2);font-size:15px}.known li b{color:var(--ink);font-weight:400}
+.resume{margin-top:14px;font-size:14.5px;color:var(--ink3)}
+.resume button{color:var(--ink2);border-bottom:1px solid var(--line)}
+.fin{margin-top:28px;border:1px solid rgba(159,211,168,.35);padding:24px;background:rgba(159,211,168,.04)}
+.fin h2{font-family:"Frank Ruhl Libre",serif;font-weight:500;font-size:24px}
+.fin p{color:var(--ink2);margin-top:8px}
+.steps{margin-top:34px;list-style:none;border-top:1px solid var(--line2)}
+.steps li{display:grid;grid-template-columns:46px 1fr;gap:12px;padding:16px 0;border-bottom:1px solid var(--line2)}
+.steps i{font-style:normal;font-family:"Bodoni Moda",serif;font-size:24px;color:var(--gold);direction:ltr;line-height:1.2}
+.steps b{font-family:"Frank Ruhl Libre",serif;font-weight:500;font-size:18px;display:block}.steps span{color:var(--ink2);font-size:15px}
+footer{text-align:center;color:var(--ink3);font-size:13.5px;margin-top:36px}
+footer a{border-bottom:1px solid var(--line)}
 </style>
 </head>
 <body>
-<div class="grain"></div>
-<header><div class="w"><span class="logo">פרונט<b>.</b></span></div></header>
-<div class="mq" aria-hidden="true"><div class="mq__t" id="mq"></div></div>
-<main><div class="w">
- <div class="hg">
-  <div class="hg__t">
-   <div class="rv"><div class="stamp"><i></i>התשלום נקלט</div></div>
-   <h1 class="rv">קיבלנו את הכסף.<br>עכשיו <em>תורכם לדבר.</em></h1>
-   <p class="lead rv">אל תדאגו, זה החלק הקצר. עוד רגע מיטל תשאל אתכם כמה שאלות על העסק — ומשם אתם משוחררים.</p>
-   <div class="prod" id="prod" hidden><b id="prodName"></b><span id="prodMeta"></span></div>
-  </div>
-  <div class="hg__c">
-   <div class="mt">
-     <div class="mt__gl"></div>
-     <img src="/assets/meital.webp" alt="" width="420" height="420" loading="eager" decoding="async">
-     <div class="mt__b"><span class="mt__d"></span>מיטל · ממתינה לכם</div>
-   </div>
-  </div>
- </div>
+<main class="w">
+  <div class="brand" aria-hidden="true">FRONT</div>
+  <div class="rule" aria-hidden="true"></div>
+  <h1 id="h1">תודה על ההזמנה.</h1>
+  <p class="lead" id="lead">עכשיו נדייק מה הפרסומת צריכה להגיד. לא צריך להגיע עם רעיון. את התסריט כותבים אנחנו.</p>
+  <div class="ord"><span>מספר הזמנה <b id="ordId">—</b></span><span class="pill" id="payPill">התשלום בבדיקה</span></div>
 
-  <div class="steps">
-    <div class="st st--now" data-n="1">
-      <span class="st__tag">עכשיו</span>
-      <div class="st__n">שלב 1 · אתם</div>
-      <h3>שיחה אחת עם מיטל</h3>
-      <p>מה העסק עושה, מי קונה מכם, ומה הכי מעצבן אתכם בשוק שלכם. ככל שתספרו יותר — התסריט יוצא חד יותר. אין תשובות נכונות ואין טופס.</p>
-    </div>
-    <div class="st" data-n="2">
-      <div class="st__n">שלב 2 · אנחנו</div>
-      <h3>נועלים את עצמנו בסטודיו</h3>
-      <p>כתיבה, ליהוק, מוזיקה, עריכה וכתוביות. בלי פגישת סטטוס ובלי שנחזור אליכם עם שאלות.</p>
-    </div>
-    <div class="st" data-n="3">
-      <div class="st__n">שלב 3 · מוכן</div>
-      <h3>הקובץ אצלכם <em id="clock" style="font-style:normal;color:var(--y)"></em></h3>
-      <p>מוכן לכל רשת, בלי סימן מים. מעלים, שולחים בוואטסאפ, שמים בסטטוס, מצרפים לכל פנייה.</p>
-    </div>
-  </div>
+  <section class="card" id="nopay" hidden>
+    <h2>עדיין לא קיבלנו אישור תשלום</h2>
+    <p id="nopayTxt">אם שילמתם עכשיו בפייפאל, האישור מגיע אלינו ישירות מפייפאל ובדרך כלל תוך דקה. הדף מתעדכן לבד. בינתיים אפשר כבר להתחיל באפיון.</p>
+  </section>
+  <section class="card" id="noorder" hidden>
+    <h2>לא מצאנו הזמנה בדפדפן הזה</h2>
+    <p>אם הזמנתם ממכשיר אחר, פתחו את הקישור האישי שקיבלתם. אפשר גם לכתוב לנו בוואטסאפ עם מספר ההזמנה.</p>
+  </section>
+    <!-- 1 · contact -->
+  <section class="card" id="c1" aria-labelledby="c1h">
+    <h2 id="c1h"><i>01</i>לאן לשלוח את התסריט?</h2>
+    <p>לפני שמפיקים, התסריט מגיע אליכם לאישור.</p>
+    <form class="f" id="cf" novalidate data-clarity-mask="true">
+      <label>שם<input name="name" autocomplete="name" required maxlength="80"></label>
+      <label>טלפון<input name="phone" type="tel" dir="ltr" autocomplete="tel" inputmode="tel" required maxlength="20"></label>
+      <label class="full">אימייל, לאישור ולתסריט (לא חובה)<input name="email" type="email" dir="ltr" autocomplete="email" maxlength="120"></label>
+      <div class="full btns"><button class="btn" type="submit">שמירה והמשך</button></div>
+    </form>
+    <p class="saved" id="cSaved" hidden data-clarity-mask="true"></p>
+    <p class="msg" id="cMsg" hidden></p>
+  </section>
 
-  <div class="cta">
-    <button class="btn" data-open="voice">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v10M8 7v4M16 7v4M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
-      יאללה, מדברים
-    </button>
-    <button class="btn btn--o" data-open="text">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M8 14h8"/></svg>
-      לא בא לי לדבר, אני אכתוב
-    </button>
-  </div>
-  <p class="hint">אפשר לקטוע אותה באמצע. היא תעצור. ואפשר לעבור לכתיבה תוך כדי — היא עונה בדיוק אותו דבר.</p>
+  <!-- 2 · brief with Meital -->
+  <section class="card off" id="c2" aria-labelledby="c2h">
+    <h2 id="c2h"><i>02</i>האפיון עם מיטל</h2>
+    <p>כמה שאלות קצרות: מה מקדמים, למי, מה אסור להגיד, ומה הצופה צריך לעשות בסוף. כותבים כמו בוואטסאפ, ואם נוח יותר אפשר לעבור לדיבור. לוגו ותמונות מצרפים בתוך השיחה.</p>
+    <div class="btns"><button class="btn" type="button" id="openChat">להתחיל את האפיון</button></div>
+    <div class="known" id="known" hidden data-clarity-mask="true"><h3>מה כבר ידוע לנו</h3><ul id="knownList"></ul></div>
+    <p class="resume" id="resume" hidden>כל מה שמיטל רושמת נשמר אצלנו מיד. צריך לעצור? אפשר לחזור מכל מכשיר דרך <button type="button" id="copyLink">הקישור האישי להזמנה</button>. הקישור הוא הגישה להזמנה, אז לא לשתף אותו.</p>
+  </section>
 
-  <p class="note" id="note">השעון מתחיל רק אחרי השיחה הזאת — כדי שלא נבזבז לכם אותו על המתנה. קבלה נשלחת אליכם מפייפאל אוטומטית.<br>
-  <a class="walink" data-wa="שילמתי עכשיו בפרונט ואני רוצה להתחיל." href="https://wa.me/972559501280" target="_blank" rel="noopener" style="margin-top:9px">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>
-    או פשוט בוואטסאפ, אם ככה נוח לכם
-  </a></p>
-</div></main>
-<footer><div class="w ft">
-  <div><span class="logo">פרונט<b>.</b></span> <span style="margin-inline-start:10px">להשפיל את עצמכם ברשת זה לא מודל עסקי.</span></div>
-  <div><a href="/">חזרה לדף</a> · <span dir="ltr">055-950-1280</span></div>
-</div></footer>
+  <!-- 3 · send -->
+  <section class="card off" id="c3" aria-labelledby="c3h">
+    <h2 id="c3h"><i>03</i>שולחים לנו את האפיון</h2>
+    <p>כשסיימתם עם מיטל, שלחו. מכאן זה אצלנו.</p>
+    <form class="f" id="mf" hidden novalidate data-clarity-mask="true">
+      <label class="full" id="mfBizL">איזה עסק יש לכם?<input name="business_type" maxlength="200"></label>
+      <label class="full" id="mfProL">מה הפרסומת צריכה לקדם?<input name="promote" maxlength="200"></label>
+    </form>
+    <div class="btns"><button class="btn" type="button" id="send">שליחת האפיון</button></div>
+    <p class="msg" id="sMsg" hidden></p>
+  </section>
 
-<elevenlabs-convai agent-id="agent_1101m0a412w3ena8etkz8arhbhxt"></elevenlabs-convai>
-<script>
-/* ─── פיקסל + ייחוס ─── */
-window.FRONT_IDS={ clarity:"xdrn5fa9p1", pixel:"871649018702910" };
-window.FRONT_ATTR=(function(){var a={};try{var raw=localStorage.getItem('front_attr');
-  if(raw){var o=JSON.parse(raw); if(o&&Date.now()-(o.ts||0)<2592000000) a=o;}}catch(e){}return a;})();
-(function(){var C=window.FRONT_IDS.clarity,P=window.FRONT_IDS.pixel;
-  if(C){(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script",C);}
-  if(P){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
-    (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init',P); fbq('track','PageView');}
-})();
-(function(){"use strict";
-var P={take1:['טייק אחד','סרטון בודד · ₪590','תוך 72 שעות'],
-       stotz:['סטוץ','סרטון בודד · ₪1,290','תוך שבעה ימי עסקים'],
-       weekly:['טייק אחד בשבוע','ארבעה סרטונים · ₪1,790 לחודש','הראשון תוך 72 שעות'],
-       retainer:['לא נעלמים בבוקר','ארבעה סרטונים · ₪3,890 לחודש','הראשון תוך שבעה ימי עסקים']};
-var k=(new URLSearchParams(location.search).get('p')||'').toLowerCase(), r=P[k];
-if(r){var b=document.getElementById('prod');b.hidden=false;
-  document.getElementById('prodName').textContent=r[0];
-  document.getElementById('prodMeta').textContent=r[1];
-  document.getElementById('clock').textContent='— '+r[2];}
-else{document.getElementById('clock').textContent='';}
-var AMT={take1:590,stotz:1290,weekly:1790,retainer:3890};
-var FIRED=false;
-try{ var gk='front-paid-'+k; FIRED=!!sessionStorage.getItem(gk); }catch(e){}
-try{if(window.va)window.va('event',{name:'purchase_return',data:{product:k||'unknown'}});}catch(e){}
-/* ── חזרה מפייפאל: אירוע מותאם בלבד, לא Purchase (hotfix 2026-10-09) ── */
-(function(){
-  if(!r||FIRED) return;
-  var pr={value:AMT[k]||0, currency:'ILS', content_name:r[0], content_ids:[k], content_type:'product'};
-  try{ var A=window.FRONT_ATTR||{}; for(var ak in A){ if(ak!=='ts') pr[ak]=A[ak]; } }catch(e){}
-  /* hotfix 2026-10-09: a return to this page is NOT a verified payment. No Purchase is sent from the browser. */
-  try{ if(window.fbq){ window.fbq('trackCustom','paypal_return',{content_ids:[k]}); } }catch(e){}
-  try{ if(window.clarity) window.clarity('event','paypal_return'); }catch(e){}
-})();
-/* ── התראת תשלום ל-Make ── */
-(function(){
-  if(!r) return;
-  var key='front-paid-'+k;
-  try{ if(sessionStorage.getItem(key)) return; sessionStorage.setItem(key,'1'); }catch(e){}
-  try{
-    fetch('https://hook.eu1.make.com/5ynh3pyl99rt9deuf46rlbf6grn86f6x',{
-      method:'POST', mode:'no-cors', keepalive:true,
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({product:k, product_label:r[0], amount:AMT[k]||'', due:r[2],
-        creative:(window.FRONT_ATTR&&window.FRONT_ATTR.utm_content)||'ישיר',
-        campaign:(window.FRONT_ATTR&&window.FRONT_ATTR.utm_campaign)||'',
-        source:(window.FRONT_ATTR&&window.FRONT_ATTR.utm_source)||'אורגני',
-        ts:new Date().toLocaleString('he-IL',{timeZone:'Asia/Jerusalem'})})
-    }).catch(function(){});
-  }catch(e){}
-})();
-var biz=['מוסכים','מספרות','קליניקות','אולמות','מסעדות','חדרי כושר','נגריות','שיפוצניקים','סטודיו לפילאטיס','חנויות שכונתיות','עורכי דין','קוסמטיקאיות','גני ילדים','מדריכי טיולים','וטרינרים','מאמנים אישיים'];
-var mq=document.getElementById('mq');
-if(mq)mq.innerHTML=biz.concat(biz).map(function(b){return '<span>'+b+'</span>';}).join('');
-var a=document.querySelector('[data-wa]');
-if(a)a.href='https://wa.me/972559501280?text='+encodeURIComponent(a.dataset.wa);
-var loaded=false;
-function load(){if(loaded)return;loaded=true;
-  var t=document.createElement('script');t.src='https://unpkg.com/@elevenlabs/convai-widget-embed';
-  t.async=true;document.head.appendChild(t);}
-setTimeout(load,1200);
+  <section class="fin" id="fin" hidden aria-live="polite">
+    <h2>קיבלנו את האפיון.</h2>
+    <p id="finTxt"></p>
+  </section>
 
-function micToast(msg){
-  var t=document.getElementById('mict');
-  if(!t){t=document.createElement('div');t.id='mict';t.className='mict';document.body.appendChild(t);}
-  t.innerHTML='<span>'+msg+'</span>'+
-    '<button class="mict__b" type="button">\u05dc\u05db\u05ea\u05d5\u05d1 \u05dc\u05de\u05d9\u05d8\u05dc</button>'+
-    '<button class="mict__x" type="button" aria-label="\u05e1\u05d2\u05d9\u05e8\u05d4">&times;</button>';
-  t.classList.add('on');
-  t.querySelector('.mict__b').onclick=function(){t.classList.remove('on');openWidgetRaw('text');};
-  t.querySelector('.mict__x').onclick=function(){t.classList.remove('on');};
-  clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('on');},14000);
-}
-function micBlocked(cb){
-  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){cb(true);return;}
-  if(navigator.permissions&&navigator.permissions.query){
-    try{navigator.permissions.query({name:'microphone'})
-          .then(function(s){cb(s&&s.state==='denied');},function(){cb(false);});return;}catch(e){}
-  }
-  cb(false);
-}
-function watchAgentError(){
-  var tries=0;
-  (function poll(){
-    var w=document.querySelector('elevenlabs-convai'),sr=w&&w.shadowRoot;
-    if(sr&&(sr.textContent||'').indexOf('\u05de\u05e9\u05d4\u05d5 \u05d4\u05e9\u05ea\u05d1\u05e9')>-1){
-      micToast('\u05d4\u05de\u05d9\u05e7\u05e8\u05d5\u05e4\u05d5\u05df \u05dc\u05d0 \u05e0\u05e4\u05ea\u05d7 \u05db\u05d0\u05df. \u05d0\u05e4\u05e9\u05e8 \u05dc\u05db\u05ea\u05d5\u05d1 \u05dc\u05d4 \u05d1\u05de\u05e7\u05d5\u05dd \u2014 \u05d0\u05d5\u05ea\u05d4 \u05de\u05d9\u05d8\u05dc, \u05d0\u05d5\u05ea\u05df \u05ea\u05e9\u05d5\u05d1\u05d5\u05ea.');
-      return;
-    }
-    if(++tries<60) setTimeout(poll,500);
-  })();
-}
-function openWidget(mode){
-  load();
-  if(mode!=='voice'){ openWidgetRaw(mode); return; }
-  micBlocked(function(blocked){
-    if(blocked){
-      openWidgetRaw('text');
-      micToast('\u05d4\u05de\u05d9\u05e7\u05e8\u05d5\u05e4\u05d5\u05df \u05d7\u05e1\u05d5\u05dd \u05d1\u05d3\u05e4\u05d3\u05e4\u05df \u05d4\u05d6\u05d4. \u05e4\u05ea\u05d7\u05e0\u05d5 \u05dc\u05db\u05dd \u05de\u05e7\u05dc\u05d3\u05ea \u2014 \u05de\u05d9\u05d8\u05dc \u05e2\u05d5\u05e0\u05d4 \u05d1\u05d3\u05d9\u05d5\u05e7 \u05d0\u05d5\u05ea\u05d5 \u05d3\u05d1\u05e8.');
-    } else { openWidgetRaw('voice'); watchAgentError(); }
-  });
-}
+  <ol class="steps" aria-label="מה קורה אחרי האפיון">
+    <li><i>01</i><div><b>תסריט לאישור</b><span>אנחנו כותבים ושולחים לכם תסריט, לפני שמתחילים להפיק.</span></div></li>
+    <li><i>02</i><div><b>הפקה</b><span>פרסומת של 30–40 שניות, מותאמת להעלאה לרשתות. מוכנה תוך 7 ימי עסקים מסיום האפיון. זמן שבו מחכים לתשובה מכם לא נספר.</span></div></li>
+    <li><i>03</i><div><b>סבב תיקונים אחד</b><span>טקסט, כתוביות, מוזיקה וקצב. לא נמסרה בזמן? כל הסכום חוזר.</span></div></li>
+  </ol>
 
-function openWidgetRaw(mode){
-  load();
-  var want = (mode==='text') ? ['לכתוב','הקליד','כתבו'] : ['לדבר','דברו'];
-  var tries=0, opened=false;
-  (function poll(){
-    var w=document.querySelector('elevenlabs-convai'), sr=w&&w.shadowRoot;
-    if(sr){
-      var btns=[].slice.call(sr.querySelectorAll('button')), hit=null;
-      for(var i=0;i<btns.length&&!hit;i++){
-        var t=(btns[i].innerText||'')+' '+(btns[i].getAttribute('aria-label')||'');
-        for(var j=0;j<want.length;j++) if(t.indexOf(want[j])>-1){hit=btns[i];break;}
-      }
-      if(hit){hit.click();return;}
-      if(!opened&&btns.length){btns[0].click();opened=true;}
-    }
-    if(++tries<45) setTimeout(poll,150);
-  })();
-}
-document.querySelectorAll('[data-open]').forEach(function(b){
-  b.addEventListener('click',function(){
-    openWidget(b.dataset.open);
-    try{if(window.va)window.va('event',{name:'agent_open',data:{mode:b.dataset.open,product:k||'unknown'}});}catch(e){}
-  });
-});
-})();
-</script>
+  <footer>שאלה לבן אדם? <a href="#" data-wa="היי, הזמנתי פרסומת ויש לי שאלה">וואטסאפ 055-950-1280</a> · <a href="#" data-consent-open>הגדרות מדידה</a></footer>
+</main>
+
+<script src="/assets/front.js"></script>
+<script src="/assets/page-thanks.js"></script>
 </body>
 </html>

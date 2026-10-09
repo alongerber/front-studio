@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>פרונט · דשבורד</title>
+<style>
+:root{--bg:#0b0a09;--card:#141210;--line:#2a2621;--ink:#f3eee6;--ink2:#b7aea2;--ink3:#857c71;--gold:#e3c68c;--ok:#9fd3a8;--err:#f0a090;--warn:#f0c890}
+*{box-sizing:border-box;margin:0;padding:0}[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Heebo,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:#221e19;border:1px solid var(--line);border-radius:6px;padding:7px 14px}
+button.p{background:var(--gold);color:#140f08;border-color:var(--gold);font-weight:600}
+input,select,textarea{background:#0f0d0b;border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+.w{max-width:1180px;margin:0 auto;padding:20px 16px 80px}
+h1{font-size:20px;font-weight:600}h2{font-size:15px;font-weight:600;color:var(--gold);margin-bottom:10px}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between;margin-bottom:16px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.card.wide{grid-column:1/-1}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:right;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--ink3);font-weight:500}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.muted{color:var(--ink3);font-size:13px}
+.ok{color:var(--ok)}.err{color:var(--err)}.warn{color:var(--warn)}
+.fbar{height:8px;background:#221e19;border-radius:4px;overflow:hidden;margin-top:3px}.fbar i{display:block;height:100%;background:var(--gold)}
+.scroll{overflow-x:auto}
+tr.click{cursor:pointer}tr.click:hover td{background:#1b1815}
+.login{max-width:360px;margin:12vh auto;display:grid;gap:10px}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:4px 12px;font-size:14px}.kv b{color:var(--ink3);font-weight:500}.kv span[dir=ltr]{text-align:right;unicode-bidi:plaintext}
+details{margin-top:8px}summary{cursor:pointer;color:var(--ink2)}
+.tr{max-height:360px;overflow:auto;background:#0f0d0b;border:1px solid var(--line);border-radius:6px;padding:8px;margin-top:6px;font-size:14px}
+.tr p{margin:3px 0}.tr .u{color:var(--gold)}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;border:1px solid var(--line);font-size:12.5px}
+#detail{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:20px 10px;z-index:9}
+#detail .card{max-width:860px;width:100%}
+</style>
+</head>
+<body>
+<div class="login" id="login">
+  <h1>פרונט · כניסה</h1>
+  <input id="u" autocomplete="username" placeholder="משתמש">
+  <input id="pw" type="password" autocomplete="current-password" placeholder="סיסמה">
+  <button class="p" id="go">כניסה</button>
+  <p class="muted" id="lmsg"></p>
+</div>
+
+<div class="w" id="app" hidden>
+  <div class="bar">
+    <h1>פרונט · דשבורד <span class="muted" id="env"></span></h1>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="days" style="width:auto"><option value="1">יום</option><option value="7" selected>7 ימים</option><option value="30">30 יום</option><option value="90">90 יום</option></select>
+      <button id="reload">רענון</button><button id="logout">יציאה</button>
+    </div>
+  </div>
+  <div class="grid">
+    <section class="card wide"><h2>משפך</h2><div class="scroll"><table id="funnel"></table></div>
+      <p class="muted" id="fnote"></p></section>
+    <section class="card"><h2>הזמנות ותשלום</h2><div class="kv" id="orders"></div></section>
+    <section class="card"><h2>שיחות עם מיטל</h2><div class="kv" id="convs"></div><h2 style="margin-top:12px">שלב אחרון בשיחה</h2><table id="stage"></table></section>
+    <section class="card"><h2>זמן פעיל (אומדן)</h2><div class="kv" id="time"></div><h2 style="margin-top:12px">מכשירים</h2><table id="devices"></table></section>
+    <section class="card"><h2>תקינות ושגיאות</h2><table id="health"></table>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button id="recover">לנסות שוב עכשיו</button><span class="muted" id="rmsg">ניסיון חוזר רץ גם אוטומטית פעם ביום</span></div></section>
+    <section class="card wide"><h2>מקורות (ייחוס האתר)</h2><div class="scroll"><table id="sources"></table></div>
+      <h2 style="margin-top:12px">רכישות לפי מקור</h2><table id="paidsrc"></table>
+      <p class="muted" style="margin-top:8px">הוצאה וחשיפות ממטא: חיבור קריאה נפרד, עוד לא מחובר. ייחוס מטא וייחוס האתר הם שני מספרים שונים.</p></section>
+    <section class="card wide"><h2>הזמנות אחרונות</h2><div class="scroll"><table id="recent"></table></div></section>
+  </div>
+</div>
+
+<div id="detail" hidden><section class="card" id="dcard"></section></div>
+
+<script>
+(function(){'use strict';
+var $=function(id){return document.getElementById(id);};
+function esc(s){var t=document.createElement('span');t.textContent=s==null?'':String(s);return t.innerHTML;}
+var auth=null; try{auth=sessionStorage.getItem('front_admin');}catch(e){}
+function api(path,body){
+  return fetch(path,{method:body?'POST':'GET',cache:'no-store',headers:Object.assign({authorization:'Basic '+auth},body?{'content-type':'application/json'}:{}),body:body?JSON.stringify(body):undefined})
+    .then(function(r){return r.json().catch(function(){return{};}).then(function(j){if(r.status===401){logout();throw new Error('unauthorized');} if(!r.ok) throw new Error(j.error||('http_'+r.status)); return j;});});
+}
+function login(){ var u=$('u').value.trim(), p=$('pw').value;
+  auth=btoa(unescape(encodeURIComponent(u+':'+p)));
+  load().then(function(){ try{sessionStorage.setItem('front_admin',auth);}catch(e){} $('pw').value=''; },
+    function(e){ $('lmsg').textContent=e.message==='admin_not_configured'?'הכניסה עוד לא הוגדרה בשרת (ADMIN_USER / ADMIN_PASSWORD_HASH).':'שם משתמש או סיסמה שגויים.'; }); }
+function logout(){ auth=null; try{sessionStorage.removeItem('front_admin');}catch(e){} $('app').hidden=true; $('login').hidden=false; }
+$('go').onclick=login; $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')login();});
+$('logout').onclick=logout;
+$('recover').onclick=function(){ var b=this; b.disabled=true; $('rmsg').textContent='רץ…';
+  api('/api/admin/recover',{}).then(function(r){ $('rmsg').textContent='הושלם: '+r.repaired_payments+' תשלומים תוקנו · '+r.conversations_replayed+' שיחות שוחזרו · '+
+    r.meta.filter(function(x){return x.ok;}).length+' Purchase נשלחו · '+r.notify.filter(function(x){return x.ok;}).length+' מיילים נשלחו'; load(); },
+    function(e){ $('rmsg').textContent='שגיאה: '+e.message; }).then(function(){ b.disabled=false; }); }; $('reload').onclick=function(){load();}; $('days').onchange=function(){load();};
+
+function pct(a,b){ return b? (Math.round(a/b*1000)/10)+'%' : '—'; }
+function rate(a,b){ return '<span class="n">'+esc(a)+' / '+esc(b)+'</span> <span class="muted">('+pct(a,b)+')</span>'; }
+function kv(el,rows){ el.innerHTML=rows.map(function(r){return '<b>'+esc(r[0])+'</b><span>'+r[1]+'</span>';}).join(''); }
+function ms(v){ if(v==null) return '—'; var s=Math.round(v/1000); return s<60? s+' שנ׳' : Math.floor(s/60)+' דק׳ '+(s%60)+' שנ׳'; }
+function dt(v){ if(!v) return '—'; var d=new Date(v); return d.toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'}); }
+
+function load(){
+  return api('/api/admin/summary?days='+$('days').value).then(function(d){
+    $('login').hidden=true; $('app').hidden=false; $('env').textContent='· '+d.environment+' · '+d.days+' ימים';
+    var f=d.funnel, top=f[0].count||0;
+    $('funnel').innerHTML='<tr><th>שלב</th><th>מספר</th><th>מהשלב הקודם</th><th>מהכניסות</th><th>מקור</th></tr>'+f.map(function(s,i){
+      var prev=i?f[i-1]:null, same=function(a,b){return a.source===b.source;};
+      var other='<span class="muted">מקור שונה</span>';
+      return '<tr><td>'+esc(s.label)+'<div class="fbar"><i style="width:'+(top?Math.min(100,s.count/top*100):0)+'%"></i></div></td><td class="n">'+esc(s.count)+'</td><td class="n">'+(i?(same(s,prev)?rate(s.count,prev.count):other):'—')+'</td><td class="n">'+(i?(same(s,f[0])?rate(s.count,top):other):'—')+'</td><td class="muted">'+esc(s.source)+'</td></tr>';}).join('');
+    $('fnote').textContent='שלבי האתר מבוססים על '+d.consenting_sessions+' מבקרים שהסכימו למדידה. הזמנות ותשלומים: כולם. שיעור מוצג רק בין שלבים מאותו מקור. "הודעה ראשונה" מגיעה מה-webhook של השיחה ולכן באיחור.';
+    var o=d.orders;
+    kv($('orders'),[['הזמנות שנפתחו',esc(o.created)],['נוצר תשלום בפייפאל',rate(o.checkout_created,o.created)],['רכישות מאומתות',rate(o.paid,o.created)],
+      ['· פייפאל',esc(o.paid_paypal)],['· ביט (ידני)',esc(o.paid_bit)],['רכישה ישירה (בלי מיטל)',rate(o.paid_direct,o.paid)],
+      ['אפיון הושלם',rate(o.brief_done,o.paid)],['שולם, אפיון לא הושלם 24+ שעות','<span class="'+(o.brief_overdue?'warn':'')+'">'+esc(o.brief_overdue)+'</span>'],
+      ['בבדיקה (pending)',esc(o.pending)],['נכשלו',esc(o.failed)],['הוחזרו',esc(o.refunded)],['הכנסה (אחרי החזרים)',esc(o.revenue)+' ₪']]);
+    var c=d.conversations;
+    kv($('convs'),[['שיחות (webhook)',esc(c.total)],['התחברו',rate(c.connected,c.total)],['עם הודעת לקוח',rate(c.with_user_message,c.total)],['נכשלו','<span class="'+(c.failed?'err':'')+'">'+esc(c.failed)+'</span>'],
+      ['משויכות להזמנה',rate(c.linked_to_order,c.total)],['משך חציוני',c.median_duration_secs==null?'—':esc(Math.round(c.median_duration_secs))+' שנ׳']]);
+    $('stage').innerHTML=d.last_stage.length?d.last_stage.map(function(r){return '<tr><td>'+esc(r.stage)+'</td><td class="n">'+esc(r.c)+'</td></tr>';}).join(''):'<tr><td class="muted">אין עדיין</td></tr>';
+    var t=d.time; kv($('time'),[['סשנים עם מדידה',esc(t.sessions)],['חציון',ms(t.median_active_ms)],['ממוצע',ms(t.avg_active_ms)]]);
+    $('devices').innerHTML=d.devices.map(function(r){return '<tr><td>'+esc(r.device||'—')+'</td><td class="n">'+esc(r.sessions)+'</td></tr>';}).join('')||'<tr><td class="muted">אין עדיין</td></tr>';
+    var h=d.health, H=[['שגיאות webhook פייפאל',h.paypal_webhook_errors],['חתימה לא תקינה (פייפאל)',h.paypal_bad_signatures],['תשלום בלי הזמנה תואמת',h.paypal_unmatched],
+      ['תשלומים שנדחו (סכום/מוטב)',h.rejected_captures],['webhook שיחות: התקבלו',h.elevenlabs_received,1],['webhook שיחות: לא עובדו',h.elevenlabs_unprocessed],
+      ['תשלום נקלט אבל ההזמנה לא סומנה',h.captured_not_marked],
+      ['Meta Purchase: נשלחו',h.meta_sent,1],['Meta Purchase: ממתינים לניסיון חוזר',h.meta_pending],['Meta Purchase: ממתינים להסכמה',h.meta_no_consent,1],['Meta Purchase: ויתרנו',h.meta_gave_up],
+      ['מיילים: ממתינים לשליחה',h.emails_pending],['מיילים: נכשלו',h.emails_failed],
+      ['שגיאות סוכנת',h.agent_errors],['כלים של מיטל שנכשלו',h.agent_tool_failures],['שגיאות בדפדפן',h.client_errors]];
+    $('health').innerHTML=H.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td class="n '+(r[2]?'':(r[1]?'err':'ok'))+'">'+esc(r[1])+'</td></tr>';}).join('');
+    $('sources').innerHTML='<tr><th>מקור</th><th>קמפיין</th><th>סשנים</th><th>פתחו את מיטל</th><th>לחצו לשלם</th></tr>'+(d.sources.map(function(r){
+      return '<tr><td>'+esc(r.source)+'</td><td>'+esc(r.campaign||'—')+'</td><td class="n">'+esc(r.sessions)+'</td><td class="n">'+rate(r.agent_open,r.sessions)+'</td><td class="n">'+rate(r.checkout_click,r.sessions)+'</td></tr>';}).join('')||'<tr><td class="muted" colspan="5">אין עדיין</td></tr>');
+    $('paidsrc').innerHTML=d.paid_by_source.map(function(r){return '<tr><td>'+esc(r.source)+'</td><td class="n">'+esc(r.paid)+'</td></tr>';}).join('')||'<tr><td class="muted">אין רכישות בתקופה</td></tr>';
+    $('recent').innerHTML='<tr><th>הזמנה</th><th>נוצרה</th><th>סטטוס</th><th>שולם</th><th>אפיון</th><th>שם</th><th>מקור</th><th>שיחות</th></tr>'+(d.recent_orders.map(function(r){
+      return '<tr class="click" data-o="'+esc(r.order_id)+'"><td dir="ltr">'+esc(r.order_id)+'</td><td>'+dt(r.created_at)+'</td><td><span class="pill">'+esc(r.status)+'</span></td><td>'+(r.paid_at?'<span class="ok">'+esc(r.paid_via)+'</span>':'—')+'</td><td>'+(r.brief_done_at?'<span class="ok">הושלם</span>':'—')+'</td><td>'+esc(r.name||'—')+'</td><td>'+esc(r.source||'—')+'</td><td class="n">'+esc(r.conversations)+'</td></tr>';}).join('')||'<tr><td class="muted" colspan="8">אין הזמנות</td></tr>');
+    document.querySelectorAll('#recent tr.click').forEach(function(tr){ tr.onclick=function(){ openOrder(tr.getAttribute('data-o')); }; });
+  });
+}
+
+var META_ST={pending:'ממתין לשליחה',no_consent:'ממתין להסכמה לפרסום',cancelled_refund:'בוטל (החזר)',expired:'פג (מעל 7 ימים)',failed:'נכשל'};
+function openOrder(id){
+  api('/api/admin/order?order_id='+encodeURIComponent(id)).then(function(d){
+    var o=d.order, c=o.contact||{}, b=o.brief||{};
+    var html='<div class="bar"><h1 dir="ltr">'+esc(o.order_id)+'</h1><button id="dclose">סגירה</button></div>'+
+      '<div class="kv"><b>סטטוס</b><span>'+esc(o.status)+'</span><b>שולם</b><span>'+(o.paid_at?esc(dt(o.paid_at))+' · '+esc(o.paid_via)+(o.status==='refunded'?' · <span class="err">הוחזר</span>':o.status==='partially_refunded'?' · <span class="warn">החזר חלקי</span>':''):'לא')+'</span>'+
+      '<b>אפיון הושלם</b><span>'+(o.brief_done_at?esc(dt(o.brief_done_at)):'לא')+'</span><b>שם</b><span>'+esc(c.name||'—')+'</span><b>טלפון</b><span dir="ltr">'+esc(c.phone||'—')+'</span>'+
+      '<b>אימייל</b><span dir="ltr">'+esc(c.email||'—')+'</span><b>מקור</b><span>'+esc(o.attribution&&o.attribution.last&&o.attribution.last.utm_source||'—')+'</span>'+
+      '<b>הסכמה</b><span>מדידה: '+esc(o.consent&&o.consent.analytics)+' · פרסום: '+esc(o.consent&&o.consent.ads)+'</span>'+
+      '<b>Meta Purchase</b><span>'+(d.meta?(d.meta.status==='sent'?'<span class="ok">נשלח</span>':'<span class="warn">'+esc(META_ST[d.meta.status]||d.meta.status)+' ('+esc(d.meta.attempts)+' ניסיונות) '+esc(d.meta.last_error||'')+'</span>'):'<span class="muted">לא בתור (לא שולם)</span>')+'</span></div>'+
+      '<h2 style="margin-top:14px">אפיון</h2><div class="kv">'+(Object.keys(b).length?Object.keys(b).map(function(k){return '<b>'+esc(k)+'</b><span>'+esc(b[k])+'</span>';}).join(''):'<span class="muted">ריק</span>')+'</div>'+
+      '<h2 style="margin-top:14px">שיחות</h2>'+(d.awaiting_conversation_data?'<p class="warn">ממתין לנתוני שיחה</p>':'')+(d.conversation_data_missing?'<p class="err">נפתחה שיחה אבל נתוני השיחה לא הגיעו מעל שעה. לבדוק את ה-webhook של ElevenLabs.</p>':'')+
+      (d.conversations.length?d.conversations.map(function(cv){
+        return '<div style="margin-top:8px"><span class="muted">'+esc(dt(cv.started_at||cv.received_at))+' · '+esc(cv.duration_secs)+' שנ׳ · '+esc(cv.user_turns)+' הודעות לקוח · '+esc(cv.status)+'</span>'+
+          '<p>'+esc(cv.summary||'')+'</p><details><summary>תמלול</summary><div class="tr">'+(cv.transcript||[]).map(function(t){return '<p class="'+(t.role==='user'?'u':'')+'"><b>'+(t.role==='user'?'לקוח':'מיטל')+':</b> '+esc(t.message)+'</p>';}).join('')+'</div></details></div>';}).join(''):(d.awaiting_conversation_data||d.conversation_data_missing?'':'<p class="muted">אין שיחה משויכת</p>'))+
+      '<h2 style="margin-top:14px">תשלומים</h2><table>'+(d.payments.map(function(p){return '<tr><td>'+esc(p.provider)+'</td><td>'+esc(p.status)+'</td><td class="n">'+esc(p.amount)+' '+esc(p.currency)+'</td><td>'+esc(p.verified_by||'')+' '+esc(p.reference||'')+'</td><td>'+esc(dt(p.created_at))+'</td></tr>';}).join('')||'<tr><td class="muted">אין</td></tr>')+'</table>'+
+      (o.paid_at?'':'<h2 style="margin-top:14px">אישור תשלום בביט (ידני)</h2><p class="muted">צילום מסך אינו הוכחה. מאשרים רק אחרי שרואים את הכסף בחשבון.</p>'+
+        '<div style="display:grid;gap:8px;margin-top:8px"><input id="mref" placeholder="אסמכתה מביט / מהבנק"><input id="mnote" placeholder="הערה (לא חובה)">'+
+        '<label><input type="checkbox" id="mseen" style="width:auto"> ראיתי את התשלום בחשבון</label><button class="p" id="mgo">אישור תשלום</button><p id="mmsg" class="muted"></p></div>')+
+      '<details><summary>אירועים ('+d.events.length+')</summary><div class="tr">'+d.events.map(function(e){return '<p>'+esc(dt(e.occurred_at))+' · '+esc(e.event_name)+' <span class="muted">'+esc(e.channel)+'</span></p>';}).join('')+'</div></details>'+
+      '<details><summary>יומן אדמין ('+d.audit.length+')</summary><div class="tr">'+d.audit.map(function(a){return '<p>'+esc(dt(a.at))+' · '+esc(a.admin_user)+' · '+esc(a.action)+'</p>';}).join('')+'</div></details>';
+    $('dcard').innerHTML=html; $('detail').hidden=false;
+    $('dclose').onclick=function(){ $('detail').hidden=true; };
+    if($('mgo')) $('mgo').onclick=function(){
+      api('/api/admin/verify-manual',{order_id:o.order_id,reference:$('mref').value.trim(),note:$('mnote').value.trim(),confirm_seen_in_account:$('mseen').checked})
+        .then(function(){ openOrder(o.order_id); load(); },function(e){ $('mmsg').textContent=e.message==='reference_required'?'צריך אסמכתה.':e.message==='confirm_seen_in_account_required'?'צריך לסמן שראית את הכסף בחשבון.':'שגיאה: '+e.message; });
+    };
+  }).catch(function(e){ alert('שגיאה: '+e.message); });
+}
+$('detail').addEventListener('click',function(e){ if(e.target===$('detail')) $('detail').hidden=true; });
+if(auth) load().catch(function(){ logout(); });
+})();
+</script>
+</body>
+</html>

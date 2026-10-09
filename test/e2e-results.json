@@ -1,0 +1,267 @@
+[
+ {
+  "name": "A1 consent banner shown on first visit",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "A2 no tracking request before a choice",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "A3 no Meta pixel / Clarity before a choice",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "A4 \"only necessary\" → still nothing sent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "A5 no analytics cookie without consent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "A6 no JS errors (home, denied)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "B1 pixel PageView after ads consent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "B2 checkout sheet with PayPal buttons opens",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "B3 order token removed from the address bar",
+  "ok": true,
+  "detail": "http://localhost:8787/thanks"
+ },
+ {
+  "name": "B4 thanks shows paid from the server",
+  "ok": true,
+  "detail": "התשלום התקבל"
+ },
+ {
+  "name": "B5 browser never sent Purchase",
+  "ok": true,
+  "detail": "[['init', '871649018702910'], ['track', 'PageView']]"
+ },
+ {
+  "name": "B6 order paid in DB",
+  "ok": true,
+  "detail": "[{'status': 'paid', 'paid_via': 'paypal', 'attribution': {'last': {'ts': '1791575502554', 'ad_id': '123', 'fbclid': 'IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ },
+ {
+  "name": "B7 fbclid kept whole (194 chars) on the order",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "B8 fbc built from the full fbclid",
+  "ok": true,
+  "detail": "{'ip': '127.0.0.1', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791575502554.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ },
+ {
+  "name": "B9 exactly one purchase_verified",
+  "ok": true,
+  "detail": "1"
+ },
+ {
+  "name": "B10 one CAPI Purchase sent by the server",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "B11 tracked landing_view",
+  "ok": true,
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+ },
+ {
+  "name": "B11 tracked consent_updated",
+  "ok": true,
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+ },
+ {
+  "name": "B11 tracked cta_click",
+  "ok": true,
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+ },
+ {
+  "name": "B11 tracked checkout_presented",
+  "ok": true,
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+ },
+ {
+  "name": "B11 tracked checkout_clicked",
+  "ok": true,
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+ },
+ {
+  "name": "B12 no JS errors (checkout)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "B13 reloading thanks does not add a purchase",
+  "ok": true,
+  "detail": "1"
+ },
+ {
+  "name": "C1 /thanks with no order shows \"not found\"",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "C2 /thanks creates no purchase",
+  "ok": true,
+  "detail": "(1, 1)"
+ },
+ {
+  "name": "D1 widget gets a link key, no token",
+  "ok": true,
+  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'איזה עסק יש לכם, ומה הכי הייתם רוצים שיזמינו אצלכם?', 'front_link': 'kjC5E1n4gK-cMK7SzAM8_ESickIXOYv2', 'anonymous_id': 'ae190985-e007-4a85-8756-4b0dbefa0316', 'session_id': '737f9739-b9bb-40bf-8f8a"
+ },
+ {
+  "name": "D2 save_brief_note returns only after the server saved",
+  "ok": true,
+  "detail": "saved"
+ },
+ {
+  "name": "D3 note stored on the server before payment",
+  "ok": true,
+  "detail": "{'brief': {'business_type': 'מספרה בחולון'}, 'agent_links': ['kjC5E1n4gK-cMK7SzAM8_ESickIXOYv2'], 'paid_at': None}"
+ },
+ {
+  "name": "D4 order carries this tab's link key",
+  "ok": true,
+  "detail": "['kjC5E1n4gK-cMK7SzAM8_ESickIXOYv2']"
+ },
+ {
+  "name": "D5 not paid",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "D6 open_payment shows checkout (customer still has to click)",
+  "ok": true,
+  "detail": "payment options are shown on screen (PayPal or Bit). The customer must click to pay."
+ },
+ {
+  "name": "D7 checkout reused the pre-payment order (brief kept)",
+  "ok": true,
+  "detail": "('FR-VPEB-VC9Q', 'FR-VPEB-VC9Q')"
+ },
+ {
+  "name": "D8 known brief shown from the server",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "D9 contact saved",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "D10 brief-phase widget told payment is verified (from server)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "D11 brief completed and stored",
+  "ok": true,
+  "detail": "{'brief': {'promote': 'תספורת גברים', 'business_type': 'מספרה בחולון'}, 'brief_done_at': '2026-10-09T19:51:58.070Z', 'contact': {'name': 'דנה', 'email': 'dana@example.com', 'phone': '050-1234567'}}"
+ },
+ {
+  "name": "D12 no JS errors (agent + brief)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "E1 wrong token → order not shown",
+  "ok": true,
+  "detail": "התשלום בבדיקה"
+ },
+ {
+  "name": "F1 cancelled checkout is not paid",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "F3 order without a call carries no agent link (no false \"waiting for call data\")",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "F2 order without consent stores no ids",
+  "ok": true,
+  "detail": "{'paid_at': None, 'consent': {'ads': 'denied', 'analytics': 'denied'}, 'anonymous_id': None}"
+ },
+ {
+  "name": "G1 (simulated FB UA) checkout renders, no errors",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "I1 order created with ads consent and matching data",
+  "ok": true,
+  "detail": "{'consent': {'ads': 'granted', 'analytics': 'granted'}, 'meta_user': {'ip': '127.0.0.1', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791575523643.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ },
+ {
+  "name": "I2 withdrawing ads consent updates the order and drops matching data",
+  "ok": true,
+  "detail": "{'consent': {'ads': 'denied', 'analytics': 'granted'}, 'meta_user': None}"
+ },
+ {
+  "name": "I3 no JS errors (consent change)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "J1 unpaid: send to production is disabled and explained",
+  "ok": true,
+  "detail": "אפשר לשמור פרטים כבר עכשיו. שליחה להפקה נפתחת אחרי שהתשלום מאושר."
+ },
+ {
+  "name": "J2 paid: send enabled",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "J3 empty brief: the page asks for the missing details",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "J4 completed with the minimum content",
+  "ok": true,
+  "detail": "{'brief': {'promote': 'טיפול שנתי', 'business_type': 'מוסך'}, 'brief_done_at': '2026-10-09T19:52:10.609Z'}"
+ },
+ {
+  "name": "J5 no JS errors (order page)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "H1 wrong password refused",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "H2 funnel shows absolute numbers next to rates",
+  "ok": true,
+  "detail": "שלב\tמספר\tמהשלב הקודם\tמהכניסות\tמקור\nכניסות (מסכימים למדידה)\n\t4\t—\t—\tevents\nפתחו את מיטל\n\t2\t2 / 4 (50%)\t2 / 4 (50%)\tevents\nבקשת התחלת שיחה\n\t2\t2 / 2 (100%)\t2 / 4 (50%)\tevents\nהודעה ראשונה של לקוח\n\t0\tמקור שונה\tמקור שונה\tconversations (webhook, באיחור)\nהוצג תשלום\n\t1\tמקור שונה\t1 / 4 (25%)\tevents\nלחצו לשלם\n"
+ },
+ {
+  "name": "H3 order detail opens (brief visible to production)",
+  "ok": true,
+  "detail": ""
+ }
+]
