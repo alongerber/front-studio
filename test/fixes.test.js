@@ -164,6 +164,37 @@ test('F3d. a refund without custom_id is matched to the order through its captur
   assert.equal(await cnt(`SELECT count(*)::int c FROM webhook_events WHERE event_id = 'WH-NOCID' AND error IS NULL`), 1);
 });
 
+test('F3e. a queued "go to production" email is not sent after a full refund', async () => {
+  const o = await newOrder(); await pay(o); await fillBrief(o); await addContact(o);
+  mock.makeFail = true;                                          // Make is down: the finish email stays queued
+  assert.equal((await doFinish(o)).data.notified, false);
+  const refund = (id, value) => call(ppWebhook.POST, 'POST', '/api/paypal/webhook', { raw: JSON.stringify({ id: 'WH-' + id, event_type: 'PAYMENT.CAPTURE.REFUNDED',
+    resource: { id, status: 'COMPLETED', custom_id: o.order_id, amount: { value, currency_code: 'ILS' } } }), headers: ppHeaders() });
+  await refund('RF-E1', '1290.00');
+  mock.makeFail = false; await dueNow(); await runCron();
+  assert.equal(mock.calls.filter(c => /hook\.make\.test/.test(c.url) && c.body.includes('a=finish')).length, 1, 'only the failed attempt before the refund');
+  assert.equal((await sql(`SELECT status FROM notify_outbox WHERE id = $1`, ['finish:' + o.order_id]))[0].status, 'cancelled_refund');
+});
+test('F3f. partial refunds that add up to the full amount also cancel a queued production email', async () => {
+  const o = await newOrder(); await pay(o); await fillBrief(o); await addContact(o);
+  mock.makeFail = true; await doFinish(o);
+  const refund = (id, value) => call(ppWebhook.POST, 'POST', '/api/paypal/webhook', { raw: JSON.stringify({ id: 'WH-' + id, event_type: 'PAYMENT.CAPTURE.REFUNDED',
+    resource: { id, status: 'COMPLETED', custom_id: o.order_id, amount: { value, currency_code: 'ILS' } } }), headers: ppHeaders() });
+  await refund('RF-F1', '290.00');
+  mock.makeFail = false; await dueNow(); await runCron();          // partial: the email still goes out
+  assert.equal((await sql(`SELECT status FROM notify_outbox WHERE id = $1`, ['finish:' + o.order_id]))[0].status, 'sent');
+  const o2 = await newOrder(); await pay(o2); await fillBrief(o2); await addContact(o2);
+  mock.makeFail = true; await doFinish(o2);
+  const refund2 = (id, value) => call(ppWebhook.POST, 'POST', '/api/paypal/webhook', { raw: JSON.stringify({ id: 'WH-' + id, event_type: 'PAYMENT.CAPTURE.REFUNDED',
+    resource: { id, status: 'COMPLETED', custom_id: o2.order_id, amount: { value, currency_code: 'ILS' } } }), headers: ppHeaders() });
+  await refund2('RF-F2', '600.00'); await refund2('RF-F3', '690.00');
+  const before = mock.calls.filter(c => /hook\.make\.test/.test(c.url) && c.body.includes('a=finish') && c.body.includes(o2.order_id)).length;
+  mock.makeFail = false; await dueNow(); await runCron();
+  const after = mock.calls.filter(c => /hook\.make\.test/.test(c.url) && c.body.includes('a=finish') && c.body.includes(o2.order_id)).length;
+  assert.equal(after, before, 'nothing sent after the refunds added up to the full amount');
+  assert.equal((await sql(`SELECT status FROM notify_outbox WHERE id = $1`, ['finish:' + o2.order_id]))[0].status, 'cancelled_refund');
+});
+
 /* ── 4. consent changes follow the order and are checked at send time ── */
 test('F4a. ads consent withdrawn after payment (Purchase still queued) → nothing is sent, matching data removed', async () => {
   mock.metaFail = true;
