@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="front-build" content="v5.1.0">
+<meta name="front-build" content="v5.1.1">
 <title>פרונט — פרסומת לעסק שלכם · 1,290 ₪</title>
 <meta name="description" content="פרסומת למוצר או לשירות שלכם: רעיון, תסריט, עריכה, מוזיקה, כתוביות ושילוב הלוגו. בלי שתצטרכו להצטלם. 1,290 ₪, המחיר הסופי.">
 <link rel="canonical" href="https://front-studio.vercel.app/">
@@ -143,6 +143,7 @@ section{padding-block:clamp(72px,10vw,128px);position:relative}
 .notinc h3{font-size:17px;font-weight:700}
 .notinc ul{list-style:none;margin-top:8px;display:grid;gap:6px;color:var(--ink2);font-size:16px}
 .notinc li::before{content:"— ";color:var(--ink3)}
+html:not(.env-live) .bitc{display:none!important}
 .terms{margin-top:16px;font-size:15px;color:var(--ink3)}
 
 /* ── 4 · steps ── */
@@ -319,7 +320,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
         <button class="btn" type="button" data-checkout="offer" data-cta="offer" data-cta-target="checkout">להזמנה — 1,290 ₪</button>
         <button class="tlink" type="button" data-open="chat" data-cta="offer" data-cta-target="agent">עוד לא בטוחים? בואו נדבר</button>
       </div>
-      <p class="terms rv">תשלום בפייפאל (גם בכרטיס אשראי, בלי חשבון) או בביט. הקבלה נשלחת אחרי שהתשלום מאושר.</p>
+      <p class="terms rv">תשלום בפייפאל (גם בכרטיס אשראי, בלי חשבון)<span class="bitc"> או בביט</span>. הקבלה נשלחת אחרי שהתשלום מאושר.</p>
     </div>
     <div class="rv">
       <ul class="inc">
@@ -351,7 +352,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
     <h2 class="h2 rv">שלושה צעדים, ואתם לא מול מצלמה באף אחד מהם.</h2>
     <ol class="steps">
       <li class="rv"><b>בוחרים כיוון</b><span>מספרים למיטל, הסוכנת שלנו, מה העסק ומה רוצים לקדם. או מדלגים ישר להזמנה.</span></li>
-      <li class="rv"><b>מזמינים</b><span>1,290 ₪ בפייפאל או בביט. מקבלים מספר הזמנה וקישור אישי.</span></li>
+      <li class="rv"><b>מזמינים</b><span>1,290 ₪ בפייפאל<span class="bitc"> או בביט</span>. מקבלים מספר הזמנה וקישור אישי.</span></li>
       <li class="rv"><b>משלימים אפיון ומתקדמים להפקה</b><span>מה שכבר סיפרתם לא נשאל שוב. אחר כך תסריט לאישור, הפקה וסבב תיקונים.</span></li>
     </ol>
   </div>
@@ -402,8 +403,8 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
     <p class="pay__p">המחיר הסופי, בלי תוספות. אחרי התשלום מקבלים מספר הזמנה וקישור אישי לאפיון. מה שכבר סיפרתם למיטל נשמר להזמנה.</p>
     <div class="pay__pp" id="ppButtons"></div>
     <p class="paymsg" id="payMsg" hidden aria-live="polite"></p>
-    <div class="pay__or"><button type="button" data-bit="sheet">לשלם בביט (דרך וואטסאפ)</button><button type="button" data-open="chat" data-cta="checkout" data-cta-target="agent">שאלה לפני? לדבר עם מיטל</button></div>
-    <p class="pay__t">תשלום בביט מאושר ידנית אחרי שהכסף מתקבל. בפייפאל אפשר לשלם גם בכרטיס אשראי בלי חשבון.</p>
+    <div class="pay__or"><button type="button" class="bitc" data-bit="sheet">לשלם בביט (דרך וואטסאפ)</button><button type="button" data-open="chat" data-cta="checkout" data-cta-target="agent">שאלה לפני? לדבר עם מיטל</button></div>
+    <p class="pay__t"><span class="bitc">תשלום בביט מאושר ידנית אחרי שהכסף מתקבל. </span>בפייפאל אפשר לשלם גם בכרטיס אשראי בלי חשבון.</p>
   </div>
 </div>
 

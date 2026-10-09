@@ -18,6 +18,8 @@ import * as elWebhook from '../api/elevenlabs/webhook.js';
 import * as cron from '../api/cron/meta-flush.js';
 import * as adminRecover from '../api/admin/recover.js';
 import * as adminOrder from '../api/admin/order.js';
+import * as configApi from '../api/config.js';
+import { cfg } from '../lib/config.js';
 
 beforeEach(freshDb);
 
@@ -206,6 +208,23 @@ test('F8. outside production a Purchase is never sent to Meta without a test eve
     const sent = mock.calls.filter(c => /graph\.facebook/.test(c.url)).pop();
     assert.equal(JSON.parse(sent.body).test_event_code, 'TEST123', 'sent as a test event once the code exists');
   } finally { process.env.META_TEST_EVENT_CODE = saved; }
+});
+
+test('F9. outside production PayPal is always sandbox and the browser is told it is a test', async () => {
+  const saved = { env: process.env.FRONT_ENV, pp: process.env.PAYPAL_ENV };
+  try {
+    process.env.PAYPAL_ENV = 'live';
+    for (const e of ['preview', 'development', 'test']) {
+      process.env.FRONT_ENV = e;
+      assert.equal(cfg.paypal.env, 'sandbox', e + ': PAYPAL_ENV=live is ignored');
+      assert.match(cfg.paypal.base, /sandbox\.paypal\.com/);
+      const r = await call(configApi.GET, 'GET', '/api/config');
+      assert.equal(r.data.test_mode, true); assert.equal(r.data.paypal_env, 'sandbox');
+    }
+    process.env.FRONT_ENV = 'production';
+    assert.equal(cfg.paypal.env, 'live'); assert.equal(cfg.paypal.base, 'https://api-m.paypal.com');
+    assert.equal((await call(configApi.GET, 'GET', '/api/config')).data.test_mode, false);
+  } finally { process.env.FRONT_ENV = saved.env; process.env.PAYPAL_ENV = saved.pp; }
 });
 
 /* ── 4. consent changes follow the order and are checked at send time ── */

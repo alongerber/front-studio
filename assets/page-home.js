@@ -96,8 +96,10 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
   addEventListener('keydown',function(e){ if(e.key==='Escape'&&!sheet.hidden) close(); });
   document.querySelectorAll('[data-checkout]').forEach(function(b){ b.addEventListener('click',function(){ open(b.getAttribute('data-checkout')); }); });
   document.querySelectorAll('[data-bit]').forEach(function(b){ b.addEventListener('click',function(){
+    if(!F.live) return;                                   // test environment: Bit is hidden and does nothing
     var t=b.textContent; b.disabled=true; b.textContent='פותחים וואטסאפ…';
-    F.payWithBit(b.getAttribute('data-bit')).catch(function(){ b.disabled=false; b.textContent=t;
+    F.payWithBit(b.getAttribute('data-bit')).catch(function(e){ b.disabled=false; b.textContent=t;
+      if(!F.live||(e&&e.message==='bit_disabled_in_test')) return;
       location.href='https://wa.me/'+F.CFG.wa+'?text='+encodeURIComponent('היי, אני רוצה לשלם בביט על פרסומת ב-1,290 ₪'); }); }); });
 
   /* ══ Meital ══ */
@@ -108,9 +110,11 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
     if(a){a.scrollIntoView({behavior:'smooth',block:'center'});a.style.transition='box-shadow .4s';
       a.style.boxShadow='0 0 0 6px rgba(227,198,140,.35)';setTimeout(function(){a.style.boxShadow='';},2600);}
     return 'whatsapp button highlighted';}
+  function payTool(){ open('agent'); return F.live
+    ? 'payment options are shown on screen (PayPal or Bit). The customer must click to pay.'
+    : 'TEST ENVIRONMENT: only a PayPal sandbox test payment is shown, no real money. Do not mention Bit. The customer must click to pay.'; }
   var tools={
-    open_payment:function(){ open('agent'); return 'payment options are shown on screen (PayPal or Bit). The customer must click to pay.'; },
-    show_payment:function(){ open('agent'); return 'payment options are shown on screen (PayPal or Bit). The customer must click to pay.'; },
+    open_payment:payTool, show_payment:payTool,
     show_whatsapp:openWhatsapp,
     save_brief_note:function(p){ return F.saveNote(p&&p.field||'other', p&&p.value); }
   };

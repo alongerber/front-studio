@@ -348,11 +348,33 @@
     }).then(function () { return 'saved'; });
   };
 
-  /* ── checkout (PayPal Orders API via our server; Bit = manual, verified by admin) ── */
+  /* ── environment: outside production no real money moves ── */
+  // Until the server confirms production we behave as a test environment: Bit stays hidden and refused.
+  var cfgReady = null;
+  F.config = function () {
+    if (!cfgReady) { cfgReady = api('/api/config'); cfgReady.catch(function () { cfgReady = null; }); }
+    return cfgReady;
+  };
+  F.live = false;
+  function markEnv() {
+    F.config().then(function (c) {
+      F.live = c.test_mode === false && c.environment === 'production';
+      document.documentElement.classList.toggle('env-live', F.live);
+      if (F.live || document.getElementById('testBar')) return;
+      var bar = document.createElement('div');
+      bar.id = 'testBar'; bar.setAttribute('role', 'status');
+      bar.textContent = 'סביבת בדיקה — אין להעביר כסף';
+      bar.style.cssText = 'position:sticky;top:0;z-index:9999;background:#ffd400;color:#111;font:800 15px/1.3 Heebo,system-ui,sans-serif;text-align:center;padding:8px 12px';
+      document.body.insertBefore(bar, document.body.firstChild);
+    }, function () {});
+  }
+  if (document.body) markEnv(); else document.addEventListener('DOMContentLoaded', markEnv);
+
+  /* ── checkout (PayPal Orders API via our server; Bit = manual, verified by admin, production only) ── */
   var ppReady = null, ppConfig = null;
   function loadPaypal() {
     if (ppReady) return ppReady;
-    ppReady = api('/api/config').then(function (c) {
+    ppReady = F.config().then(function (c) {
       ppConfig = c;
       if (!c.paypal_client_id) throw new Error('paypal_not_configured');
       return new Promise(function (res, rej) {
@@ -390,7 +412,7 @@
           return api('/api/paypal/capture', { order_id: o.order_id, token: o.token, paypal_order_id: data.orderID }).then(function (r) {
             if (r.paid || r.pending) { flush(true); location.href = F.resumeUrl(o); return; }
             if (r.status === 'APPROVED' && actions && actions.restart) return actions.restart();   // e.g. card declined → choose another
-            say('התשלום לא הושלם. לא חויבתם. אפשר לנסות שוב או לשלם בביט.', 'err');
+            say('התשלום לא הושלם. לא חויבתם. אפשר לנסות שוב' + (F.live ? ' או לשלם בביט.' : '.'), 'err');
           }, function (e) {
             report('capture', e);
             // The webhook still captures an approved payment even if this call failed.
@@ -399,7 +421,7 @@
           });
         },
         onCancel: function () { track('payment_cancelled', { method: 'paypal' }); say('החלון נסגר בלי תשלום. אפשר לנסות שוב.'); },
-        onError: function (err) { report('paypal', err); say('משהו השתבש בתשלום בפייפאל. לא חויבתם. אפשר לנסות שוב או לשלם בביט.', 'err'); }
+        onError: function (err) { report('paypal', err); say('משהו השתבש בתשלום בפייפאל. לא חויבתם. אפשר לנסות שוב' + (F.live ? ' או לשלם בביט.' : '.'), 'err'); }
       }).render(ui.buttons).then(function () {
         if (!('IntersectionObserver' in window)) return track('checkout_presented', { method: 'paypal' });
         var t = 0, io = new IntersectionObserver(function (es) {
@@ -412,11 +434,13 @@
       });
     }).catch(function (e) {
       report('paypal_load', e);
+      if (!F.live) return say(e && e.message === 'paypal_not_configured' ? 'סביבת בדיקה — אין להעביר כסף. תשלום הבדיקה (PayPal Sandbox) עדיין לא מחובר.' : 'סביבת בדיקה — אין להעביר כסף. לא הצלחנו לטעון את PayPal Sandbox.', 'err');
       say(e && e.message === 'paypal_not_configured' ? 'תשלום בפייפאל לא זמין כרגע. אפשר לשלם בביט.' : 'לא הצלחנו לטעון את פייפאל בדפדפן הזה. אפשר לפתוח את האתר בדפדפן רגיל, או לשלם בביט.', 'err');
     });
   };
   // Bit: we create the order first so the WhatsApp message carries its number for manual verification.
   F.payWithBit = function (where) {
+    if (!F.live) return Promise.reject(new Error('bit_disabled_in_test'));   // never route a test visitor to a real transfer
     return F.ensureOrder(true).then(function (o) {
       var text = 'היי, אני רוצה לשלם בביט על פרסומת ב-1,290 ₪. מספר הזמנה ' + o.order_id;
       var id = track('whatsapp_click', {}, { cta: where || 'bit' }); F.pixel('Contact', {}, id);

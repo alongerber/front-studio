@@ -255,6 +255,28 @@ with sync_playwright() as p:
     banned = [w for w in ['AI', 'בינה מלאכותית', 'דיגיטלי', 'פתרונות חדשניים', 'לשלב הבא', 'עוסק פטור'] if w in copy]
     check('K5 no banned words in the marketing copy', not banned, banned)
     check('K6 no JS errors (landing)', not errs, errs)
+    # ── T. test environment: a clear banner, no Bit, no route to a real transfer ──
+    page.wait_for_selector('#testBar', timeout=4000)
+    check('T1 test banner says no money moves', page.locator('#testBar').inner_text().strip() == 'סביבת בדיקה — אין להעביר כסף')
+    page.locator('[data-checkout=offer]').first.evaluate('el => el.click()'); page.wait_for_timeout(200)
+    bits = [page.locator('[data-bit]').nth(i).is_visible() for i in range(page.locator('[data-bit]').count())]
+    check('T2 no Bit option or Bit copy is visible', bits and not any(bits) and 'ביט' not in page.locator('body').inner_text(), bits)
+    navs = []
+    page.on('request', lambda r: navs.append(r.url) if 'wa.me' in r.url or 'whatsapp' in r.url else None)
+    page.evaluate("document.querySelector('[data-bit]').click()"); page.wait_for_timeout(600)
+    err = page.evaluate("FRONT.payWithBit('x').then(() => 'resolved', e => e.message)")
+    check('T3 Bit is refused and never opens WhatsApp', err == 'bit_disabled_in_test' and not navs, (err, navs))
+    ctx.close()
+    # production config: Bit is back, no banner (same build)
+    ctx = new_ctx(browser)
+    def prod_cfg(r):
+        resp = r.fetch(); j = resp.json(); j.update({'environment': 'production', 'test_mode': False})
+        r.fulfill(response=resp, json=j)
+    ctx.route(re.compile(r'.*/api/config$'), prod_cfg)
+    page = ctx.new_page(); page.goto(BASE + '/'); page.wait_for_timeout(400); page.click('#cbNone')
+    page.wait_for_function("document.documentElement.classList.contains('env-live')", timeout=4000)
+    page.locator('[data-checkout=offer]').first.evaluate('el => el.click()'); page.wait_for_timeout(200)
+    check('T4 in production the banner is absent and Bit is offered', page.locator('#testBar').count() == 0 and page.locator('[data-bit]').first.is_visible())
     ctx.close()
 
     ctx = new_ctx(browser); ctx.close()
