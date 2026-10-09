@@ -325,7 +325,10 @@
     if (widget) widget.remove();
     var ids = F.ids();
     var dv = Object.assign({}, vars, {
-      front_link: LINK, anonymous_id: ids.anonymous_id || '', session_id: ids.session_id || '', order_id: F.order ? F.order.order_id : '', site_version: CFG.version
+      front_link: LINK, anonymous_id: ids.anonymous_id || '', session_id: ids.session_id || '', order_id: F.order ? F.order.order_id : '', site_version: CFG.version,
+      // What the agent may offer. Until the server confirms production: PayPal sandbox only, never Bit.
+      payment_methods: F.live ? 'פייפאל (גם בכרטיס אשראי בלי חשבון) או ביט'
+        : 'סביבת בדיקה: רק תשלום בדיקה בפייפאל, בלי כסף אמיתי. אין ביט.'
     });
     var w = document.createElement('elevenlabs-convai');
     w.setAttribute('agent-id', CFG.agent); w.setAttribute('default-expanded', 'true');

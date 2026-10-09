@@ -57,7 +57,7 @@
  {
   "name": "B6 order paid in DB",
   "ok": true,
-  "detail": "[{'status': 'paid', 'paid_via': 'paypal', 'attribution': {'last': {'ts': '1791582727899', 'ad_id': '123', 'fbclid': 'IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "[{'status': 'paid', 'paid_via': 'paypal', 'attribution': {'last': {'ts': '1791583507037', 'ad_id': '123', 'fbclid': 'IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "B7 fbclid kept whole (194 chars) on the order",
@@ -67,7 +67,7 @@
  {
   "name": "B8 fbc built from the full fbclid",
   "ok": true,
-  "detail": "{'ip': '127.0.0.1', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791582727899.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "{'ip': '127.0.0.1', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791583507037.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "B9 exactly one purchase_verified",
@@ -127,7 +127,7 @@
  {
   "name": "D1 widget gets a link key, no token",
   "ok": true,
-  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'b1_KLj2TDnFDjJr3wJJHIK6jyt4nda_R', 'anonymous_id': 'c97d832f-1f29-4375-b53d-5e20fcdc6b18', 'session_id': '2e1816a7-0775-4bc6-807b-eb73db691092', "
+  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'nBYucXozDFo2PwSywjhMk0aexi6hxcjG', 'anonymous_id': '7b6bb2a9-bec0-4860-aa0b-bb1fd2bbf6db', 'session_id': '15563ea1-56a6-4593-a8a4-3c73bcf017c2', "
  },
  {
   "name": "D2 save_brief_note returns only after the server saved",
@@ -137,12 +137,12 @@
  {
   "name": "D3 note stored on the server before payment",
   "ok": true,
-  "detail": "{'brief': {'business_type': 'מספרה בחולון'}, 'agent_links': ['b1_KLj2TDnFDjJr3wJJHIK6jyt4nda_R'], 'paid_at': None}"
+  "detail": "{'brief': {'business_type': 'מספרה בחולון'}, 'agent_links': ['nBYucXozDFo2PwSywjhMk0aexi6hxcjG'], 'paid_at': None}"
  },
  {
   "name": "D4 order carries this tab's link key",
   "ok": true,
-  "detail": "['b1_KLj2TDnFDjJr3wJJHIK6jyt4nda_R']"
+  "detail": "['nBYucXozDFo2PwSywjhMk0aexi6hxcjG']"
  },
  {
   "name": "D5 not paid",
@@ -157,7 +157,7 @@
  {
   "name": "D7 checkout reused the pre-payment order (brief kept)",
   "ok": true,
-  "detail": "('FR-JN7G-K6NH', 'FR-JN7G-K6NH')"
+  "detail": "('FR-QF4F-DKGE', 'FR-QF4F-DKGE')"
  },
  {
   "name": "D8 known brief shown from the server",
@@ -177,7 +177,7 @@
  {
   "name": "D11 brief completed and stored",
   "ok": true,
-  "detail": "{'brief': {'promote': 'תספורת גברים', 'business_type': 'מספרה בחולון'}, 'brief_done_at': '2026-10-09T21:52:21.326Z', 'contact': {'name': 'דנה', 'email': 'dana@example.com', 'phone': '050-1234567'}}"
+  "detail": "{'brief': {'promote': 'תספורת גברים', 'business_type': 'מספרה בחולון'}, 'brief_done_at': '2026-10-09T22:05:20.585Z', 'contact': {'name': 'דנה', 'email': 'dana@example.com', 'phone': '050-1234567'}}"
  },
  {
   "name": "D12 no JS errors (agent + brief)",
@@ -212,7 +212,7 @@
  {
   "name": "I1 order created with ads consent and matching data",
   "ok": true,
-  "detail": "{'consent': {'ads': 'granted', 'analytics': 'granted'}, 'meta_user': {'ip': '127.0.0.1', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791582746298.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "{'consent': {'ads': 'granted', 'analytics': 'granted'}, 'meta_user': {'ip': '127.0.0.1', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791583525567.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "I2 withdrawing ads consent updates the order and drops matching data",
@@ -242,7 +242,7 @@
  {
   "name": "J4 completed with the minimum content",
   "ok": true,
-  "detail": "{'brief': {'promote': 'טיפול שנתי', 'business_type': 'מוסך'}, 'brief_done_at': '2026-10-09T21:52:32.901Z'}"
+  "detail": "{'brief': {'promote': 'טיפול שנתי', 'business_type': 'מוסך'}, 'brief_done_at': '2026-10-09T22:05:32.267Z'}"
  },
  {
   "name": "J5 no JS errors (order page)",
@@ -310,9 +310,19 @@
   "detail": "('bit_disabled_in_test', [])"
  },
  {
+  "name": "T5 agent is told: test environment, PayPal sandbox only, no Bit offered",
+  "ok": true,
+  "detail": "סביבת בדיקה: רק תשלום בדיקה בפייפאל, בלי כסף אמיתי. אין ביט."
+ },
+ {
   "name": "T4 in production the banner is absent and Bit is offered",
   "ok": true,
   "detail": ""
+ },
+ {
+  "name": "T6 in production the agent may offer PayPal or Bit",
+  "ok": true,
+  "detail": "פייפאל (גם בכרטיס אשראי בלי חשבון) או ביט"
  },
  {
   "name": "M1 consent banner up → mobile bar hidden",

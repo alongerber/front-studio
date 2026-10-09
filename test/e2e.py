@@ -266,6 +266,10 @@ with sync_playwright() as p:
     page.evaluate("document.querySelector('[data-bit]').click()"); page.wait_for_timeout(600)
     err = page.evaluate("FRONT.payWithBit('x').then(() => 'resolved', e => e.message)")
     check('T3 Bit is refused and never opens WhatsApp', err == 'bit_disabled_in_test' and not navs, (err, navs))
+    page.evaluate("document.getElementById('payX').click()")
+    page.evaluate('window.__dv = null'); page.locator('[data-open]').first.evaluate('el => el.click()')
+    page.wait_for_function('window.__dv', timeout=4000); pm = page.evaluate('window.__dv.payment_methods') or ''
+    check('T5 agent is told: test environment, PayPal sandbox only, no Bit offered', 'בדיקה' in pm and 'אין ביט' in pm, pm)
     ctx.close()
     # production config: Bit is back, no banner (same build)
     ctx = new_ctx(browser)
@@ -277,6 +281,10 @@ with sync_playwright() as p:
     page.wait_for_function("document.documentElement.classList.contains('env-live')", timeout=4000)
     page.locator('[data-checkout=offer]').first.evaluate('el => el.click()'); page.wait_for_timeout(200)
     check('T4 in production the banner is absent and Bit is offered', page.locator('#testBar').count() == 0 and page.locator('[data-bit]').first.is_visible())
+    page.evaluate("document.getElementById('payX').click()"); page.click('#cbNone') if page.locator('#cbNone').count() else None
+    page.evaluate('window.__dv = null'); page.locator('[data-open]').first.evaluate('el => el.click()')
+    page.wait_for_function('window.__dv', timeout=4000); pm = page.evaluate('window.__dv.payment_methods') or ''
+    check('T6 in production the agent may offer PayPal or Bit', 'ביט' in pm and 'בדיקה' not in pm, pm)
     ctx.close()
 
     ctx = new_ctx(browser); ctx.close()
