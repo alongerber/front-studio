@@ -2,6 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
+<meta name="front-build" content="hotfix-2026-10-09-no-unverified-purchase">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>קיבלנו — פרונט</title>
 <meta name="robots" content="noindex">
@@ -220,13 +221,14 @@ var AMT={take1:590,stotz:1290,weekly:1790,retainer:3890};
 var FIRED=false;
 try{ var gk='front-paid-'+k; FIRED=!!sessionStorage.getItem(gk); }catch(e){}
 try{if(window.va)window.va('event',{name:'purchase_return',data:{product:k||'unknown'}});}catch(e){}
-/* ── Purchase לפיקסל — פעם אחת בלבד, עם ערך ומטבע ── */
+/* ── חזרה מפייפאל: אירוע מותאם בלבד, לא Purchase (hotfix 2026-10-09) ── */
 (function(){
   if(!r||FIRED) return;
   var pr={value:AMT[k]||0, currency:'ILS', content_name:r[0], content_ids:[k], content_type:'product'};
   try{ var A=window.FRONT_ATTR||{}; for(var ak in A){ if(ak!=='ts') pr[ak]=A[ak]; } }catch(e){}
-  try{ if(window.fbq){ window.fbq('track','Purchase',pr); } }catch(e){}
-  try{ if(window.clarity) window.clarity('event','purchase'); }catch(e){}
+  /* hotfix 2026-10-09: a return to this page is NOT a verified payment. No Purchase is sent from the browser. */
+  try{ if(window.fbq){ window.fbq('trackCustom','paypal_return',{content_ids:[k]}); } }catch(e){}
+  try{ if(window.clarity) window.clarity('event','paypal_return'); }catch(e){}
 })();
 /* ── התראת תשלום ל-Make ── */
 (function(){

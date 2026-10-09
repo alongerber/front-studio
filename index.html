@@ -2,6 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
+<meta name="front-build" content="hotfix-2026-10-09-no-unverified-purchase">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>פרונט — שוכרים לכם פנים</title>
 <meta name="description" content="פרונט מפיקה את הפרסומת של העסק שלכם — תסריט, דמות, קול וכתוביות. אתם לא עומדים מול המצלמה. החל מ־590 ₪.">
@@ -917,7 +918,7 @@ window.FRONT_ATTR=(function(){
   var q=new URLSearchParams(location.search),
       K=['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'],
       a={},got=false;
-  K.forEach(function(k){var v=q.get(k); if(v){a[k]=v.slice(0,80); got=true;}});
+  K.forEach(function(k){var v=q.get(k); if(v){a[k]=(k==='fbclid')?v:v.slice(0,500); got=true;}}); /* hotfix 2026-10-09: click ids are never truncated */
   try{
     if(got){ a.ts=Date.now(); localStorage.setItem('front_attr',JSON.stringify(a)); }
     else{ var raw=localStorage.getItem('front_attr');
@@ -938,7 +939,7 @@ window.FRONT_ATTR=(function(){
     fbq('init',P); fbq('track','PageView');}
 })();
 window.frontEvents=[];
-var FRONT_STD={agent_open:'Lead', pay_click:'InitiateCheckout', whatsapp_click:'Contact'};
+var FRONT_STD={pay_click:'InitiateCheckout', whatsapp_click:'Contact'}; /* hotfix 2026-10-09: agent_open is no longer sent as Lead */
 function ev(name,props){
   props=props||{};
   try{ var A=window.FRONT_ATTR||{};
