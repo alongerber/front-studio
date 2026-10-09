@@ -1,0 +1,12 @@
+name: preview-check
+on:
+  push:
+    branches: [ci/preview-check]
+jobs:
+  sandbox:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 .github/sandbox_check.py
+        env:
+          BASE: https://front-studio-3bv6r5wl2-alons-projects-65a14969.vercel.app
