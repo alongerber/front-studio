@@ -19,7 +19,7 @@ check('S1 config: preview, sandbox, test mode, PayPal client present, checkout o
       {k: c.get(k) for k in ('environment', 'paypal_env', 'test_mode', 'checkout_open')})
 s, o = call('POST', '/api/order', {'consent': {'analytics': 'denied', 'ads': 'denied'}})
 oid, tok = o.get('order_id'), o.get('token')
-check('S2 order created on the Preview database', s == 200 and bool(oid), (s, o.get('error')))
+check('S2 order created on the Preview database (201)', s == 201 and bool(oid), (s, o.get('error')))
 print('order_id=' + str(oid))
 s, n = call('POST', '/api/brief/note', {'order_id': oid, 'token': tok, 'field': 'business_type', 'value': 'מספרה (בדיקת sandbox)'})
 check('S3 brief note saved before payment', s == 200, (s, n))
@@ -35,7 +35,7 @@ s, w = call('POST', '/api/paypal/webhook', {'id': 'WH-FAKE-1', 'event_type': 'PA
 check('S7 unsigned/forged webhook rejected', s >= 400, (s, w))
 s, g = call('GET', '/api/order?order_id=' + str(oid), None, {'x-order-token': tok})
 od = g.get('order') or {}
-check('S8 order still unpaid, brief note kept on the same order', s == 200 and not od.get('paid') and (od.get('brief') or {}).get('business_type'), (s, {k: od.get(k) for k in ('status', 'paid')}))
+check('S8 order still unpaid, brief note kept on the same order', s == 200 and not od.get('paid') and bool((od.get('brief') or {}).get('business_type')), (s, {k: od.get(k) for k in ('status', 'paid')}))
 print('paypal_order_created=' + ('yes' if p1.get('id') else 'no'))
 print(f'{sum(res)}/{len(res)} passed')
 sys.exit(0 if all(res) else 1)
