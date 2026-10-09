@@ -6,7 +6,7 @@ res = []
 def check(n, c, d=''):
     res.append(c); print(('PASS ' if c else 'FAIL ') + n + ('' if c else '  — ' + str(d)[:400]))
 with sync_playwright() as p:
-    b = p.chromium.launch()
+    b = p.chromium.launch(channel='chrome')   # real Google Chrome: has the H.264 decoder that the hero video needs
     for name, ctxargs in [('desktop', dict(viewport={'width': 1440, 'height': 900})),
                           ('mobile', dict(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True, user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'))]:
         c = b.new_context(**ctxargs); pg = c.new_page(); errs = []
@@ -23,7 +23,7 @@ with sync_playwright() as p:
         check(f'{name}: no sideways scroll', pg.evaluate('document.documentElement.scrollWidth <= innerWidth'))
         pg.click('#cbNone'); pg.wait_for_timeout(500)
         if name == 'desktop':
-            v = pg.evaluate("(()=>{const v=document.getElementById('loop');return [!!v.src, v.paused, v.readyState]})()")
+            v = pg.evaluate("(()=>{const v=document.getElementById('loop');return [!!v.src, v.paused, v.readyState, v.canPlayType('video/mp4; codecs=avc1.42E01E')]})()")
             pg.wait_for_timeout(2500)
             v2 = pg.evaluate("(()=>{const v=document.getElementById('loop');return [!!v.src, v.paused, Math.round(v.currentTime*10)/10]})()")
             check(f'{name}: hero loop loads and plays muted', v2[0] and not v2[1] and v2[2] > 0, (v, v2))
@@ -36,8 +36,10 @@ with sync_playwright() as p:
         dv = pg.evaluate("JSON.parse(document.querySelector('elevenlabs-convai')?.getAttribute('dynamic-variables')||'{}')")
         check(f'{name}: real agent widget opens', ok)
         check(f'{name}: agent gets the opening question + sales phase', dv.get('opening_line') == 'מה העסק שלכם, ומה הייתם רוצים לקדם?' and dv.get('phase') == 'sales', dv)
-        sr = pg.evaluate("document.querySelector('elevenlabs-convai').shadowRoot.textContent")
-        check(f'{name}: widget offers text first and a voice option', ('לכתוב' in sr or 'כתבו' in sr or 'יאללה' in sr) and ('לדבר' in sr or 'דיבור' in sr or 'יאללה' in sr), sr[:300])
+        pg.wait_for_timeout(1500)
+        sr = pg.evaluate("[...document.querySelector('elevenlabs-convai').shadowRoot.querySelectorAll('button,[role=button],textarea,input')].map(e=>(e.innerText||'')+'|'+(e.getAttribute('aria-label')||'')+'|'+(e.getAttribute('placeholder')||'')).join(' ;; ')")
+        print(f'INFO {name}: widget controls: {sr[:600]}')
+        check(f'{name}: widget offers text and a voice option', ('כתבו' in sr or 'לכתוב' in sr or 'כתיבה' in sr or 'יאללה' in sr) and ('לדבר' in sr or 'דיבור' in sr or 'יאללה' in sr), sr[:300])
         if name == 'mobile':
             check(f'{name}: bar hidden while agent open', not pg.locator('#dock').is_visible())
         # checkout
