@@ -144,7 +144,7 @@ function load(){
     var t=d.time; kv($('time'),[['סשנים עם מדידה',esc(t.sessions)],['חציון',ms(t.median_active_ms)],['ממוצע',ms(t.avg_active_ms)]]);
     $('devices').innerHTML=d.devices.map(function(r){return '<tr><td>'+esc(r.device||'—')+'</td><td class="n">'+esc(r.sessions)+'</td></tr>';}).join('')||'<tr><td class="muted">אין עדיין</td></tr>';
     var h=d.health, H=[['שגיאות webhook פייפאל',h.paypal_webhook_errors],['חתימה לא תקינה (פייפאל)',h.paypal_bad_signatures],['תשלום בלי הזמנה תואמת',h.paypal_unmatched],
-      ['תשלומים שנדחו (סכום/מוטב)',h.rejected_captures],['webhook שיחות: התקבלו',h.elevenlabs_received,1],['webhook שיחות: לא עובדו',h.elevenlabs_unprocessed],
+      ['תשלומים שנדחו (סכום/מוטב)',h.rejected_captures],['webhook שיחות: התקבלו',h.elevenlabs_received,1],['webhook שיחות: נדחו בחתימה',h.elevenlabs_bad_signatures],['webhook שיחות: לא עובדו',h.elevenlabs_unprocessed],
       ['תשלום נקלט אבל ההזמנה לא סומנה',h.captured_not_marked],
       ['Meta Purchase: נשלחו',h.meta_sent,1],['Meta Purchase: ממתינים לניסיון חוזר',h.meta_pending],['Meta Purchase: ממתינים להסכמה',h.meta_no_consent,1],['Meta Purchase: ויתרנו',h.meta_gave_up],
       ['מיילים: ממתינים לשליחה',h.emails_pending],['מיילים: נכשלו',h.emails_failed],

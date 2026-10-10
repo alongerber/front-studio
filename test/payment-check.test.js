@@ -64,11 +64,21 @@ test('P4. a full refund: refunded, never verified again', async () => {
   assert.equal(r.data.payment, 'refunded'); assert.match(r.data.instruction, /אסור לומר שהתשלום התקבל/);
 });
 
-test('P5. the database fails: an error, never a guessed status', async () => {
+test('P5. the database fails: "cannot check now", never "not paid" and never a guessed status', async () => {
   const k = key(); const o = await newOrder(k); await pay(o);
   failNext(/agent_links/);
   const r = await check({ link: k });
-  assert.equal(r.status, 500); assert.equal(r.data.payment, undefined);
+  assert.equal(r.status, 200); assert.equal(r.data.ok, false); assert.equal(r.data.payment, 'check_failed');
+  assert.match(r.data.instruction, /לא ניתן לבדוק/); assert.match(r.data.instruction, /אסור לומר שלא שילמו/);
+  assert.equal((await check({ link: k })).data.payment, 'verified', 'the next check works again');
+});
+
+test('P5b. not paid: the instruction asks whether PayPal was completed and never promises a check it will not run', async () => {
+  const k = key(); await newOrder(k);
+  const r = await check({ link: k });
+  assert.equal(r.data.payment, 'not_paid');
+  assert.match(r.data.instruction, /השלימו את האישור בחלון של PayPal/);
+  assert.doesNotMatch(r.data.instruction, /נבדוק שוב בעוד רגע/);
 });
 
 test('P6. another order cannot be read: the order id in the request is ignored, unknown keys see nothing', async () => {
@@ -155,4 +165,52 @@ test('P10. post-call: "the payment arrived" without a verified check is recorded
   const c = await claims();
   assert.deepEqual(c.map(x => x.conversation_id), ['conv_bad', 'conv_np']);
   assert.deepEqual(c[0].props.at_secs, [165]);
+});
+
+/* ── the bingo-club conversation (conv_4301m4k16cjgfgtv49h5v2mzc2zm), reduced to its tool calls ── */
+function bingo(conv, link, openResult) {
+  return delivery(conv, link, [
+    { role: 'agent', message: 'מה העסק שלכם, ומה הייתם רוצים לקדם?', time_in_call_secs: 0 },
+    { role: 'user', message: 'מועדון בינגו לגיל הזהב. רוצה רעיון סופר קומי ומופרע', time_in_call_secs: 0 },
+    { role: 'user', message: 'זה גנרי', time_in_call_secs: 14 },
+    { role: 'user', message: 'רגע. בואי נאפיין. שילמתי', time_in_call_secs: 28 },
+    { role: 'agent', message: '', tool_results: [{ tool_name: 'check_payment', result_value: '{"ok":true,"payment":"not_paid"}', is_error: false }], time_in_call_secs: 30 },
+    { role: 'agent', message: 'אני עדיין לא רואה אישור תשלום.', time_in_call_secs: 30 },
+    { role: 'agent', message: '', tool_results: [{ tool_name: 'open_payment', result_value: openResult, is_error: false }], time_in_call_secs: 42 },
+    { role: 'agent', message: 'חלון התשלום נפתח על המסך.', time_in_call_secs: 42 },
+    { role: 'user', message: 'שולם', time_in_call_secs: 51 },
+    { role: 'agent', message: '', tool_results: [{ tool_name: 'check_payment', result_value: '{"ok":true,"payment":"not_paid"}', is_error: false }], time_in_call_secs: 52 },
+    { role: 'agent', message: 'אני עדיין לא רואה אישור תשלום.', time_in_call_secs: 52 }]);
+}
+const post = (raw, sig = elSign(raw)) => call(elWebhook.POST, 'POST', '/api/elevenlabs/webhook', { raw, headers: sig ? { 'elevenlabs-signature': sig } : {} });
+
+test('W1. a signed delivery is stored, processed and linked to the order of that tab; transcript and summary are kept', async () => {
+  const k = key(); const o = await newOrder(k);
+  const r = await post(bingo('conv_bingo', k, 'OPENED: TEST ENVIRONMENT'));
+  assert.equal(r.status, 200); assert.equal(r.data.linked, true);
+  const [c] = await sql(`SELECT order_id, transcript, user_turns FROM conversations WHERE conversation_id = 'conv_bingo'`);
+  assert.equal(c.order_id, o.order_id); assert.equal(c.user_turns, 4);
+  assert.ok(c.transcript.some(t => t.message === 'שולם'));
+  const [w] = await sql(`SELECT verified, processed_at FROM webhook_events WHERE provider = 'elevenlabs' AND event_id = 'post_call_transcription:conv_bingo'`);
+  assert.equal(w.verified, true); assert.ok(w.processed_at);
+  assert.equal((await claims()).length, 0, '"I still do not see a payment" is not a payment claim');
+});
+
+test('W2. a delivery with a wrong or missing signature is refused AND recorded with the reason, so a broken connection is visible', async () => {
+  const k = key(); await newOrder(k);
+  const raw = bingo('conv_forged', k, 'OPENED: x');
+  assert.equal((await post(raw, elSign(raw, 'wrong'))).status, 401);
+  assert.equal((await post(bingo('conv_nosig', k, 'OPENED: x'), null)).status, 401);
+  const rows = await sql(`SELECT event_id, verified, error FROM webhook_events WHERE provider = 'elevenlabs' ORDER BY event_id`);
+  assert.deepEqual(rows.map(r => [r.event_id, r.verified, r.error]),
+    [['unverified:conv_forged', false, 'signature_mismatch'], ['unverified:conv_nosig', false, 'no_signature_header']]);
+  assert.equal((await sql(`SELECT count(*)::int c FROM conversations`))[0].c, 0, 'nothing processed');
+});
+
+test('W3. "the payment window opened" without an OPENED result from the page is recorded (the bingo call said it after an unconfirmed result)', async () => {
+  const k = key(); await newOrder(k);
+  await post(bingo('conv_old', k, 'TEST ENVIRONMENT: only a PayPal sandbox test payment is shown'));
+  await post(bingo('conv_new', k, 'OPENED: TEST ENVIRONMENT, only a PayPal sandbox test payment is shown'));
+  const ev = await sql(`SELECT conversation_id FROM events WHERE event_name = 'agent_unconfirmed_window_claim'`);
+  assert.deepEqual(ev.map(e => e.conversation_id), ['conv_old']);
 });

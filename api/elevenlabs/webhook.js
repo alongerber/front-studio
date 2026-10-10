@@ -10,14 +10,18 @@ export const config = { maxDuration: 20 };
 const TOLERANCE_SECS = 30 * 60;
 
 // Header "ElevenLabs-Signature: t=<unix>,v0=<hex hmac sha256 of `${t}.${body}`>"
-export function verifyElevenSignature(header, raw, secret, nowSecs = Math.floor(Date.now() / 1000)) {
-  if (!header || !secret) return false;
+// Returns null when valid, otherwise why it was rejected (recorded, never the secret or the signature).
+export function elevenSignatureProblem(header, raw, secret, nowSecs = Math.floor(Date.now() / 1000)) {
+  if (!secret) return 'secret_not_configured';
+  if (!header) return 'no_signature_header';
   const parts = Object.fromEntries(String(header).split(',').map(p => { const i = p.indexOf('='); return [p.slice(0, i).trim(), p.slice(i + 1).trim()]; }));
   const t = Number(parts.t);
-  if (!Number.isFinite(t) || !parts.v0 || Math.abs(nowSecs - t) > TOLERANCE_SECS) return false;
+  if (!Number.isFinite(t) || !parts.v0) return 'malformed_signature';
+  if (Math.abs(nowSecs - t) > TOLERANCE_SECS) return 'stale_timestamp';
   const mac = createHmac('sha256', secret).update(`${parts.t}.${raw}`).digest('hex');
-  return safeEqual(mac, parts.v0);
+  return safeEqual(mac, parts.v0) ? null : 'signature_mismatch';
 }
+export function verifyElevenSignature(header, raw, secret, nowSecs) { return elevenSignatureProblem(header, raw, secret, nowSecs) === null; }
 
 // Data Collection values may be plain strings/booleans or JSON {value, basis}.
 function dc(results, key) {
@@ -52,6 +56,20 @@ export function unverifiedPaymentClaims(transcript) {
       if (r && r.tool_name === 'check_payment' && !r.is_error) verified = /"payment"\s*:\s*"verified"/.test(String(r.result_value || ''));
     }
     if (t.role === 'agent' && PAYMENT_CLAIM.test(String(t.message || '')) && !verified) out.push(t.time_in_call_secs ?? null);
+  }
+  return out;
+}
+
+// Agent turns that say the payment window opened, when the last open_payment result before them did not start with OPENED.
+const OPEN_CLAIM = /חלון\s+(?:ה)?תשלום\s+(?:כבר\s+)?(?:נפתח|פתוח)|פתחתי\s+(?:לכם\s+)?(?:את\s+)?(?:חלון|ה?תשלום)/;
+export function unconfirmedWindowClaims(transcript) {
+  let opened = false; const out = [];
+  for (const t of transcript || []) {
+    if (!t) continue;
+    for (const r of t.tool_results || []) {
+      if (r && (r.tool_name === 'open_payment' || r.tool_name === 'show_payment')) opened = !r.is_error && /^OPENED\b/.test(String(r.result_value || '').trim());
+    }
+    if (t.role === 'agent' && OPEN_CLAIM.test(String(t.message || '')) && !opened) out.push(t.time_in_call_secs ?? null);
   }
   return out;
 }
@@ -98,6 +116,8 @@ export async function processElevenEvent(evt) {
       at: startedAt && Number.isFinite(firstUser.time_in_call_secs) ? new Date(md.start_time_unix_secs * 1000 + firstUser.time_in_call_secs * 1000).toISOString() : startedAt,
       props: { mode: medium === 'text' ? 'text' : medium === 'audio' || medium === 'voice' ? 'voice' : 'unknown', at_secs: firstUser.time_in_call_secs ?? null } });
   }
+  const opens = unconfirmedWindowClaims(transcript);
+  if (opens.length) await serverEvent('agent_unconfirmed_window_claim', { ...base, eventId: `agent_unconfirmed_window_claim:${convId}`, props: { at_secs: opens.slice(0, 10) } });
   const claims = unverifiedPaymentClaims(transcript);
   if (claims.length) await serverEvent('agent_unverified_payment_claim', { ...base, eventId: `agent_unverified_payment_claim:${convId}`, props: { at_secs: claims.slice(0, 10) } });
   const qual = qualify(analysis.data_collection_results);
@@ -117,7 +137,15 @@ export async function markElevenProcessed(eventKey, res) {
 
 export const POST = handle(async (request) => {
   const raw = await readBody(request, 2 * 1024 * 1024);
-  if (!verifyElevenSignature(request.headers.get('elevenlabs-signature'), raw, cfg.elevenlabs.webhookSecret)) {
+  const problem = elevenSignatureProblem(request.headers.get('elevenlabs-signature'), raw, cfg.elevenlabs.webhookSecret);
+  if (problem) {
+    // Visible in the dashboard ("webhooks rejected for signature") and in the logs, so a silent 401 cannot hide a broken connection.
+    let conv = null; try { conv = clip(JSON.parse(raw).data.conversation_id, 120); } catch {}
+    console.warn('[elevenlabs webhook] rejected', problem, conv || '');
+    try {
+      await q(`INSERT INTO webhook_events (provider, event_id, event_type, verified, error, environment) VALUES ('elevenlabs',$1,$2,false,$3,$4) ON CONFLICT DO NOTHING`,
+        ['unverified:' + (conv || Date.now()), 'post_call', problem, cfg.environment]);
+    } catch (e) { console.error('[elevenlabs webhook] could not record rejection', e && e.message); }
     return json({ ok: false, error: 'bad_signature' }, 401);
   }
   let evt; try { evt = JSON.parse(raw); } catch { return json({ ok: false }, 400); }
@@ -143,6 +171,7 @@ export const POST = handle(async (request) => {
   try {
     const res = await processElevenEvent(evt);
     await markElevenProcessed(eventKey, res);
+    console.log('[elevenlabs webhook] processed', eventKey, res.linked ? 'linked' : (res.note || 'not_linked'));
     return json({ ok: true, linked: res.linked });
   } catch (e) {
     console.error('[elevenlabs webhook]', e && e.stack || e);

@@ -115,9 +115,12 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
     var st=F.order?F.orderStatus().catch(function(){return null;}):Promise.resolve(null);
     return st.then(function(o){
       if(o&&o.paid&&!o.brief_done) return 'NOT OPENED: the order in this browser is already paid (server-verified). Do not open payment again; continue the brief. For a second ad, offer WhatsApp.';
-      open('agent'); return F.live
-        ? 'payment options are shown on screen (PayPal or Bit). The customer must click to pay. Opening the window is not a payment.'
-        : 'TEST ENVIRONMENT: only a PayPal sandbox test payment is shown, no real money. Do not mention Bit. The customer must click to pay. Opening the window is not a payment.';
+      // Report what actually happened on screen, never what was intended.
+      try{ open('agent'); }catch(e){}
+      if(sheet.hidden||!sheet.getClientRects().length) return 'NOT OPENED: the payment window could not be shown on this screen. Do not say it opened. Say there is a display problem and offer WhatsApp.';
+      return F.live
+        ? 'OPENED: payment options are shown on screen (PayPal or Bit). The customer must click to pay. Opening the window is not a payment.'
+        : 'OPENED: TEST ENVIRONMENT, only a PayPal sandbox test payment is shown, no real money. Do not mention Bit. The customer must click to pay. Opening the window is not a payment.';
     });
   }
   var tools={
