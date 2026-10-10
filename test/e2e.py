@@ -309,7 +309,7 @@ with sync_playwright() as p:
     # approved delivery time shown in the checkout before paying
     ctx = new_ctx(browser); page = ctx.new_page(); page.goto(BASE + '/'); page.wait_for_timeout(400); page.click('#cbNone')
     page.locator('[data-checkout=hero]').first.evaluate('el => el.click()'); page.wait_for_selector('#fakepp', state='attached', timeout=5000)
-    check('T9 checkout shows the approved delivery time before paying', page.locator('#payDelivery').inner_text().strip() == 'זמן אספקה: 7 ימי עסקים מרגע ההזמנה', page.locator('#payDelivery').inner_text())
+    check('T9 checkout shows the approved delivery time and the customer-delay rule before paying', page.locator('#payDelivery').inner_text().strip() == 'זמן אספקה: 7 ימי עסקים מרגע ההזמנה' and 'דוחה את מועד המסירה' in page.locator('#payTerms').inner_text(), page.locator('#payDelivery').inner_text())
     ctx.close()
 
     ctx = new_ctx(browser); ctx.close()

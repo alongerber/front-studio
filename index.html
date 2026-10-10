@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="front-build" content="v5.2.0">
+<meta name="front-build" content="v5.3.0">
 <title>פרונט — פרסומת לעסק שלכם · 1,290 ₪</title>
 <meta name="description" content="פרסומת למוצר או לשירות שלכם: רעיון, תסריט, עריכה, מוזיקה, כתוביות ושילוב הלוגו. בלי שתצטרכו להצטלם. 1,290 ₪, המחיר הסופי.">
 <link rel="canonical" href="https://front-studio.vercel.app/">
@@ -145,6 +145,7 @@ section{padding-block:clamp(72px,10vw,128px);position:relative}
 .notinc li::before{content:"— ";color:var(--ink3)}
 html:not(.env-live) .bitc,html.checkout-closed .bitc,html.checkout-closed .pay__pp{display:none!important}
 .pay__d{margin-top:8px;font-size:15.5px;font-weight:700;color:var(--ink)}
+.pay__n{margin-top:4px;font-size:14px;color:var(--ink2)}
 .terms{margin-top:16px;font-size:15px;color:var(--ink3)}
 
 /* ── 4 · steps ── */
@@ -331,8 +332,8 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
         <li><b>כתוביות</b><span>רוב הצופים בלי סאונד. הם יקראו.</span></li>
         <li><b>הלוגו שלכם</b><span>שילוב הלוגו הקיים בסרטון.</span></li>
         <li><b>30–40 שניות</b><span>מותאמת להעלאה לרשתות.</span></li>
-        <li><b>סבב תיקונים אחד</b><span>טקסט, כתוביות, מוזיקה וקצב, מרוכז בבת אחת.</span></li>
-        <li><b>7 ימי עסקים</b><span>מרגע ההזמנה ועד הפרסומת המוכנה.</span></li>
+        <li><b>סבב תיקונים אחד</b><span>הערות מרוכזות על טקסט, כתוביות, מוזיקה וקצב. תיקון של טעות שלנו לא נספר בסבב.</span></li>
+        <li><b>7 ימי עסקים</b><span>מרגע ההזמנה ועד הפרסומת המוכנה. עיכוב מצדכם במסירת חומרים, בהשלמת האפיון או באישור התסריט דוחה את מועד המסירה בהתאם.</span></li>
       </ul>
       <div class="notinc">
         <h3>מה לא כלול</h3>
@@ -340,6 +341,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
           <li>תקציב הקידום ברשתות. משלמים אותו ישירות לפלטפורמה.</li>
           <li>עיצוב לוגו חדש.</li>
           <li>צילום וליהוק שחקנים.</li>
+          <li>שינוי רעיון או דמות אחרי שאישרתם את התסריט. זה מתומחר בנפרד.</li>
           <li>גרסאות או פורמטים נוספים. על אלה מדברים בנפרד.</li>
         </ul>
       </div>
@@ -369,7 +371,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a1">זה מתאים גם לשירות, לא רק למוצר?</button><div id="a1" hidden>כן. מוסך, קליניקה, שיפוצים או מורה פרטי — כל דבר שאפשר להסביר למה כדאי לבחור בו. הרעיון נכתב סביב מה שאתם נותנים ללקוח.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a2">חייבים להצטלם?</button><div id="a2" hidden>לא. הדמות בפרסומת היא לא אתם, ואף אחד מכם לא עומד מול מצלמה.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a3">מי בוחר את הדמות?</button><div id="a3" hidden>אנחנו מציעים דמות שמתאימה לרעיון, והיא מתוארת בתסריט שמגיע אליכם לאישור. לא מתאים לכם? אומרים לפני שמפיקים.</div></div>
-      <div class="q"><button type="button" aria-expanded="false" aria-controls="a4">מה כלול, ומה לא?</button><div id="a4" hidden>רעיון, תסריט, דמות, עריכה, מוזיקה, כתוביות ושילוב הלוגו הקיים, באורך 30–40 שניות, עם סבב תיקונים אחד, תוך 7 ימי עסקים מרגע ההזמנה. לא כלולים: תקציב קידום ברשתות, עיצוב לוגו חדש, צילום וליהוק שחקנים, וגרסאות נוספות.</div></div>
+      <div class="q"><button type="button" aria-expanded="false" aria-controls="a4">מה כלול, ומה לא?</button><div id="a4" hidden>רעיון, תסריט, דמות, עריכה, מוזיקה, כתוביות ושילוב הלוגו הקיים, באורך 30–40 שניות, עם סבב תיקונים אחד (הערות מרוכזות על טקסט, כתוביות, מוזיקה וקצב), תוך 7 ימי עסקים מרגע ההזמנה. עיכוב מצדכם במסירת חומרים, בהשלמת האפיון או באישור התסריט דוחה את מועד המסירה בהתאם. שינוי רעיון או דמות אחרי אישור התסריט מתומחר בנפרד. לא כלולים: תקציב קידום ברשתות, עיצוב לוגו חדש, צילום וליהוק שחקנים, וגרסאות נוספות.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a5">מה קורה אחרי התשלום?</button><div id="a5" hidden>התשלום המלא, 1,290 ₪, משולם בהזמנה ולפני האפיון. מקבלים מספר הזמנה וקישור אישי, וממשיכים לאפיון עם מיטל — בכתב או בקול. מה שכבר סיפרתם לפני ההזמנה שמור ולא נשאל שוב. אחרי שהאפיון נשלח, התסריט מגיע אליכם לאישור, ורק אז מפיקים.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a6">מי זו מיטל?</button><div id="a6" hidden>הסוכנת של פרונט, לא בן אדם. היא עוזרת להבין אם זה מתאים לכם ושומרת את מה שסיפרתם להזמנה. מעדיפים לדבר עם בן אדם? <a href="#" data-wa="היי, יש לי שאלה על פרסומת לעסק" class="tlink">וואטסאפ</a>.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a7">זה מבטיח לקוחות?</button><div id="a7" hidden>לא, וגם אף אחד אחר לא יכול להבטיח. מה שאנחנו עושים: פרסומת שגורמת לעצור ולהבין מה אתם מוכרים. מה שקורה אחר כך תלוי גם בהצעה, בקהל ובכמה מהר עונים.</div></div>
@@ -404,6 +406,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
     <h2 class="pay__h" id="payH">פרסומת לעסק · 1,290 ₪</h2>
     <p class="pay__p">המחיר הסופי, בלי תוספות, משולם במלואו עכשיו ולפני האפיון. אחרי התשלום מקבלים מספר הזמנה וקישור אישי לאפיון. מה שכבר סיפרתם למיטל נשמר להזמנה.</p>
     <p class="pay__d" id="payDelivery">זמן אספקה: 7 ימי עסקים מרגע ההזמנה</p>
+    <p class="pay__n" id="payTerms">עיכוב מצדכם במסירת חומרים, בהשלמת האפיון או באישור התסריט דוחה את מועד המסירה בהתאם. כולל תסריט לאישורכם לפני ההפקה, פרסומת של 30–40 שניות וסבב תיקונים אחד.</p>
     <div class="pay__pp" id="ppButtons"></div>
     <p class="paymsg" id="payMsg" hidden aria-live="polite"></p>
     <div class="pay__or"><button type="button" class="bitc" data-bit="sheet">לשלם בביט (דרך וואטסאפ)</button><button type="button" data-open="chat" data-cta="checkout" data-cta-target="agent">שאלה לפני? לדבר עם מיטל</button></div>
