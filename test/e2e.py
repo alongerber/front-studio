@@ -257,6 +257,16 @@ with sync_playwright() as p:
     check('H2 funnel shows absolute numbers next to rates', re.search(r'\d+ / \d+', funnel) is not None, funnel[:300])
     page.locator('#recent tr.click').first.click(); page.wait_for_selector('#detail:not([hidden])')
     check('H3 order detail opens (brief visible to production)', 'מספרה' in page.locator('#dcard').inner_text() or 'קיבלנו' in page.locator('#dcard').inner_text() or True)
+    orders_txt = page.locator('#orders').inner_text()
+    check('H9 outside production the sum is labelled as test payments, not revenue', 'סכום תשלומי בדיקה — לא כסף אמיתי' in orders_txt and 'הכנסה' not in orders_txt, orders_txt[:300])
+    paid = sql(page, "select order_id from orders where paid_at is not null and paypal_order_id is not null order by created_at desc limit 1", [])
+    if paid:
+        page.evaluate("id => document.querySelector('#recent tr[data-o=\"'+id+'\"]').click()", paid[0]['order_id']); page.wait_for_selector('#ppchk', timeout=5000)
+        page.evaluate("document.getElementById('ppchk').click()"); page.wait_for_function("document.getElementById('ppres').innerText.indexOf('Capture') >= 0", timeout=8000)
+        res = page.locator('#ppres').inner_text()
+        check('H10 PayPal check from the order: capture id, amount and currency shown, verified', 'מאומת מול PayPal' in res and '1290.00 ILS' in res and 'CAP-' in res, res[:400])
+    else:
+        check('H10 PayPal check from the order (needs a paid PayPal order in the run)', False, 'no paid order')
     page.screenshot(path='test/out-admin.png', full_page=True)
     ctx.close()
     # ── H2. admin sign-in by a mailed one-time link; the server refuses the API without a session ──

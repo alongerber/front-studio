@@ -210,6 +210,19 @@ test('F8. outside production a Purchase is never sent to Meta without a test eve
   } finally { process.env.META_TEST_EVENT_CODE = saved; }
 });
 
+test('F8b. production still on PayPal Sandbox: a Purchase is never sent to Meta as a real event', async () => {
+  const saved = { env: process.env.FRONT_ENV, pp: process.env.PAYPAL_ENV, code: process.env.META_TEST_EVENT_CODE };
+  try {
+    process.env.FRONT_ENV = 'production'; process.env.PAYPAL_ENV = 'sandbox'; delete process.env.META_TEST_EVENT_CODE;
+    const before = mock.count(/graph\.facebook/);
+    const o = await newOrder(); await pay(o); await dueNow(); await runCron();
+    assert.equal(mock.count(/graph\.facebook/), before, 'a sandbox purchase is not a real Purchase');
+    assert.equal((await sql(`SELECT last_error FROM meta_outbox WHERE order_id = $1`, [o.order_id]))[0].last_error, 'test_code_required');
+  } finally {
+    for (const [k, v] of [['FRONT_ENV', saved.env], ['PAYPAL_ENV', saved.pp], ['META_TEST_EVENT_CODE', saved.code]]) if (v === undefined) delete process.env[k]; else process.env[k] = v;
+  }
+});
+
 test('F9. outside production PayPal is always sandbox and the browser is told it is a test', async () => {
   const saved = { env: process.env.FRONT_ENV, pp: process.env.PAYPAL_ENV };
   try {

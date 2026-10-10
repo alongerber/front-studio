@@ -69,7 +69,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--ink2)}
     <section class="card"><h2>הזמנות ותשלום</h2><div class="kv" id="orders"></div></section>
     <section class="card"><h2>שיחות עם מיטל</h2><div class="kv" id="convs"></div><h2 style="margin-top:12px">שלב אחרון בשיחה</h2><table id="stage"></table></section>
     <section class="card"><h2>זמן פעיל (אומדן)</h2><div class="kv" id="time"></div><h2 style="margin-top:12px">מכשירים</h2><table id="devices"></table></section>
-    <section class="card"><h2>תקינות ושגיאות</h2><table id="health"></table>
+    <section class="card"><h2>תקינות ושגיאות</h2><table id="health"></table><div id="healthx"></div>
       <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button id="recover">לנסות שוב עכשיו</button><span class="muted" id="rmsg">ניסיון חוזר רץ גם אוטומטית פעם ביום</span></div></section>
     <section class="card wide"><h2>מקורות (ייחוס האתר)</h2><div class="scroll"><table id="sources"></table></div>
       <h2 style="margin-top:12px">רכישות לפי מקור</h2><table id="paidsrc"></table>
@@ -136,7 +136,7 @@ function load(){
     kv($('orders'),[['הזמנות שנפתחו',esc(o.created)],['נוצר תשלום בפייפאל',rate(o.checkout_created,o.created)],['רכישות מאומתות',rate(o.paid,o.created)],
       ['· פייפאל',esc(o.paid_paypal)],['· ביט (ידני)',esc(o.paid_bit)],['רכישה ישירה (בלי מיטל)',rate(o.paid_direct,o.paid)],
       ['אפיון הושלם',rate(o.brief_done,o.paid)],['שולם, אפיון לא הושלם 24+ שעות','<span class="'+(o.brief_overdue?'warn':'')+'">'+esc(o.brief_overdue)+'</span>'],
-      ['בבדיקה (pending)',esc(o.pending)],['נכשלו',esc(o.failed)],['הוחזרו',esc(o.refunded)],['הכנסה (אחרי החזרים)',esc(o.revenue)+' ₪']]);
+      ['בבדיקה (pending)',esc(o.pending)],['נכשלו',esc(o.failed)],['הוחזרו',esc(o.refunded)],[d.environment==='production'?'הכנסה (אחרי החזרים)':'סכום תשלומי בדיקה — לא כסף אמיתי',esc(o.revenue)+' ₪']]);
     var c=d.conversations;
     kv($('convs'),[['שיחות (webhook)',esc(c.total)],['התחברו',rate(c.connected,c.total)],['עם הודעת לקוח',rate(c.with_user_message,c.total)],['נכשלו','<span class="'+(c.failed?'err':'')+'">'+esc(c.failed)+'</span>'],
       ['משויכות להזמנה',rate(c.linked_to_order,c.total)],['משך חציוני',c.median_duration_secs==null?'—':esc(Math.round(c.median_duration_secs))+' שנ׳']]);
@@ -150,6 +150,12 @@ function load(){
       ['מיילים: ממתינים לשליחה',h.emails_pending],['מיילים: נכשלו',h.emails_failed],
       ['שגיאות סוכנת',h.agent_errors],['כלים של מיטל שנכשלו',h.agent_tool_failures],['שגיאות בדפדפן',h.client_errors]];
     $('health').innerHTML=H.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td class="n '+(r[2]?'':(r[1]?'err':'ok'))+'">'+esc(r[1])+'</td></tr>';}).join('');
+    var MW={not_configured:'חסר טוקן Meta בסביבה הזו — לא נשלח',test_code_required:'אין קוד בדיקה של Meta — רכישת בדיקה לא נשלחת כאירוע אמיתי'};
+    $('healthx').innerHTML=
+      ((d.rejected_webhooks||[]).length?'<details><summary>webhooks שנדחו בגלל חתימה ('+d.rejected_webhooks.length+')</summary><table>'+d.rejected_webhooks.map(function(w){
+        return '<tr><td>'+esc(w.provider)+'</td><td dir="ltr">'+esc(w.event_id)+'</td><td dir="ltr">'+esc(w.event_type||'')+'</td><td>'+esc(dt(w.received_at))+'</td></tr>';}).join('')+'</table></details>':'')+
+      ((d.meta_waiting||[]).length?'<details><summary>Meta Purchase ממתינים — הסיבה ('+d.meta_waiting.length+')</summary><table>'+d.meta_waiting.map(function(m){
+        return '<tr><td dir="ltr">'+esc(m.order_id)+'</td><td>'+esc(MW[m.last_error]||m.last_error||'טרם נוסה')+'</td><td>'+esc(m.attempts)+' ניסיונות</td></tr>';}).join('')+'</table></details>':'');
     $('sources').innerHTML='<tr><th>מקור</th><th>קמפיין</th><th>סשנים</th><th>פתחו את מיטל</th><th>לחצו לשלם</th></tr>'+(d.sources.map(function(r){
       return '<tr><td>'+esc(r.source)+'</td><td>'+esc(r.campaign||'—')+'</td><td class="n">'+esc(r.sessions)+'</td><td class="n">'+rate(r.agent_open,r.sessions)+'</td><td class="n">'+rate(r.checkout_click,r.sessions)+'</td></tr>';}).join('')||'<tr><td class="muted" colspan="5">אין עדיין</td></tr>');
     $('paidsrc').innerHTML=d.paid_by_source.map(function(r){return '<tr><td>'+esc(r.source)+'</td><td class="n">'+esc(r.paid)+'</td></tr>';}).join('')||'<tr><td class="muted">אין רכישות בתקופה</td></tr>';
@@ -175,6 +181,7 @@ function openOrder(id){
       '<b>purchase_verified</b><span>'+esc(k.purchase_verified_events)+' (צריך להיות 1)</span>'+
       '<b>webhook של פייפאל</b><span>'+esc(k.webhook_deliveries)+' משלוחים · מתוכם '+esc(k.webhook_resends)+' חוזרים (נקלטו ולא עובדו שוב)</span>'+
       '<b>Meta Purchase</b><span>'+esc(k.meta_purchase)+(k.meta_sent_as?' · נשלח כ-'+esc(k.meta_sent_as):'')+'</span></div>'+
+      (o.paypal_order_id?'<div style="margin:8px 0"><button id="ppchk">בדיקה מול PayPal (קריאה בלבד)</button><div id="ppres" class="kv"></div></div>':'')+
       '<details><summary>webhooks ('+(d.webhooks||[]).length+')</summary><table>'+(d.webhooks||[]).map(function(w){return '<tr><td dir="ltr">'+esc(w.event_type)+'</td><td>'+esc(dt(w.received_at))+'</td><td>'+esc(w.deliveries)+' משלוחים</td><td>'+(w.processed_at?'עובד':'<span class="warn">לא עובד</span>')+'</td><td>'+esc(w.error||'')+'</td></tr>';}).join('')+'</table></details>'+
       '<details><summary>מיילים בתור ('+(d.notify||[]).length+')</summary><table>'+(d.notify||[]).map(function(n){return '<tr><td>'+esc(NOTE[n.action]||n.action)+'</td><td>'+esc(n.status)+'</td><td>'+esc(n.attempts)+' ניסיונות</td><td>'+esc(n.sent_at?dt(n.sent_at):'')+'</td><td>'+esc(n.last_error||'')+'</td></tr>';}).join('')+'</table></details>'+
       '<div class="kv"><b>סטטוס</b><span>'+esc(o.status)+'</span><b>שולם</b><span>'+(o.paid_at?esc(dt(o.paid_at))+' · '+esc(o.paid_via)+(o.status==='refunded'?' · <span class="err">הוחזר</span>':o.status==='partially_refunded'?' · <span class="warn">החזר חלקי</span>':''):'לא')+'</span>'+
@@ -195,6 +202,15 @@ function openOrder(id){
       '<details><summary>יומן אדמין ('+d.audit.length+')</summary><div class="tr">'+d.audit.map(function(a){return '<p>'+esc(dt(a.at))+' · '+esc(a.admin_user)+' · '+esc(a.action)+'</p>';}).join('')+'</div></details>';
     $('dcard').innerHTML=html; $('detail').hidden=false;
     $('dclose').onclick=function(){ $('detail').hidden=true; };
+    if($('ppchk')) $('ppchk').onclick=function(){ var b=$('ppchk'); b.disabled=true; $('ppres').innerHTML='<span class="muted">בודק…</span>';
+      api('/api/admin/paypal-check?order_id='+encodeURIComponent(o.order_id)).then(function(r){
+        var yn=function(v){return v===true?'<span class="ok">תואם</span>':v===false?'<span class="err">לא תואם</span>':'<span class="muted">לא נבדק</span>';};
+        $('ppres').innerHTML='<b>תוצאה</b><span>'+(r.verified?'<span class="ok">מאומת מול PayPal</span>':'<span class="err">לא מאומת</span>')+' · '+esc(r.paypal_env)+' · '+esc(dt(r.checked_at))+'</span>'+
+          '<b>הזמנת PayPal</b><span dir="ltr">'+esc(r.paypal_order.id)+' · '+esc(r.paypal_order.status||r.paypal_order.error||'—')+'</span>'+
+          (r.captures.length?r.captures.map(function(c){return '<b>Capture</b><span dir="ltr">'+esc(c.capture_id)+'</span><b>סטטוס ב-PayPal</b><span>'+(c.found_at_paypal?esc(c.paypal_status):'<span class="err">לא נמצא ב-PayPal ('+esc(c.paypal_http)+')</span>')+' · '+esc(c.create_time?dt(c.create_time):'')+'</span>'+
+            '<b>סכום</b><span>'+esc(c.amount)+' '+esc(c.currency)+' · סכום '+yn(c.matches.amount)+' · מטבע '+yn(c.matches.currency)+'</span>'+
+            '<b>שיוך</b><span>custom_id '+yn(c.matches.order)+' · מוטב '+yn(c.matches.payee)+' · ברשומות: '+(c.in_database?'כן':'<span class="err">לא</span>')+'</span>';}).join(''):'<b>Captures</b><span class="err">אין</span>');
+      },function(e){ $('ppres').innerHTML='<span class="err">שגיאה: '+esc(e.message)+'</span>'; }).then(function(){ b.disabled=false; }); };
     if($('mgo')) $('mgo').onclick=function(){
       api('/api/admin/verify-manual',{order_id:o.order_id,reference:$('mref').value.trim(),note:$('mnote').value.trim(),confirm_seen_in_account:$('mseen').checked})
         .then(function(){ openOrder(o.order_id); load(); },function(e){ $('mmsg').textContent=e.message==='reference_required'?'צריך אסמכתה.':e.message==='confirm_seen_in_account_required'?'צריך לסמן שראית את הכסף בחשבון.':'שגיאה: '+e.message; });

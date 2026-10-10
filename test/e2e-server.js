@@ -17,7 +17,7 @@ const routes = {
   '/api/paypal/create': '../api/paypal/create.js', '/api/paypal/capture': '../api/paypal/capture.js', '/api/paypal/webhook': '../api/paypal/webhook.js',
   '/api/elevenlabs/webhook': '../api/elevenlabs/webhook.js', '/api/admin/summary': '../api/admin/summary.js', '/api/admin/order': '../api/admin/order.js',
   '/api/admin/verify-manual': '../api/admin/verify-manual.js', '/api/cron/meta-flush': '../api/cron/meta-flush.js',
-  '/api/consent': '../api/consent.js', '/api/admin/recover': '../api/admin/recover.js', '/api/admin/login': '../api/admin/login.js',
+  '/api/consent': '../api/consent.js', '/api/admin/recover': '../api/admin/recover.js', '/api/admin/login': '../api/admin/login.js', '/api/admin/paypal-check': '../api/admin/paypal-check.js',
 };
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.mp4': 'video/mp4', '.json': 'application/json' };
 

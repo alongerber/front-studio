@@ -4,6 +4,17 @@
 
 עודכן: 2026-10-10 · שדרוג סוכנת (ראו "שדרוג הסוכנת למנהלת קריאייטיב") · ענף `v5` · Preview בלבד · אין מיזוג ל-main.
 
+## בדיקות אחרי כניסה לדשבורד — 10/10 (תוצאות בפועל)
+
+| נושא | ממצא | מה נשאר |
+|---|---|---|
+| אימות מול PayPal | נוסף כפתור "בדיקה מול PayPal (קריאה בלבד)" בפרטי הזמנה → `GET /api/admin/paypal-check`. קורא את ההזמנה ואת כל capture מ-PayPal (GET בלבד) ומשווה לרשומות. מבוקר ב-admin_audit. נבדק מקומית מול mock בלבד. | אלון לוחץ על SNQA ועל HKS8 אחרי הפריסה. התוצאה אמיתית רק משם. |
+| webhook של ElevenLabs | בסוכנת אין webhook מסוג post-call (`workspace_overrides.webhooks` בלי מזהה webhook). ב-Preview חסר `ELEVENLABS_WEBHOOK_SECRET`. לכן 0 webhooks. אין כלי MCP שיוצר webhook ברמת workspace. | אלון יוצר ב-ElevenLabs → Settings → Webhooks webhook אל `<Preview>/api/elevenlabs/webhook`, משייך אותו לסוכנת, ושומר את הסוד ב-Vercel (Preview·v5) בעצמו. אחר כך פריסה מחדש. שיחות עבר לא יגיעו רטרואקטיבית. |
+| Meta pending | ב-Preview אין `META_CAPI_TOKEN`/`META_TEST_EVENT_CODE`, לכן לא נשלח כלום (נכון). נמצא פער: Production עם PayPal Sandbox היה שולח רכישה כאירוע אמיתי. תוקן: בלי קוד בדיקה נשלח רק כש-Production וגם PayPal live (בדיקה F8b). הסיבה מוצגת בדשבורד. | — |
+| שגיאת חתימה | בדיקת האבטחה (S7, ריצה 37998723985) שלחה webhook מזויף עם `WH-FAKE-1`. היא נשמרת כ-`unverified:WH-FAKE-1`. הדשבורד מציג עכשיו רשימת webhooks שנדחו. | אלון משווה: אם המזהה הוא `unverified:WH-FAKE-1` זו הבדיקה המכוונת. |
+| מייל אישור + קישור | ב-Make אין ריצה אחרי 10:36 UTC (הריצה ההיא תואמת למייל הכניסה). קבלה לא נשלחה. Gmail לא נגיש לי. | אלון מזין alongerber@gmail.com בדף ההזמנה, מאשר הגעה ופותח את הקישור. |
+| תווית הכנסה | מחוץ ל-Production: "סכום תשלומי בדיקה — לא כסף אמיתי" (e2e H9). | — |
+
 ## מצב נוכחי — 10/10 ערב (מחליף את "הצעד הבא" הישן למטה)
 
 ### מה תוקן (commits `d0046c1`, `0906179`, `45111f8`)

@@ -61,6 +61,12 @@ globalThis.fetch = async (input, init = {}) => {
       mock.pp.set(id, { id, status: 'CREATED', purchase_units: [{ reference_id: pu.reference_id, custom_id: pu.custom_id, invoice_id: pu.invoice_id, amount: pu.amount, payee: { merchant_id: mock.payee } }] });
       return res(201, mock.pp.get(id));
     }
+    const cm = /^\/v2\/payments\/captures\/([^/]+)$/.exec(u.pathname);
+    if (cm && method === 'GET') {
+      for (const o of mock.pp.values()) for (const c of (o.purchase_units[0].payments || {}).captures || [])
+        if (c.id === decodeURIComponent(cm[1])) return res(200, { ...c, create_time: '2026-10-10T02:57:00Z', payee: { merchant_id: o.purchase_units[0].payee.merchant_id } });
+      return res(404, { name: 'RESOURCE_NOT_FOUND' });
+    }
     const m = /^\/v2\/checkout\/orders\/([^/]+)(\/capture)?$/.exec(u.pathname);
     if (m) {
       const o = mock.pp.get(decodeURIComponent(m[1]));
