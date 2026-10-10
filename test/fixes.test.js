@@ -227,10 +227,15 @@ test('F9. outside production PayPal is always sandbox and the browser is told it
   } finally { process.env.FRONT_ENV = saved.env; process.env.PAYPAL_ENV = saved.pp; }
 });
 
-test('F10. production takes no PayPal payment until a delivery time is approved; preview stays open', async () => {
-  const saved = { env: process.env.FRONT_ENV, d: process.env.DELIVERY_TIME_TEXT };
+test('F10. approved delivery time opens production checkout; without one, production takes no PayPal payment', async () => {
+  const saved = { env: process.env.FRONT_ENV, d: process.env.DELIVERY_TIME_TEXT, a: cfg.approvedDeliveryTime };
   try {
     delete process.env.DELIVERY_TIME_TEXT;
+    process.env.FRONT_ENV = 'production';
+    const appr = (await call(configApi.GET, 'GET', '/api/config')).data;
+    assert.equal(appr.checkout_open, true); assert.equal(appr.delivery_time, '7 ימי עסקים מרגע ההזמנה');
+    process.env.FRONT_ENV = saved.env;
+    cfg.approvedDeliveryTime = '';
     const o = await newOrder();
     process.env.FRONT_ENV = 'production';
     assert.equal((await call(configApi.GET, 'GET', '/api/config')).data.checkout_open, false);
@@ -244,7 +249,7 @@ test('F10. production takes no PayPal payment until a delivery time is approved;
     process.env.FRONT_ENV = 'test'; delete process.env.DELIVERY_TIME_TEXT;
     const ok = await call(ppCreate.POST, 'POST', '/api/paypal/create', { body: { order_id: o.order_id, token: o.token } });
     assert.equal(ok.status, 200, 'preview/test: sandbox checkout stays open without a delivery time');
-  } finally { process.env.FRONT_ENV = saved.env; if (saved.d === undefined) delete process.env.DELIVERY_TIME_TEXT; else process.env.DELIVERY_TIME_TEXT = saved.d; }
+  } finally { cfg.approvedDeliveryTime = saved.a; process.env.FRONT_ENV = saved.env; if (saved.d === undefined) delete process.env.DELIVERY_TIME_TEXT; else process.env.DELIVERY_TIME_TEXT = saved.d; }
 });
 
 /* ── 4. consent changes follow the order and are checked at send time ── */

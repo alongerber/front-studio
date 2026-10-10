@@ -404,7 +404,7 @@
     F.config().then(function (c) {
       // Delivery time is part of the offer and must be visible before paying.
       if (ui.delivery) ui.delivery.textContent = c.delivery_time ? 'זמן אספקה: ' + c.delivery_time
-        : 'זמן אספקה: טרם נקבע' + (c.test_mode ? ' (חסם להשקה; בסביבת הבדיקה התשלום פתוח)' : '');
+        : 'זמן אספקה: חסר בהגדרות' + (c.test_mode ? ' (בסביבת הבדיקה התשלום פתוח)' : '');
       if (c.checkout_open === false) { var e = new Error('checkout_closed'); e.closed = true; throw e; }
       return loadPaypal();
     }).then(function (paypal) {
@@ -446,7 +446,7 @@
         io.observe(ui.buttons);
       });
     }).catch(function (e) {
-      if (e && e.closed) return say('ההזמנה עוד לא פתוחה: זמן האספקה טרם נקבע. אפשר לדבר עם מיטל או לכתוב לנו בוואטסאפ.', 'err');
+      if (e && e.closed) return say('ההזמנה עוד לא פתוחה: זמן האספקה חסר בהגדרות. אפשר לדבר עם מיטל או לכתוב לנו בוואטסאפ.', 'err');
       report('paypal_load', e);
       if (!F.live) return say(e && e.message === 'paypal_not_configured' ? 'סביבת בדיקה — אין להעביר כסף. תשלום הבדיקה (PayPal Sandbox) עדיין לא מחובר.' : 'סביבת בדיקה — אין להעביר כסף. לא הצלחנו לטעון את PayPal Sandbox.', 'err');
       say(e && e.message === 'paypal_not_configured' ? 'תשלום בפייפאל לא זמין כרגע. אפשר לשלם בביט.' : 'לא הצלחנו לטעון את פייפאל בדפדפן הזה. אפשר לפתוח את האתר בדפדפן רגיל, או לשלם בביט.', 'err');
