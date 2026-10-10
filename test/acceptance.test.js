@@ -87,6 +87,14 @@ test('3. duplicate webhooks + capture endpoint → exactly one purchase', async 
   assert.equal((await sql(`SELECT count(*)::int c FROM payments WHERE order_id = $1`, [o.order_id]))[0].c, 1);
   assert.equal(mock.count(/graph\.facebook\.com/), 1);
   assert.equal((await sql(`SELECT count(*)::int c FROM webhook_events WHERE provider = 'paypal'`))[0].c, 3);
+  // The owner's view: one capture, right amount, currency and payee, one purchase_verified; the resends are counted, not processed.
+  const k = (await call(adminOrder.GET, 'GET', '/api/admin/order?order_id=' + o.order_id, { headers: basic() })).data.checks;
+  assert.deepEqual([k.completed_payments, k.distinct_captures, k.amount_matches, k.currency_matches, k.payee_matches, k.purchase_verified_events],
+    [1, 1, true, true, true, 1]);
+  assert.equal(k.currency, 'ILS'); assert.equal(k.captured_total, '1290.00');
+  assert.equal(k.webhook_deliveries, 5); assert.equal(k.webhook_resends, 2);
+  const w = (await sql(`SELECT event_id, deliveries, order_id FROM webhook_events WHERE event_id = 'WH-EVT-2'`))[0];
+  assert.deepEqual([w.deliveries, w.order_id], [3, o.order_id]);
 });
 
 test('3b. forged PayPal webhook is rejected and changes nothing', async () => {

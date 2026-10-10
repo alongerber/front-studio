@@ -30,11 +30,12 @@ export const POST = handle(async (request) => {
   const fresh = await q(`INSERT INTO webhook_events (provider, event_id, event_type, verified, environment) VALUES ('paypal',$1,$2,true,$3) ON CONFLICT DO NOTHING RETURNING event_id`,
     [evt.id, evt.event_type, cfg.environment]);
   if (!fresh.length) {
+    await q(`UPDATE webhook_events SET deliveries = deliveries + 1, last_received_at = now() WHERE provider = 'paypal' AND event_id = $1`, [evt.id]);
     const prev = await one(`SELECT processed_at FROM webhook_events WHERE provider = 'paypal' AND event_id = $1`, [evt.id]);
     if (prev && prev.processed_at) return json({ ok: true, duplicate: true });   // already handled → no second purchase
   }
 
-  let outcome = null;
+  let outcome = null, matched = null;
   try {
     const r = evt.resource || {};
     switch (evt.event_type) {
@@ -42,6 +43,7 @@ export const POST = handle(async (request) => {
         // Buyer approved but may have closed the tab before we captured: capture here.
         const orderId = await orderIdFromPaypalOrder(r);
         if (!orderId) { outcome = 'unmatched'; break; }
+        matched = orderId;
         await serverEvent('payment_approved', { eventId: `payment_approved:${r.id}`, orderId, channel: 'paypal', props: { via: 'webhook' } });
         let res = await capturePaypalOrder(r.id);
         const order = res.ok ? res.data : await getPaypalOrder(r.id);
@@ -57,6 +59,7 @@ export const POST = handle(async (request) => {
         if (ppOrderId) { const ord = await getPaypalOrder(ppOrderId); cap = capturesOf(ord).find(c => c.id === r.id) || { ...r, payee: ((ord.purchase_units || [])[0] || {}).payee }; }
         const orderId = cap.custom_id || r.custom_id || (ppOrderId && (await one(`SELECT order_id FROM orders WHERE paypal_order_id = $1`, [ppOrderId]) || {}).order_id);
         if (!orderId) { outcome = 'unmatched'; break; }
+        matched = orderId;
         if (evt.event_type === 'PAYMENT.CAPTURE.DENIED') cap = { ...cap, status: 'DECLINED' };
         outcome = await applyCapture(orderId, cap, 'webhook');
         break;
@@ -72,6 +75,7 @@ export const POST = handle(async (request) => {
           orderId = row && row.order_id;
         }
         if (!orderId) { outcome = 'unmatched'; break; }
+        matched = orderId;
         // REVERSED (chargeback) ends the order like a full refund.
         outcome = await applyRefund(orderId, evt.event_type === 'PAYMENT.CAPTURE.REVERSED' ? { ...r, amount: null } : r);
         break;
@@ -79,8 +83,8 @@ export const POST = handle(async (request) => {
       default: outcome = 'ignored';
     }
     const unmatched = outcome === 'unmatched' || (outcome && outcome.reason === 'unknown_order');
-    await q(`UPDATE webhook_events SET processed_at = now(), error = $3 WHERE provider = $1 AND event_id = $2`,
-      ['paypal', evt.id, unmatched ? 'unmatched_order' : (outcome && outcome.ok === false ? outcome.reason : null)]);
+    await q(`UPDATE webhook_events SET processed_at = now(), error = $3, order_id = $4 WHERE provider = $1 AND event_id = $2`,
+      ['paypal', evt.id, unmatched ? 'unmatched_order' : (outcome && outcome.ok === false ? outcome.reason : null), matched]);
     try { await recover({ light: true }); } catch (e) { console.error('[recover]', e.message); }   // opportunistic retries
     return json({ ok: true });
   } catch (e) {
