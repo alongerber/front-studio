@@ -235,10 +235,11 @@
   };
   var creating = null;
   // fresh: for a new checkout, an order that is already paid is not reused.
+  // fresh === 'new': the customer asked for another ad; the stored order is kept as it is and a new one is created.
   F.ensureOrder = function (fresh) {
     if (creating) return creating;
     creating = (function () {
-      var check = F.order ? (fresh ? F.orderStatus() : Promise.resolve({ paid: false })) : Promise.resolve(null);
+      var check = fresh === 'new' ? Promise.resolve({ paid: true }) : F.order ? (fresh ? F.orderStatus() : Promise.resolve({ paid: false })) : Promise.resolve(null);
       return check.then(function (st) {
         if (F.order && st && !st.paid) return F.order;
         var ids = F.ids(), t = touches();
@@ -347,6 +348,17 @@
     return w;
   };
   // save_brief_note → server, before the call ends. Returns only after the server stored it.
+  // switch_ad: 'new_ad' → a new order for this conversation (the previous one stays untouched);
+  // 'change_direction' → same unpaid order, previous details archived on the server (never deleted).
+  F.switchAd = function (mode) {
+    callStarted = true;
+    if (mode === 'new_ad') return F.ensureOrder('new').then(function (o) {
+      linkOrder = true;
+      return api('/api/agent-link', { order_id: o.order_id, token: o.token, agent_link: LINK }).then(function () { return o; });
+    });
+    if (!F.order) return Promise.resolve(null);
+    return api('/api/brief/note', { order_id: F.order.order_id, token: F.order.token, action: 'change_direction' }).then(function () { return F.order; });
+  };
   F.saveNote = function (field, value) {
     callStarted = true;                                   // a tool call proves the conversation is running
     return F.ensureOrder(!!F.agentSales).then(function (o) {

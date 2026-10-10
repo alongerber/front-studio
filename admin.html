@@ -175,10 +175,12 @@ function openOrder(id){
       '<h2>אימות תשלום (מהרשומות בשרת)</h2><div class="kv" id="checks">'+
       '<b>סביבה</b><span>'+esc(k.environment)+'</span>'+
       '<b>תשלומים שהושלמו</b><span>'+esc(k.completed_payments)+' · captures שונים: '+esc(k.distinct_captures)+'</span>'+
+      (k.has_payment?
       '<b>סכום</b><span>'+esc(k.captured_total)+' מתוך '+esc(k.expected_total)+' · תואם: '+yes(k.amount_matches)+'</span>'+
       '<b>מטבע</b><span>'+esc(k.currency||'—')+' · תואם: '+yes(k.currency_matches)+'</span>'+
       '<b>חשבון מוכר</b><span dir="ltr">'+esc(k.payee||'—')+'</span><span></span><span>תואם לחשבון המוגדר: '+yes(k.payee_matches)+'</span>'+
-      '<b>purchase_verified</b><span>'+esc(k.purchase_verified_events)+' (צריך להיות 1)</span>'+
+      '<b>purchase_verified</b><span>'+(Number(k.purchase_verified_events)===1?'<span class="ok">1</span>':'<span class="err">'+esc(k.purchase_verified_events)+' (צפוי 1 להזמנה ששולמה)</span>')+'</span>'
+      :'<b>תשלום</b><span class="muted">טרם שולם — אין סכום, מטבע או purchase_verified לאמת</span>')+
       '<b>webhook של פייפאל</b><span>'+esc(k.webhook_deliveries)+' משלוחים · מתוכם '+esc(k.webhook_resends)+' חוזרים (נקלטו ולא עובדו שוב)</span>'+
       '<b>Meta Purchase</b><span>'+esc(k.meta_purchase)+(k.meta_sent_as?' · נשלח כ-'+esc(k.meta_sent_as):'')+'</span></div>'+
       (o.paypal_order_id?'<div style="margin:8px 0"><button id="ppchk">בדיקה מול PayPal (קריאה בלבד)</button><div id="ppres" class="kv"></div></div>':'')+

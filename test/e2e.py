@@ -155,6 +155,33 @@ with sync_playwright() as p:
     check('D12 no JS errors (agent + brief)', not errors, errors)
     ctx.close()
 
+    # ── DS. returning to the chat continues the same order; another business is switched only through switch_ad ──
+    ctx = new_ctx(browser); page = ctx.new_page(); errors = []; page.on('pageerror', lambda e: errors.append(str(e)))
+    page.goto(BASE + '/'); page.wait_for_timeout(500); page.click('#cbAll')
+    page.click('.h3 [data-open]'); page.wait_for_function('window.__el && window.__el.clientTools', timeout=5000)
+    page.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מועדון בינגו'})")
+    page.evaluate("window.__el.clientTools.save_brief_note({field:'tone', value:'סופר קומי'})")
+    oid = page.evaluate("FRONT.order.order_id")
+    page.reload(); page.wait_for_timeout(500)
+    page.click('.h3 [data-open]'); page.wait_for_function('window.__el && window.__el.clientTools', timeout=5000); page.wait_for_timeout(300)
+    kc = page.evaluate('window.__dv.known_context')
+    check('DS1 re-entry: same order, previous details passed and marked as from a previous chat', page.evaluate("FRONT.order.order_id") == oid and 'מועדון בינגו' in kc and 'שיחה קודמת' in kc, kc)
+    n_orders = sql(page, "select count(*)::int c from orders")[0]['c']
+    r = page.evaluate("window.__el.clientTools.switch_ad({mode:'change_direction'})")
+    row = sql(page, "select brief from orders where order_id=$1", [oid])[0]
+    arch = sql(page, "select props from events where event_name='brief_direction_changed' and order_id=$1", [oid])
+    check('DS2 change_direction: same order, brief emptied, previous details kept as an event', r.startswith('DONE') and row['brief'] == {} and len(arch) == 1 and arch[0]['props']['previous'].get('tone') == 'סופר קומי' and page.evaluate("FRONT.order.order_id") == oid, (r, row, arch))
+    page.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'ניקוי ספות'})")
+    r = page.evaluate("window.__el.clientTools.switch_ad({mode:'new_ad'})")
+    oid2 = page.evaluate("FRONT.order.order_id")
+    rows = {x['order_id']: x for x in sql(page, "select order_id, brief, agent_links from orders where order_id = any($1)", [[oid, oid2]])}
+    check('DS3 new_ad: a new order with this tab\'s link key, the previous one untouched', r.startswith('DONE') and oid2 != oid and page.evaluate('window.__dv.front_link') in rows[oid2]['agent_links'] and rows[oid]['brief'] == {'business_type': 'ניקוי ספות'} and rows[oid2]['brief'] == {}, (r, rows))
+    check('DS4 one new order only (no order per chat opening)', sql(page, "select count(*)::int c from orders")[0]['c'] == n_orders + 1)
+    r = page.evaluate("window.__el.clientTools.switch_ad({mode:'other'})")
+    check('DS5 an unknown mode is refused', r.startswith('NOT DONE'), r)
+    check('DS6 no JS errors (switch)', not errors, errors)
+    ctx.close()
+
     # ── D2. a paid order with an open brief is never paid again from the chat; a finished one is not reused ──
     ctx = new_ctx(browser); page = ctx.new_page(); errors = []; page.on('pageerror', lambda e: errors.append(str(e)))
     page.goto(BASE + '/'); page.wait_for_timeout(500); page.click('#cbAll')

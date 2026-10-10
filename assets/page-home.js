@@ -104,7 +104,7 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
 
   /* ══ Meital ══ */
   function known(o){ var b=o&&o.brief||{}, k=Object.keys(b).filter(function(x){return b[x];});
-    return k.length?k.map(function(x){return x+': '+b[x];}).join('; '):'עדיין לא ידוע כלום.'; }
+    return k.length?(o.paid?'פרטי ההזמנה ששולמה: ':'נשמר בשיחה קודמת בדפדפן הזה (אותה הזמנה, עוד לא שולמה): ')+k.map(function(x){return x+': '+b[x];}).join('; '):'עדיין לא ידוע כלום.'; }
   function openWhatsapp(){
     var a=document.querySelector('.fin [data-wa]')||document.querySelector('[data-wa]');
     if(a){a.scrollIntoView({behavior:'smooth',block:'center'});a.style.transition='box-shadow .4s';
@@ -123,7 +123,23 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
         : 'OPENED: TEST ENVIRONMENT, only a PayPal sandbox test payment is shown, no real money. Do not mention Bit. The customer must click to pay. Opening the window is not a payment.';
     });
   }
+  // Another business mid-chat: the agent asks first, then calls this with the customer's answer.
+  function switchAd(p){
+    var mode=p&&p.mode;
+    if(mode!=='new_ad'&&mode!=='change_direction') return 'NOT DONE: mode must be new_ad or change_direction. Ask the customer which one they mean.';
+    var st=F.order?F.orderStatus().catch(function(){return null;}):Promise.resolve(null);
+    return st.then(function(o){
+      if(o&&o.paid) return 'NOT DONE: the order in this browser is already paid; its brief stays as it is. A second ad is a separate order: offer WhatsApp with Alon.';
+      return F.switchAd(mode).then(function(){
+        F.agentSales=true;
+        return mode==='new_ad'
+          ? 'DONE: a new ad was started; the previous ad and its details stay as they were. Treat known_context as not relevant to this ad. Save the new details with save_brief_note.'
+          : 'DONE: the previous direction was archived (kept, not deleted) and this ad now starts with empty details. Treat known_context as replaced. Save the new details with save_brief_note.';
+      });
+    }).catch(function(){ return 'NOT DONE: could not update the order. Do not say it changed. Continue the conversation; offer WhatsApp if it matters.'; });
+  }
   var tools={
+    switch_ad:switchAd,
     open_payment:payTool, show_payment:payTool,
     show_whatsapp:openWhatsapp,
     save_brief_note:function(p){ return F.saveNote(p&&p.field||'other', p&&p.value); }
