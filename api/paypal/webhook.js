@@ -30,7 +30,11 @@ export const POST = handle(async (request) => {
   const fresh = await q(`INSERT INTO webhook_events (provider, event_id, event_type, verified, environment) VALUES ('paypal',$1,$2,true,$3) ON CONFLICT DO NOTHING RETURNING event_id`,
     [evt.id, evt.event_type, cfg.environment]);
   if (!fresh.length) {
-    await q(`UPDATE webhook_events SET deliveries = deliveries + 1, last_received_at = now() WHERE provider = 'paypal' AND event_id = $1`, [evt.id]);
+    // A resend is counted, never reprocessed. It also links rows stored before order_id existed (migration 006).
+    const r0 = evt.resource || {};
+    await q(`UPDATE webhook_events SET deliveries = deliveries + 1, last_received_at = now(),
+               order_id = COALESCE(order_id, (SELECT order_id FROM orders WHERE order_id = $2))
+             WHERE provider = 'paypal' AND event_id = $1`, [evt.id, r0.custom_id || r0.invoice_id || null]);
     const prev = await one(`SELECT processed_at FROM webhook_events WHERE provider = 'paypal' AND event_id = $1`, [evt.id]);
     if (prev && prev.processed_at) return json({ ok: true, duplicate: true });   // already handled → no second purchase
   }

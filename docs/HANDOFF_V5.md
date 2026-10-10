@@ -8,6 +8,9 @@
 
 | נושא | ממצא | מה נשאר |
 |---|---|---|
+| **SNQA — אומת ישירות מול PayPal Sandbox (אלון, 10/10)** | הזמנת PayPal `9EP78293M29745057`, Capture `076940725B8327510`, סטטוס COMPLETED, 1,290 ILS. סכום, מטבע, custom_id ומוטב תואמים. | HKS8 עדיין לא נבדקה בכפתור. |
+| purchase_verified = 0 במסך SNQA | **באג תצוגה, לא חסר אירוע.** האירוע נרשם באותה פקודת SQL שמסמנת "שולם". מסך ההזמנה קרא רק את 300 האירועים **הראשונים** של הסשן, ושיחה של 10 דקות דחקה את האירוע אל מחוץ לחלון. תוקן: ספירה נפרדת לפי הזמנה, והרשימה מציגה את 300 האחרונים (בדיקה C5, נכשלת על הקוד הישן). | לפתוח מחדש את SNQA אחרי הפריסה ולוודא 1. |
+| webhook חוזר | webhook שהגיע לפני מיגרציה 006 נשמר בלי order_id, ולכן לא הופיע במסך ההזמנה. משלוח חוזר רק העלה את המונה. תוקן: משלוח חוזר משייך את השורה להזמנה, נספר ולא מעובד שוב (בדיקה C6, נכשלת על הקוד הישן). | Resend אחד ב-PayPal Sandbox ל-PAYMENT.CAPTURE.COMPLETED של SNQA, ואז לבדוק במסך: 2 משלוחים, 1 חוזר, purchase_verified = 1, תשלום אחד. |
 | אימות מול PayPal | נוסף כפתור "בדיקה מול PayPal (קריאה בלבד)" בפרטי הזמנה → `GET /api/admin/paypal-check`. קורא את ההזמנה ואת כל capture מ-PayPal (GET בלבד) ומשווה לרשומות. מבוקר ב-admin_audit. נבדק מקומית מול mock בלבד. | אלון לוחץ על SNQA ועל HKS8 אחרי הפריסה. התוצאה אמיתית רק משם. |
 | webhook של ElevenLabs | בסוכנת אין webhook מסוג post-call (`workspace_overrides.webhooks` בלי מזהה webhook). ב-Preview חסר `ELEVENLABS_WEBHOOK_SECRET`. לכן 0 webhooks. אין כלי MCP שיוצר webhook ברמת workspace. | אלון יוצר ב-ElevenLabs → Settings → Webhooks webhook אל `<Preview>/api/elevenlabs/webhook`, משייך אותו לסוכנת, ושומר את הסוד ב-Vercel (Preview·v5) בעצמו. אחר כך פריסה מחדש. שיחות עבר לא יגיעו רטרואקטיבית. |
 | Meta pending | ב-Preview אין `META_CAPI_TOKEN`/`META_TEST_EVENT_CODE`, לכן לא נשלח כלום (נכון). נמצא פער: Production עם PayPal Sandbox היה שולח רכישה כאירוע אמיתי. תוקן: בלי קוד בדיקה נשלח רק כש-Production וגם PayPal live (בדיקה F8b). הסיבה מוצגת בדשבורד. | — |
