@@ -4,7 +4,7 @@ import { createHmac } from 'node:crypto';
 import { q, one } from '../../lib/db.js';
 import { cfg } from '../../lib/config.js';
 import { json, handle, readBody, clip, safeEqual } from '../../lib/util.js';
-import { serverEvent, isLinkKey } from '../../lib/store.js';
+import { serverEvent, isLinkKey, orderForLink } from '../../lib/store.js';
 
 export const config = { maxDuration: 20 };
 const TOLERANCE_SECS = 30 * 60;
@@ -41,6 +41,21 @@ export function qualify(results) {
   return { ok, basis };
 }
 
+// Agent turns that say the payment arrived without a verified check_payment result before them in the same
+// conversation. The server cannot stop a sentence from being generated, so every such turn is recorded for review.
+const PAYMENT_CLAIM = /התשלום\s+(?:כבר\s+)?(?:התקבל|אושר|עבר|נקלט|הצליח)|קיבלנו\s+את\s+התשלום|רואה\s+(?:את\s+)?(?:ה)?תשלום/;
+export function unverifiedPaymentClaims(transcript) {
+  let verified = false; const out = [];
+  for (const t of transcript || []) {
+    if (!t) continue;
+    for (const r of t.tool_results || []) {
+      if (r && r.tool_name === 'check_payment' && !r.is_error) verified = /"payment"\s*:\s*"verified"/.test(String(r.result_value || ''));
+    }
+    if (t.role === 'agent' && PAYMENT_CLAIM.test(String(t.message || '')) && !verified) out.push(t.time_in_call_secs ?? null);
+  }
+  return out;
+}
+
 // Process one stored delivery. Throws on failure; the caller keeps the raw delivery for replay.
 export async function processElevenEvent(evt) {
   const d = evt.data || {};
@@ -54,7 +69,7 @@ export async function processElevenEvent(evt) {
   const analysis = d.analysis || {};
   const linkKey = isLinkKey(vars.front_link) ? vars.front_link : null;
   // The agent and the browser may claim any order id; we link only through the link key the order owner attached.
-  const order = linkKey ? await one(`SELECT order_id, session_id, anonymous_id FROM orders WHERE $1 = ANY(agent_links) AND environment = $2`, [linkKey, cfg.environment]) : null;
+  const order = linkKey ? await orderForLink(linkKey) : null;
   const failed = evt.type === 'call_initiation_failure' || d.status === 'failed';
   const startedAt = md.start_time_unix_secs ? new Date(md.start_time_unix_secs * 1000).toISOString() : null;
   const sessionId = order && order.session_id || (typeof vars.session_id === 'string' ? clip(vars.session_id, 64) : null);
@@ -83,6 +98,8 @@ export async function processElevenEvent(evt) {
       at: startedAt && Number.isFinite(firstUser.time_in_call_secs) ? new Date(md.start_time_unix_secs * 1000 + firstUser.time_in_call_secs * 1000).toISOString() : startedAt,
       props: { mode: medium === 'text' ? 'text' : medium === 'audio' || medium === 'voice' ? 'voice' : 'unknown', at_secs: firstUser.time_in_call_secs ?? null } });
   }
+  const claims = unverifiedPaymentClaims(transcript);
+  if (claims.length) await serverEvent('agent_unverified_payment_claim', { ...base, eventId: `agent_unverified_payment_claim:${convId}`, props: { at_secs: claims.slice(0, 10) } });
   const qual = qualify(analysis.data_collection_results);
   if (qual.ok) await serverEvent('lead_qualified', { ...base, eventId: `lead_qualified:${order ? order.order_id : convId}`, props: { basis: qual.basis } });
 

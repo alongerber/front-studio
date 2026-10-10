@@ -110,9 +110,16 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
     if(a){a.scrollIntoView({behavior:'smooth',block:'center'});a.style.transition='box-shadow .4s';
       a.style.boxShadow='0 0 0 6px rgba(227,198,140,.35)';setTimeout(function(){a.style.boxShadow='';},2600);}
     return 'whatsapp button highlighted';}
-  function payTool(){ open('agent'); return F.live
-    ? 'payment options are shown on screen (PayPal or Bit). The customer must click to pay.'
-    : 'TEST ENVIRONMENT: only a PayPal sandbox test payment is shown, no real money. Do not mention Bit. The customer must click to pay.'; }
+  // A paid order whose brief is still open is never paid again by accident: the server decides it is paid.
+  function payTool(){
+    var st=F.order?F.orderStatus().catch(function(){return null;}):Promise.resolve(null);
+    return st.then(function(o){
+      if(o&&o.paid&&!o.brief_done) return 'NOT OPENED: the order in this browser is already paid (server-verified). Do not open payment again; continue the brief. For a second ad, offer WhatsApp.';
+      open('agent'); return F.live
+        ? 'payment options are shown on screen (PayPal or Bit). The customer must click to pay. Opening the window is not a payment.'
+        : 'TEST ENVIRONMENT: only a PayPal sandbox test payment is shown, no real money. Do not mention Bit. The customer must click to pay. Opening the window is not a payment.';
+    });
+  }
   var tools={
     open_payment:payTool, show_payment:payTool,
     show_whatsapp:openWhatsapp,
@@ -123,8 +130,11 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
     var st=F.order?F.orderStatus().catch(function(){return null;}):Promise.resolve(null);
     var timer=new Promise(function(r){ setTimeout(r,1500); });
     Promise.race([st,timer]).then(function(o){
-      F.openAgent({ phase:o&&o.paid?'brief':'sales', known_context:known(o), payment_status:o?(o.paid?'verified':'pending'):'none',
-        opening_line:'מה העסק שלכם, ומה הייתם רוצים לקדם?' }, tools, w);
+      // A finished order is history: a new conversation here is a new sale and must not be tied to it.
+      var done=!!(o&&o.paid&&o.brief_done), brief=!!(o&&o.paid&&!o.brief_done);
+      F.agentSales=!brief;                                  // notes from a sales chat never land on an already paid order
+      F.openAgent({ phase:brief?'brief':'sales', known_context:done?'עדיין לא ידוע כלום.':known(o), payment_status:done||!o?'none':(o.paid?'verified':'pending'),
+        opening_line:'מה העסק שלכם, ומה הייתם רוצים לקדם?' }, tools, w, { noOrder: done });
     });
   }
   addEventListener('pointerdown',F.loadAgent,{once:true,passive:true}); setTimeout(F.loadAgent,8000);

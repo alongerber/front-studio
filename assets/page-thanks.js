@@ -82,15 +82,16 @@
   /* ── 02 Meital, in brief mode. What she saves goes to the server immediately. ── */
   function known() { var b = order && order.brief || {}, k = keys(); return k.length ? k.map(function (x) { return (LABEL[x] || x) + ': ' + b[x]; }).join('; ') : 'עדיין לא ידוע כלום.'; }
   function opening() {
-    var b = order && order.brief || {}, biz = b.business_name || b.business_type, paid = order && order.paid;
-    var head = paid ? 'התשלום התקבל. ' : 'תודה על ההזמנה. ';
+    // The page shows the payment state from the server; Meital confirms payment only after her own server check.
+    var b = order && order.brief || {}, biz = b.business_name || b.business_type;
+    var head = 'תודה על ההזמנה. ';
     if (biz) return head + 'את ' + biz + ' כבר הכרנו, עכשיו נדייק מה הפרסומת צריכה להגיד. ' + (b.promote ? 'מי הלקוח שהכי חשוב לכם להביא?' : 'איזה שירות או מוצר הכי חשוב לכם לקדם?');
     return head + 'בואו נתחיל: איזה עסק יש לכם, ומה הכי הייתם רוצים שיזמינו אצלכם?';
   }
   var tools = {
     save_brief_note: function (p) { return F.saveNote(p && p.field || 'other', p && p.value).then(function (r) { refresh(); return r; }); },
     show_whatsapp: function () { var a = document.querySelector('[data-wa]'); if (a) a.scrollIntoView({ behavior: 'smooth', block: 'center' }); return 'ok'; },
-    open_payment: function () { return order && order.paid ? 'already paid (verified by the server)' : 'payment is not verified yet; the customer can pay on the main page'; }
+    open_payment: function () { return 'NOT OPENED: payment is not opened from the order page. To know whether the payment arrived, call check_payment.'; }
   };
   $('openChat').addEventListener('click', function () {
     F.openAgent({ phase: 'brief', known_context: known(), payment_status: order && order.paid ? 'verified' : 'pending', opening_line: opening() }, tools, 'thanks');

@@ -295,7 +295,8 @@
         we record it as agent_start_requested, never as "connected". ── */
   var widget = null, widgetLoaded = false, callStarted = false;
   // The link key is attached to an order only once a call was requested, so "waiting for call data" means a real call.
-  function attachLink() { if (F.order) api('/api/agent-link', { order_id: F.order.order_id, token: F.order.token, agent_link: LINK }).catch(function () {}); }
+  var linkOrder = true;                                   // false: this conversation must not be tied to the stored (finished) order
+  function attachLink() { if (F.order && linkOrder) api('/api/agent-link', { order_id: F.order.order_id, token: F.order.token, agent_link: LINK }).catch(function () {}); }
   F.loadAgent = function () {
     if (widgetLoaded) return; widgetLoaded = true;
     var t = document.createElement('script'); t.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed@0.19.0'; t.async = true; document.head.appendChild(t);
@@ -318,14 +319,15 @@
     return out;
   }
   // vars: {phase, known_context, payment_status, opening_line}. Ids are added here.
-  F.openAgent = function (vars, tools, where) {
+  F.openAgent = function (vars, tools, where, opts) {
     F.loadAgent();
+    linkOrder = !(opts && opts.noOrder);
     track('agent_opened', {}, { cta: where || null });
     if (widget && expand(widget)) return widget;
     if (widget) widget.remove();
     var ids = F.ids();
     var dv = Object.assign({}, vars, {
-      front_link: LINK, anonymous_id: ids.anonymous_id || '', session_id: ids.session_id || '', order_id: F.order ? F.order.order_id : '', site_version: CFG.version,
+      front_link: LINK, anonymous_id: ids.anonymous_id || '', session_id: ids.session_id || '', order_id: F.order && linkOrder ? F.order.order_id : '', site_version: CFG.version,
       // What the agent may offer. Until the server confirms production: PayPal sandbox only, never Bit.
       payment_methods: !F.checkoutOpen ? 'ההזמנה עוד לא פתוחה לתשלום. אל תפעילי open_payment; הציעי וואטסאפ.'
         : F.live ? 'פייפאל (גם בכרטיס אשראי בלי חשבון) או ביט'
@@ -347,7 +349,7 @@
   // save_brief_note → server, before the call ends. Returns only after the server stored it.
   F.saveNote = function (field, value) {
     callStarted = true;                                   // a tool call proves the conversation is running
-    return F.ensureOrder(false).then(function (o) {
+    return F.ensureOrder(!!F.agentSales).then(function (o) {
       return api('/api/brief/note', { order_id: o.order_id, token: o.token, field: String(field || 'other'), value: String(value || '') });
     }).then(function () { return 'saved'; });
   };

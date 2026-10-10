@@ -150,6 +150,35 @@ with sync_playwright() as p:
     check('D12 no JS errors (agent + brief)', not errors, errors)
     ctx.close()
 
+    # ── D2. a paid order with an open brief is never paid again from the chat; a finished one is not reused ──
+    ctx = new_ctx(browser); page = ctx.new_page(); errors = []; page.on('pageerror', lambda e: errors.append(str(e)))
+    page.goto(BASE + '/'); page.wait_for_timeout(500); page.click('#cbAll')
+    page.click('.h3 [data-open]'); page.wait_for_function('window.__el && window.__el.clientTools', timeout=5000)
+    page.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מועדון סנוקר'})")
+    page.evaluate("window.__el.clientTools.open_payment()"); page.wait_for_selector('#fakepp', timeout=5000); page.wait_for_timeout(500)
+    page.evaluate("document.getElementById('fakepp').click()"); page.wait_for_url(re.compile(r'.*/thanks.*'), timeout=10000); page.wait_for_timeout(1200)
+    paid_oid = page.evaluate("FRONT.order.order_id")
+    page.evaluate("document.getElementById('openChat').click()"); page.wait_for_function('window.__el && window.__el.clientTools', timeout=5000)
+    check('Q2 order page opening line makes no payment claim', 'התשלום התקבל' not in page.evaluate('window.__dv.opening_line'), page.evaluate('window.__dv.opening_line'))
+    page.goto(BASE + '/'); page.wait_for_timeout(800)
+    page.evaluate("document.querySelector('.h3 [data-open]').click()"); page.wait_for_function('window.__el && window.__el.clientTools', timeout=5000); page.wait_for_timeout(300)   # the open-order bar covers the button
+    check('Q3 home chat with a paid, open order continues the brief', page.evaluate('window.__dv.phase') == 'brief', page.evaluate('window.__dv'))
+    n_orders = sql(page, "select count(*)::int c from orders")[0]['c']
+    r = page.evaluate("window.__el.clientTools.open_payment()"); page.wait_for_timeout(600)
+    check('Q4 open_payment refuses to charge an already paid order', r.startswith('NOT OPENED') and not page.locator('#pay').is_visible(), r)
+    check('Q5 no new order created', sql(page, "select count(*)::int c from orders")[0]['c'] == n_orders)
+    sql(page, "update orders set brief_done_at = now() where order_id=$1", [paid_oid])
+    page.goto(BASE + '/'); page.wait_for_timeout(800)
+    page.evaluate("document.querySelector('.h3 [data-open]').click()"); page.wait_for_function('window.__el && window.__el.clientTools', timeout=5000); page.wait_for_timeout(300)   # the open-order bar covers the button
+    dv = page.evaluate('window.__dv')
+    check('Q6 after the brief is done, a home chat is a new sale, not tied to the old order', dv['phase'] == 'sales' and dv['order_id'] == '' and dv['payment_status'] == 'none', dv)
+    page.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מוסך'})"); page.wait_for_timeout(500)
+    new_oid = page.evaluate("FRONT.order.order_id")
+    old_brief = sql(page, "select brief from orders where order_id=$1", [paid_oid])[0]['brief']
+    check('Q7 notes from the new sale go to a new order, the paid one is untouched', new_oid != paid_oid and old_brief.get('business_type') == 'מועדון סנוקר', (paid_oid, new_oid, old_brief))
+    check('Q8 no JS errors', not errors, errors)
+    ctx.close()
+
     # ── E. someone else's browser cannot open the order ──
     ctx = new_ctx(browser); page = ctx.new_page()
     page.goto(BASE + '/thanks#o=' + oid + '&t=' + 'A' * 43); page.wait_for_timeout(1500)
