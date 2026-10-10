@@ -340,8 +340,8 @@ test('F7. scripts/migrate.js applies all migrations, is idempotent, and fails cl
   setDb(async (t, p) => (await db.query(t, p)).rows);
   const { run } = await import('../scripts/migrate.js');
   const first = await run();
-  assert.deepEqual(first.all, ['001_init', '002_agent_link', '003_durable_queues']);
-  assert.deepEqual(first.applied, ['001_init', '002_agent_link', '003_durable_queues']);
+  assert.deepEqual(first.all, ['001_init', '002_agent_link', '003_durable_queues', '004_receipt']);
+  assert.deepEqual(first.applied, ['001_init', '002_agent_link', '003_durable_queues', '004_receipt']);
   setDb(async (t, p) => (await db.query(t, p)).rows);                     // a new process
   const second = await run();
   assert.deepEqual(second.applied, [], 'nothing re-applied');
@@ -352,4 +352,37 @@ test('F7. scripts/migrate.js applies all migrations, is idempotent, and fails cl
   const env = { ...process.env }; delete env.DATABASE_URL;
   const p = spawnSync(process.execPath, ['scripts/migrate.js'], { cwd: new URL('..', import.meta.url).pathname, env, encoding: 'utf8' });
   assert.equal(p.status, 2); assert.match(p.stderr, /DATABASE_URL is not set/);
+});
+
+/* ── 11. payment confirmation + personal link for customers who brief later ── */
+test('F11. paid customer who leaves an email gets the receipt with the link right away, once; never before payment; test addresses only outside production', async () => {
+  const receipts = () => mock.calls.filter(c => /hook\.make\.test/.test(c.url) && c.body.includes('a=receipt'));
+  const row = (o) => sql(`SELECT status, secret_link FROM notify_outbox WHERE id = $1`, ['receipt:' + o.order_id]).then(r => r[0]);
+  try {
+    // no allowlist outside production → nothing is queued, nothing is sent
+    delete process.env.NOTIFY_TEST_RECIPIENTS;
+    const a = await newOrder(); await pay(a); await addContact(a);
+    assert.equal(await row(a), undefined); assert.equal(receipts().length, 0);
+
+    process.env.NOTIFY_TEST_RECIPIENTS = 'someone@else.test, Dana@Example.com';
+    // the usual path: pay, then leave contact details and postpone the brief
+    const b = await newOrder(); await pay(b); await addContact(b);
+    assert.equal((await row(b)).status, 'sent');
+    assert.equal((await row(b)).secret_link, null, 'the link (it carries the token) is erased once delivered');
+    assert.equal(receipts().length, 1);
+    const sent = new URLSearchParams(receipts()[0].body);
+    assert.equal(sent.get('email'), 'dana@example.com'); assert.equal(sent.get('order'), b.order_id);
+    assert.equal(Number(sent.get('amount')), 1290); assert.equal(sent.get('currency'), 'ILS');
+    assert.equal(sent.get('link'), 'https://front.test/thanks#o=' + encodeURIComponent(b.order_id) + '&t=' + encodeURIComponent(b.token));
+    await addContact(b);                                          // saving the contact again does not send it again
+    assert.equal(receipts().length, 1);
+
+    // contact before payment → held, delivered by the payment itself
+    const c = await newOrder(); await addContact(c);
+    assert.equal((await row(c)).status, 'pending'); await dueNow(); await runCron();
+    assert.equal((await row(c)).status, 'pending', 'not sent while the payment is not verified');
+    assert.equal(receipts().length, 1);
+    await pay(c);
+    assert.equal((await row(c)).status, 'sent'); assert.equal(receipts().length, 2);
+  } finally { delete process.env.NOTIFY_TEST_RECIPIENTS; }
 });
