@@ -1,7 +1,7 @@
 """Browser end-to-end tests against test/e2e-server.js (real pages, real API, PGlite, mocked PayPal/Meta/ElevenLabs SDKs).
 Run: node test/e2e-server.js 8787 &  then  python3 test/e2e.py
 """
-import json, sys, time, re
+import json, urllib.parse, sys, time, re
 from playwright.sync_api import sync_playwright
 
 BASE = 'http://localhost:8787'
@@ -250,7 +250,7 @@ with sync_playwright() as p:
 
     # ── H. admin ──
     ctx = new_ctx(browser); page = ctx.new_page()
-    page.goto(BASE + '/admin'); page.fill('#u', 'alon'); page.fill('#pw', 'wrong'); page.click('#go'); page.wait_for_timeout(800)
+    page.goto(BASE + '/admin'); page.click('#login summary'); page.fill('#u', 'alon'); page.fill('#pw', 'wrong'); page.click('#go'); page.wait_for_timeout(800)
     check('H1 wrong password refused', page.locator('#login').is_visible())
     page.fill('#pw', 'correct horse battery staple'); page.click('#go'); page.wait_for_selector('#app:not([hidden])', timeout=5000)
     funnel = page.locator('#funnel').inner_text()
@@ -258,6 +258,22 @@ with sync_playwright() as p:
     page.locator('#recent tr.click').first.click(); page.wait_for_selector('#detail:not([hidden])')
     check('H3 order detail opens (brief visible to production)', 'מספרה' in page.locator('#dcard').inner_text() or 'קיבלנו' in page.locator('#dcard').inner_text() or True)
     page.screenshot(path='test/out-admin.png', full_page=True)
+    ctx.close()
+    # ── H2. admin sign-in by a mailed one-time link; the server refuses the API without a session ──
+    ctx = new_ctx(browser); page = ctx.new_page(); errors = []; page.on('pageerror', lambda e: errors.append(str(e)))
+    page.goto(BASE + '/admin')
+    r = page.evaluate("fetch('/api/admin/summary').then(function(r){return r.status;})")
+    check('H4 dashboard data refused without sign-in (server, not just a hidden page)', r == 401, r)
+    page.fill('#em', 'owner@front.test'); page.click('#sendLink'); page.wait_for_timeout(800)
+    body = ctl(page, '/__test/lastmail')['body']
+    link = urllib.parse.parse_qs(body)['link'][0]; tok = link.split('#login=')[1]
+    check('H5 link requested; the page does not show it', 'נשלח' in page.locator('#lmsg').inner_text() and tok not in page.content(), page.locator('#lmsg').inner_text())
+    page.goto('about:blank'); page.goto(link.replace('https://front.test', BASE)); page.wait_for_selector('#app:not([hidden])', timeout=5000)
+    check('H6 the mailed link signs in and leaves no token in the address bar', '#login' not in page.url, page.url)
+    page.click('#logout'); page.wait_for_timeout(500)
+    page.goto('about:blank'); page.goto(link.replace('https://front.test', BASE)); page.wait_for_timeout(1200)
+    check('H7 the same link does not work twice', page.locator('#login').is_visible() and 'נוצל' in page.locator('#lmsg').inner_text(), page.locator('#lmsg').inner_text())
+    check('H8 no JS errors (admin link)', not errors, errors)
     ctx.close()
     # ── K. landing page v5.1: every CTA works, mobile bar never covers, no sideways scroll, reduced motion ──
     ctx = new_ctx(browser); page = ctx.new_page(); errs = []

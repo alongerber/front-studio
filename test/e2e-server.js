@@ -8,6 +8,7 @@ import { freshDb, sql, mock } from './helpers.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 process.env.FRONT_ENV = 'test';
+process.env.ADMIN_EMAIL = 'owner@front.test';
 await freshDb();
 
 const routes = {
@@ -16,7 +17,7 @@ const routes = {
   '/api/paypal/create': '../api/paypal/create.js', '/api/paypal/capture': '../api/paypal/capture.js', '/api/paypal/webhook': '../api/paypal/webhook.js',
   '/api/elevenlabs/webhook': '../api/elevenlabs/webhook.js', '/api/admin/summary': '../api/admin/summary.js', '/api/admin/order': '../api/admin/order.js',
   '/api/admin/verify-manual': '../api/admin/verify-manual.js', '/api/cron/meta-flush': '../api/cron/meta-flush.js',
-  '/api/consent': '../api/consent.js', '/api/admin/recover': '../api/admin/recover.js',
+  '/api/consent': '../api/consent.js', '/api/admin/recover': '../api/admin/recover.js', '/api/admin/login': '../api/admin/login.js',
 };
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.mp4': 'video/mp4', '.json': 'application/json' };
 
@@ -25,6 +26,7 @@ async function control(path, body) {
   if (path === '/__test/approve') { mock.approve(body.id); return { ok: true }; }
   if (path === '/__test/sql') return { rows: await sql(body.q, body.p || []) };
   if (path === '/__test/calls') return { calls: mock.calls.map(c => ({ url: c.url, method: c.method })) };
+  if (path === '/__test/lastmail') { const m = mock.calls.filter(c => /hook\.make\.test/.test(c.url)).pop(); return { body: m ? m.body : null }; }
   return null;
 }
 

@@ -42,10 +42,16 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--ink2)}
 <body>
 <div class="login" id="login">
   <h1>פרונט · כניסה</h1>
-  <input id="u" autocomplete="username" placeholder="משתמש">
-  <input id="pw" type="password" autocomplete="current-password" placeholder="סיסמה">
-  <button class="p" id="go">כניסה</button>
-  <p class="muted" id="lmsg"></p>
+  <input id="em" type="email" autocomplete="email" dir="ltr" placeholder="האימייל שלך">
+  <button class="p" id="sendLink">שלחו לי קישור כניסה</button>
+  <p class="muted" id="lmsg">הקישור תקף לרבע שעה ולכניסה אחת. הכניסה נשמרת ל-12 שעות בלשונית הזו.</p>
+  <details><summary>כניסה עם משתמש וסיסמה</summary>
+    <div style="display:grid;gap:10px;margin-top:10px">
+      <input id="u" autocomplete="username" placeholder="משתמש">
+      <input id="pw" type="password" autocomplete="current-password" placeholder="סיסמה">
+      <button id="go">כניסה</button>
+    </div>
+  </details>
 </div>
 
 <div class="w" id="app" hidden>
@@ -77,18 +83,34 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--ink2)}
 (function(){'use strict';
 var $=function(id){return document.getElementById(id);};
 function esc(s){var t=document.createElement('span');t.textContent=s==null?'':String(s);return t.innerHTML;}
-var auth=null; try{auth=sessionStorage.getItem('front_admin');}catch(e){}
+// auth = the whole Authorization value: "Bearer <session>" (sign-in link) or "Basic <…>" (password).
+var auth=null; try{auth=sessionStorage.getItem('front_admin_auth');}catch(e){}
 function api(path,body){
-  return fetch(path,{method:body?'POST':'GET',cache:'no-store',headers:Object.assign({authorization:'Basic '+auth},body?{'content-type':'application/json'}:{}),body:body?JSON.stringify(body):undefined})
+  return fetch(path,{method:body?'POST':'GET',cache:'no-store',headers:Object.assign({authorization:auth||''},body?{'content-type':'application/json'}:{}),body:body?JSON.stringify(body):undefined})
     .then(function(r){return r.json().catch(function(){return{};}).then(function(j){if(r.status===401){logout();throw new Error('unauthorized');} if(!r.ok) throw new Error(j.error||('http_'+r.status)); return j;});});
 }
+function keep(a){ auth=a; try{sessionStorage.setItem('front_admin_auth',a);}catch(e){} }
 function login(){ var u=$('u').value.trim(), p=$('pw').value;
-  auth=btoa(unescape(encodeURIComponent(u+':'+p)));
-  load().then(function(){ try{sessionStorage.setItem('front_admin',auth);}catch(e){} $('pw').value=''; },
-    function(e){ $('lmsg').textContent=e.message==='admin_not_configured'?'הכניסה עוד לא הוגדרה בשרת (ADMIN_USER / ADMIN_PASSWORD_HASH).':'שם משתמש או סיסמה שגויים.'; }); }
-function logout(){ auth=null; try{sessionStorage.removeItem('front_admin');}catch(e){} $('app').hidden=true; $('login').hidden=false; }
+  auth='Basic '+btoa(unescape(encodeURIComponent(u+':'+p)));
+  load().then(function(){ keep(auth); $('pw').value=''; },
+    function(e){ $('lmsg').textContent=e.message==='admin_not_configured'?'הכניסה עוד לא הוגדרה בשרת.':'שם משתמש או סיסמה שגויים.'; }); }
+function post(body){ return fetch('/api/admin/login',{method:'POST',cache:'no-store',headers:{'content-type':'application/json'},body:JSON.stringify(body)})
+  .then(function(r){ return r.json().catch(function(){return{};}).then(function(j){ if(!r.ok) throw new Error(j.error||('http_'+r.status)); return j; }); }); }
+function sendLink(){ var b=$('sendLink'), em=$('em').value.trim(); if(!em) return; b.disabled=true;
+  post({action:'request',email:em}).then(function(){ $('lmsg').textContent='אם הכתובת מורשית, נשלח אליה קישור כניסה. אפשר לסגור את הדף ולפתוח את הקישור מהמייל.'; },
+    function(e){ $('lmsg').textContent=e.message==='send_failed'?'לא הצלחנו לשלוח את המייל כרגע. נסו שוב בעוד דקה.':e.message==='admin_not_configured'?'הכניסה במייל עוד לא הוגדרה בשרת.':'משהו השתבש. נסו שוב בעוד דקה.'; })
+    .then(function(){ b.disabled=false; }); }
+function logout(){ if(auth&&auth.indexOf('Bearer ')===0) fetch('/api/admin/login',{method:'POST',headers:{'content-type':'application/json',authorization:auth},body:'{"action":"logout"}'}).catch(function(){});
+  auth=null; try{sessionStorage.removeItem('front_admin_auth');}catch(e){} $('app').hidden=true; $('login').hidden=false; }
 $('go').onclick=login; $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')login();});
+$('sendLink').onclick=sendLink; $('em').addEventListener('keydown',function(e){if(e.key==='Enter')sendLink();});
 $('logout').onclick=logout;
+// Arriving from the sign-in link: exchange it once for a session, and take it out of the address bar.
+(function(){ var m=/^#login=([A-Za-z0-9_-]{20,128})$/.exec(location.hash); if(!m) return;
+  try{ history.replaceState(null,'',location.pathname); }catch(e){}
+  $('lmsg').textContent='נכנסים…';
+  post({action:'redeem',token:m[1]}).then(function(j){ keep('Bearer '+j.session); return load(); })
+    .catch(function(){ $('lmsg').textContent='הקישור כבר נוצל או שפג תוקפו. אפשר לבקש קישור חדש.'; }); })();
 $('recover').onclick=function(){ var b=this; b.disabled=true; $('rmsg').textContent='רץ…';
   api('/api/admin/recover',{}).then(function(r){ $('rmsg').textContent='הושלם: '+r.repaired_payments+' תשלומים תוקנו · '+r.conversations_replayed+' שיחות שוחזרו · '+
     r.meta.filter(function(x){return x.ok;}).length+' Purchase נשלחו · '+r.notify.filter(function(x){return x.ok;}).length+' מיילים נשלחו'; load(); },
