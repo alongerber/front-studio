@@ -25,9 +25,9 @@ export const POST = handle(async (request) => {
   const metaUser = consent.ads === 'granted' ? {
     fbc: clip(b.fbc, 1200) || null, fbp: clip(b.fbp, 200) || null, ip, ua: clip(request.headers.get('user-agent'), 400),
   } : null;
-  const { orderId, token } = await createOrder({ anonymousId, sessionId, consent, attribution, metaUser });
+  const { orderId, token, reused } = await createOrder({ anonymousId, sessionId, consent, attribution, metaUser, clientRef: b.client_ref });
   if (b.agent_link) await attachAgentLink(orderId, b.agent_link);
-  return json({ ok: true, order_id: orderId, token, environment: cfg.environment }, 201);
+  return json({ ok: true, order_id: orderId, token, reused: !!reused, environment: cfg.environment }, 201);
 });
 
 export const GET = handle(async (request) => {

@@ -43,6 +43,9 @@ h1{font-weight:900;letter-spacing:-.02em;font-size:clamp(30px,6vw,44px);line-hei
   background:var(--gold);border-radius:999px}
 .btn[disabled]{opacity:.5;cursor:default}
 .lnk{color:var(--ink);border-bottom:1.5px solid var(--gold);font-size:15px}
+.order{position:fixed;inset-inline:0;top:0;z-index:50;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;padding:10px 16px;background:var(--card,#fff);border-bottom:1px solid var(--line,#ddd);font-size:15px}
+#fbar{top:auto;bottom:16px;inset-inline:16px;z-index:101;border:1px solid var(--line,#ddd);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+.order .lnk{background:none;border:0;border-bottom:1.5px solid var(--gold);font:inherit;cursor:pointer;padding:0}
 .saved{margin-top:12px;color:var(--ink2);font-size:15.5px}.saved b{color:var(--ink);font-weight:400}
 .msg{margin-top:12px;font-size:15px}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
 .known{margin-top:16px;border-top:1px solid var(--line2);padding-top:14px}

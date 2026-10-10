@@ -95,7 +95,8 @@ globalThis.fetch = async (input, init = {}) => {
 
 /* ── request helpers ── */
 export function req(method, path, { body, headers = {}, raw } = {}) {
-  const h = new Headers({ 'x-forwarded-for': '203.0.113.7', 'user-agent': 'Mozilla/5.0 (iPhone) FBAV/400', ...headers });
+  // Pages of the current release send x-front-proto (see lib/agent-tools.js); a test can override it to act as an old tab.
+  const h = new Headers({ 'x-forwarded-for': '203.0.113.7', 'user-agent': 'Mozilla/5.0 (iPhone) FBAV/400', 'x-front-proto': '2', ...headers });
   const init = { method, headers: h };
   if (raw !== undefined) init.body = raw; else if (body !== undefined) { init.body = JSON.stringify(body); h.set('content-type', 'application/json'); }
   return new Request('https://front.test' + path, init);

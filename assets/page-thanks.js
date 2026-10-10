@@ -91,9 +91,11 @@
   var tools = {
     save_brief_note: function (p) { return F.saveNote(p && p.field || 'other', p && p.value).then(function (r) { refresh(); return r; }); },
     show_whatsapp: function () { var a = document.querySelector('[data-wa]'); if (a) a.scrollIntoView({ behavior: 'smooth', block: 'center' }); return 'ok'; },
-    open_payment: function () { return 'NOT OPENED: payment is not opened from the order page. To know whether the payment arrived, call check_payment.'; }
+    open_payment: function () { return 'NOT OPENED: payment is not opened from the order page. To know whether the payment arrived, call check_payment.'; },
+    switch_ad: function () { return 'NOT DONE: this is the brief of a paid order; it stays as it is. Do not save details of another business here. For another ad, offer WhatsApp with Alon.'; }
   };
   $('openChat').addEventListener('click', function () {
+    F.agentSales = false;
     F.openAgent({ phase: 'brief', known_context: known(), payment_status: order && order.paid ? 'verified' : 'pending', opening_line: opening() }, tools, 'thanks');
   });
   $('copyLink').addEventListener('click', function () {

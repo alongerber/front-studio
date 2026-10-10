@@ -207,11 +207,13 @@
   addEventListener('pagehide', function () { emitTime(true); flush(true); });
 
   /* ── API ── */
+  F.PROTO = 2;                                            // must match lib/agent-tools.js PAGE_PROTOCOL
   function api(path, body, opts) {
     opts = opts || {};
     var init = { method: body ? 'POST' : 'GET', headers: {}, cache: 'no-store', credentials: 'same-origin' };
     if (body) { init.body = JSON.stringify(body); init.headers['content-type'] = 'application/json'; }
     if (opts.token) init.headers['x-order-token'] = opts.token;
+    init.headers['x-front-proto'] = String(F.PROTO);       // the API refuses notes from a page older than this release
     return fetch(path, init).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) {
         if (!r.ok) { var e = new Error(j.error || ('http_' + r.status)); e.status = r.status; throw e; }
@@ -233,7 +235,7 @@
       return j.order; })
       .catch(function (e) { if (e.status === 404) { F.saveOrder(null); return null; } throw e; });
   };
-  var creating = null;
+  var creating = null, pendingRef = null;               // pendingRef: reused until a creation succeeds (no duplicate on retry)
   // fresh: for a new checkout, an order that is already paid is not reused.
   // fresh === 'new': the customer asked for another ad; the stored order is kept as it is and a new one is created.
   F.ensureOrder = function (fresh) {
@@ -243,9 +245,10 @@
       return check.then(function (st) {
         if (F.order && st && !st.paid) return F.order;
         var ids = F.ids(), t = touches();
+        pendingRef = pendingRef || uuid();
         return api('/api/order', { consent: F.consentForServer(), anonymous_id: ids.anonymous_id, session_id: ids.session_id, first_touch: t.first, last_touch: t.last,
-          fbc: fbc(), fbp: AD() ? cookie('_fbp') : null, agent_link: callStarted ? LINK : null }).then(function (j) {
-          F.saveOrder({ order_id: j.order_id, token: j.token }); return F.order;
+          fbc: fbc(), fbp: AD() ? cookie('_fbp') : null, agent_link: callStarted ? LINK : null, client_ref: pendingRef }).then(function (j) {
+          pendingRef = null; F.saveOrder({ order_id: j.order_id, token: j.token }); return F.order;
         });
       });
     })();
@@ -319,8 +322,33 @@
     });
     return out;
   }
+  // A small bar at the top of the page (loading, retry, refresh). One at a time.
+  F.bar = function (text, actionLabel, action) {
+    var d = document.getElementById('fbar');
+    if (!text) { if (d) d.remove(); return; }
+    if (!d) { d = document.createElement('div'); d.id = 'fbar'; d.className = 'order'; d.setAttribute('role', 'status'); document.body.appendChild(d); }
+    d.innerHTML = '<span></span>'; d.firstChild.textContent = text;
+    if (actionLabel) { var b = document.createElement('button'); b.type = 'button'; b.className = 'lnk'; b.textContent = actionLabel; b.onclick = action; d.appendChild(b); }
+  };
+  // Before a conversation starts: the page must have every tool the agent may call. An old tab (code from before a
+  // release) is stopped here and offered a refresh; the order and the chat link survive a reload (local/session storage).
+  F.agentReady = function (tools) {
+    return api('/api/config?fresh=' + Date.now()).then(function (c) {
+      var need = (c && c.agent_client_tools) || [], have = Object.keys(tools || {});
+      var missing = need.filter(function (n) { return have.indexOf(n) < 0; });
+      if (missing.length || (c.page_protocol && c.page_protocol > F.PROTO)) {
+        track('agent_page_outdated', { missing: missing.join(',').slice(0, 120) });
+        F.bar('יש גרסה חדשה של האתר. רענון ימשיך מאותה נקודה, בלי לאבד את מה שכבר נשמר.', 'לרענן עכשיו', function () { location.reload(); });
+        return false;
+      }
+      return true;
+    }, function () { return true; });                      // config unreachable: the agent still works; tools are checked by the server
+  };
   // vars: {phase, known_context, payment_status, opening_line}. Ids are added here.
   F.openAgent = function (vars, tools, where, opts) {
+    return F.agentReady(tools).then(function (ok) { return ok ? openWidget(vars, tools, where, opts) : null; });
+  };
+  function openWidget(vars, tools, where, opts) {
     F.loadAgent();
     linkOrder = !(opts && opts.noOrder);
     track('agent_opened', {}, { cta: where || null });
@@ -346,24 +374,36 @@
     document.body.appendChild(w); document.body.classList.add('chat-on');
     widget = w;
     return w;
-  };
+  }
   // save_brief_note → server, before the call ends. Returns only after the server stored it.
-  // switch_ad: 'new_ad' → a new order for this conversation (the previous one stays untouched);
-  // 'change_direction' → same unpaid order, previous details archived on the server (never deleted).
+  // switch_ad: 'new_ad' → one request creates the new order and moves this tab's link key to it (the previous order
+  // stays untouched); 'change_direction' → same unpaid order, previous details archived on the server (never deleted).
+  // Until a switch the agent asked for succeeds, business notes are refused here, whatever the agent does next.
+  F.notesBlocked = null;
   F.switchAd = function (mode) {
     callStarted = true;
-    if (mode === 'new_ad') return F.ensureOrder('new').then(function (o) {
-      linkOrder = true;
-      return api('/api/agent-link', { order_id: o.order_id, token: o.token, agent_link: LINK }).then(function () { return o; });
-    });
-    if (!F.order) return Promise.resolve(null);
-    return api('/api/brief/note', { order_id: F.order.order_id, token: F.order.token, action: 'change_direction' }).then(function () { return F.order; });
+    var done = mode === 'new_ad'
+      ? F.ensureOrder('new').then(function (o) { linkOrder = true; return o; })
+      : F.order ? api('/api/brief/note', { order_id: F.order.order_id, token: F.order.token, action: 'change_direction', phase: 'sales' }).then(function () { return F.order; })
+        : Promise.resolve(null);
+    return done.then(function (o) { F.notesBlocked = null; return o; },
+      function (e) { F.notesBlocked = 'switch_failed'; throw e; });
   };
+  // Returns the real outcome to the agent (the tool waits for it): "SAVED: …" only after the server stored it.
   F.saveNote = function (field, value) {
     callStarted = true;                                   // a tool call proves the conversation is running
-    return F.ensureOrder(!!F.agentSales).then(function (o) {
-      return api('/api/brief/note', { order_id: o.order_id, token: o.token, field: String(field || 'other'), value: String(value || '') });
-    }).then(function () { return 'saved'; });
+    if (F.notesBlocked) return Promise.resolve('NOT SAVED: the ad switch did not complete, so nothing is saved for the new business. Do not say it was saved. Tell the customer there is a technical problem and offer WhatsApp.');
+    var work = F.ensureOrder(!!F.agentSales).then(function (o) {
+      return api('/api/brief/note', { order_id: o.order_id, token: o.token, field: String(field || 'other'), value: String(value || ''), phase: F.agentSales ? 'sales' : 'brief' });
+    }).then(function (j) { return j.saved ? 'SAVED: ' + j.saved : 'NOT SAVED: empty value.'; },
+      function (e) {
+        var why = e && e.message === 'page_outdated' ? 'this page is out of date; the customer must refresh it before continuing'
+          : e && e.message === 'paid_order' ? 'the order in this browser is already paid; this conversation cannot change it'
+          : 'the server did not confirm (' + String(e && e.message || 'error').slice(0, 40) + ')';
+        return 'NOT SAVED: ' + why + '. Do not say it was saved.';
+      });
+    var timeout = new Promise(function (r) { setTimeout(function () { r('NOT SAVED: no answer from the server in time. Do not say it was saved.'); }, 9000); });
+    return Promise.race([work, timeout]);
   };
 
   /* ── environment: outside production no real money moves ── */

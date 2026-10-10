@@ -70,3 +70,68 @@ test('S5. dashboard: an unpaid order shows no failed matches, only "not paid"', 
   assert.deepEqual([k.amount_matches, k.currency_matches, k.payee_matches], [null, null, null]);
   assert.equal(k.purchase_verified_events, 0);
 });
+
+import * as elWebhook from '../api/elevenlabs/webhook.js';
+import * as payStatus from '../api/agent/payment-status.js';
+import { elSign } from './helpers.js';
+
+async function paidOrder(link) {
+  const o = await newOrder(link);
+  const pp = await call(ppCreate.POST, 'POST', '/api/paypal/create', { body: { order_id: o.order_id, token: o.token } });
+  mock.approve(pp.data.id);
+  await call(ppCapture.POST, 'POST', '/api/paypal/capture', { body: { order_id: o.order_id, token: o.token, paypal_order_id: pp.data.id } });
+  return o;
+}
+
+test('S6. an old tab (no page protocol header) cannot save notes, and nothing changes', async () => {
+  const o = await newOrder(key());
+  const r = await call(note.POST, 'POST', '/api/brief/note', { body: { order_id: o.order_id, token: o.token, field: 'business_type', value: 'מספרה' }, headers: { 'x-front-proto': '' } });
+  assert.equal(r.status, 409); assert.equal(r.data.error, 'page_outdated');
+  assert.deepEqual(await brief(o), {});
+});
+
+test('S7. a note returns what was really saved', async () => {
+  const o = await newOrder(key());
+  const r = await save(o, 'business_type', 'מספרה');
+  assert.equal(r.data.saved, 'business_type'); assert.equal(r.data.order_id, o.order_id);
+  const e = await save(o, 'audience', '   ');
+  assert.equal(e.data.saved, null);
+});
+
+test('S8. a sales conversation cannot write onto a paid order (salon case), and the paid brief is untouched', async () => {
+  const o = await paidOrder(key());
+  await call(note.POST, 'POST', '/api/brief/note', { body: { order_id: o.order_id, token: o.token, field: 'business_type', value: 'ניקוי ספות', phase: 'brief' } });
+  const r = await call(note.POST, 'POST', '/api/brief/note', { body: { order_id: o.order_id, token: o.token, field: 'business_type', value: 'מספרה', phase: 'sales' } });
+  assert.equal(r.status, 409); assert.equal(r.data.error, 'paid_order');
+  assert.deepEqual(await brief(o), { business_type: 'ניקוי ספות' });
+});
+
+test('S9. new ad: the link key moves explicitly; notes, check_payment and the post-call webhook all go to the new order', async () => {
+  const k = key(); const a = await paidOrder(k);
+  const before = await sql(`SELECT brief, status, paid_at FROM orders WHERE order_id = $1`, [a.order_id]);
+  const b = await newOrder(k);                                               // the page's single request: create + attach
+  const links = Object.fromEntries((await sql(`SELECT order_id, agent_links FROM orders WHERE order_id = any($1)`, [[a.order_id, b.order_id]])).map(r => [r.order_id, r.agent_links]));
+  assert.deepEqual([links[a.order_id].includes(k), links[b.order_id].includes(k)], [false, true]);
+  const moved = await sql(`SELECT props FROM events WHERE event_name = 'agent_link_moved' AND order_id = $1`, [b.order_id]);
+  assert.deepEqual(moved[0].props.from, [a.order_id]);
+  await save(b, 'business_type', 'מספרה');
+  assert.equal((await call(payStatus.POST, 'POST', '/api/agent/payment-status', { body: { link: k } })).data.order_id, b.order_id);
+  const conv = 'conv_' + uuid4().replace(/-/g, '');
+  const raw = JSON.stringify({ type: 'post_call_transcription', data: { conversation_id: conv, agent_id: process.env.ELEVENLABS_AGENT_ID || 'agent_test', status: 'done',
+    metadata: { start_time_unix_secs: Math.floor(Date.now() / 1000) - 60, call_duration_secs: 60 }, transcript: [{ role: 'user', message: 'מספרה', time_in_call_secs: 1 }],
+    conversation_initiation_client_data: { dynamic_variables: { front_link: k, order_id: a.order_id } } } });
+  assert.equal((await call(elWebhook.POST, 'POST', '/api/elevenlabs/webhook', { raw, headers: { 'elevenlabs-signature': elSign(raw) } })).status, 200);
+  assert.equal((await sql(`SELECT order_id FROM conversations WHERE conversation_id = $1`, [conv]))[0].order_id, b.order_id);
+  assert.deepEqual(await sql(`SELECT brief, status, paid_at FROM orders WHERE order_id = $1`, [a.order_id]), before);   // the paid order did not change
+});
+
+test('S10. a retried creation (same client_ref) returns the same order with a working token, never a duplicate', async () => {
+  const ref = uuid4(); const body = { consent: { analytics: 'denied', ads: 'denied' }, client_ref: ref };
+  const r1 = await call(order.POST, 'POST', '/api/order', { body });
+  const n1 = (await sql(`SELECT count(*)::int c FROM orders`))[0].c;
+  const r2 = await call(order.POST, 'POST', '/api/order', { body });
+  assert.equal(r1.data.order_id, r2.data.order_id); assert.equal(r2.data.reused, true);
+  assert.equal((await sql(`SELECT count(*)::int c FROM orders`))[0].c, n1);
+  assert.equal((await save({ order_id: r2.data.order_id, token: r2.data.token }, 'business_type', 'מספרה')).status, 200);
+  assert.equal((await save({ order_id: r1.data.order_id, token: r1.data.token }, 'business_type', 'x')).status, 404);   // the lost first token is void
+});

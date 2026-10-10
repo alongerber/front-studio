@@ -129,14 +129,15 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
     if(mode!=='new_ad'&&mode!=='change_direction') return 'NOT DONE: mode must be new_ad or change_direction. Ask the customer which one they mean.';
     var st=F.order?F.orderStatus().catch(function(){return null;}):Promise.resolve(null);
     return st.then(function(o){
-      if(o&&o.paid) return 'NOT DONE: the order in this browser is already paid; its brief stays as it is. A second ad is a separate order: offer WhatsApp with Alon.';
+      // A paid order is never changed; while its brief is open it also stays the order of this browser.
+      if(o&&o.paid&&(!o.brief_done||mode==='change_direction')){ F.notesBlocked='paid_order'; return 'NOT DONE: the order in this browser is already paid; its brief stays as it is. Do not save details of another business. For another ad, offer WhatsApp with Alon.'; }
       return F.switchAd(mode).then(function(){
         F.agentSales=true;
         return mode==='new_ad'
           ? 'DONE: a new ad was started; the previous ad and its details stay as they were. Treat known_context as not relevant to this ad. Save the new details with save_brief_note.'
           : 'DONE: the previous direction was archived (kept, not deleted) and this ad now starts with empty details. Treat known_context as replaced. Save the new details with save_brief_note.';
       });
-    }).catch(function(){ return 'NOT DONE: could not update the order. Do not say it changed. Continue the conversation; offer WhatsApp if it matters.'; });
+    }).catch(function(){ F.notesBlocked='switch_failed'; return 'NOT DONE: could not update the order. Nothing about the new business can be saved now. Do not say it changed; tell the customer there is a technical problem and offer WhatsApp.'; });
   }
   var tools={
     switch_ad:switchAd,
@@ -144,17 +145,24 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
     show_whatsapp:openWhatsapp,
     save_brief_note:function(p){ return F.saveNote(p&&p.field||'other', p&&p.value); }
   };
+  // The agent gets the order's real state or nothing: while an existing order loads, the page says so; if it cannot
+  // be loaded, the customer can retry and the order stays in this browser. Never "none" because of a slow answer.
+  var opening=false;
   function openAgent(w){
-    // Payment status and known context come from the server, never from this browser.
-    var st=F.order?F.orderStatus().catch(function(){return null;}):Promise.resolve(null);
-    var timer=new Promise(function(r){ setTimeout(r,1500); });
-    Promise.race([st,timer]).then(function(o){
+    if(opening) return; opening=true;
+    var st=F.order?Promise.race([F.orderStatus(), new Promise(function(_,no){ setTimeout(function(){ no(new Error('timeout')); },10000); })]):Promise.resolve(null);
+    if(F.order) F.bar('טוענים את ההזמנה הקיימת…');
+    st.then(function(o){
+      F.bar(null);
       // A finished order is history: a new conversation here is a new sale and must not be tied to it.
       var done=!!(o&&o.paid&&o.brief_done), brief=!!(o&&o.paid&&!o.brief_done);
       F.agentSales=!brief;                                  // notes from a sales chat never land on an already paid order
-      F.openAgent({ phase:brief?'brief':'sales', known_context:done?'עדיין לא ידוע כלום.':known(o), payment_status:done||!o?'none':(o.paid?'verified':'pending'),
+      return F.openAgent({ phase:brief?'brief':'sales', known_context:done?'עדיין לא ידוע כלום.':known(o), payment_status:done||!o?'none':(o.paid?'verified':'pending'),
         opening_line:'מה העסק שלכם, ומה הייתם רוצים לקדם?' }, tools, w, { noOrder: done });
-    });
+    },function(e){
+      F.report('order_load',e);
+      F.bar('לא הצלחנו לטעון את ההזמנה הקיימת. היא שמורה בדפדפן הזה.','לנסות שוב',function(){ F.bar(null); openAgent(w); });
+    }).then(function(){ opening=false; },function(){ opening=false; });
   }
   addEventListener('pointerdown',F.loadAgent,{once:true,passive:true}); setTimeout(F.loadAgent,8000);
   document.querySelectorAll('[data-open]').forEach(function(b){ b.addEventListener('click',function(){

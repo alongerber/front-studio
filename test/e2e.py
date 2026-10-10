@@ -1,7 +1,7 @@
 """Browser end-to-end tests against test/e2e-server.js (real pages, real API, PGlite, mocked PayPal/Meta/ElevenLabs SDKs).
 Run: node test/e2e-server.js 8787 &  then  python3 test/e2e.py
 """
-import json, urllib.parse, sys, time, re
+import json, urllib.parse, sys, time, re, subprocess
 from playwright.sync_api import sync_playwright
 
 BASE = 'http://localhost:8787'
@@ -20,6 +20,8 @@ window.paypal = { Buttons: function (o) { return { render: function (el) {
   };
   return Promise.resolve(); } }; } };
 """
+OLD_FRONT = subprocess.run(['git', 'show', '688b809:assets/front.js'], capture_output=True, text=True).stdout
+OLD_HOME = subprocess.run(['git', 'show', '688b809:assets/page-home.js'], capture_output=True, text=True).stdout
 FAKE_WIDGET = r"""
 customElements.define('elevenlabs-convai', class extends HTMLElement {
   connectedCallback() { var cfg = {}; window.__dv = JSON.parse(this.getAttribute('dynamic-variables') || '{}');
@@ -36,8 +38,11 @@ def ctl(page, path, body=None):
 def sql(page, q, p=None):
     return ctl(page, '/__test/sql', {'q': q, 'p': p or []})['rows']
 
+CTX_N = [0]
 def new_ctx(browser, ua=None):
     ctx = browser.new_context(user_agent=ua) if ua else browser.new_context()
+    # each browser context is its own visitor (own IP), so the per-IP order rate limit does not leak between sections
+    CTX_N[0] += 1; ctx.set_extra_http_headers({'x-forwarded-for': '203.0.113.%d' % (CTX_N[0] % 250 + 1)})
     ctx.route(re.compile(r'https://www\.paypal\.com/sdk/js.*'), lambda r: r.fulfill(status=200, content_type='text/javascript', body=FAKE_PAYPAL))
     ctx.route(re.compile(r'https://unpkg\.com/@elevenlabs/.*'), lambda r: r.fulfill(status=200, content_type='text/javascript', body=FAKE_WIDGET))
     ctx.route(re.compile(r'https://connect\.facebook\.net/.*'), lambda r: r.fulfill(status=200, content_type='text/javascript', body=''))
@@ -125,7 +130,7 @@ with sync_playwright() as p:
     dv = page.evaluate('window.__dv')
     check('D1 widget gets a link key, no token', bool(dv.get('front_link')) and 'token' not in json.dumps(dv), dv)
     r = page.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מספרה בחולון'})")
-    check('D2 save_brief_note returns only after the server saved', r == 'saved', r)
+    check('D2 save_brief_note returns the real result only after the server saved', r == 'SAVED: business_type', r)
     oid = page.evaluate("FRONT.order.order_id")
     row = sql(page, "select brief, agent_links, paid_at from orders where order_id=$1", [oid])[0]
     check('D3 note stored on the server before payment', row['brief'].get('business_type') == 'מספרה בחולון', row)
@@ -182,6 +187,94 @@ with sync_playwright() as p:
     check('DS6 no JS errors (switch)', not errors, errors)
     ctx.close()
 
+    # ── X. robustness of the agent ↔ order link ──
+    def home(ctx):
+        pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
+        pg.goto(BASE + '/'); pg.wait_for_timeout(400); pg.click('#cbAll'); return pg, errs
+    def chat(pg):
+        pg.click('.h3 [data-open]'); pg.wait_for_function('window.__el && window.__el.clientTools', timeout=8000); pg.wait_for_timeout(200)
+    n_orders = lambda pg: sql(pg, "select count(*)::int c from orders")[0]['c']
+
+    # X1. an old tab (code from before switch_ad) cannot save: the server refuses, the agent hears "not saved"
+    ctx = new_ctx(browser)
+    ctx.route(re.compile(r'.*/assets/front\.js(\?.*)?$'), lambda r: r.fulfill(status=200, content_type='text/javascript', body=OLD_FRONT))
+    ctx.route(re.compile(r'.*/assets/page-home\.js(\?.*)?$'), lambda r: r.fulfill(status=200, content_type='text/javascript', body=OLD_HOME))
+    pg, errs = home(ctx); chat(pg)
+    keys = pg.evaluate('Object.keys(window.__el.clientTools)')
+    r = pg.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מספרה'})")
+    xoid = pg.evaluate("FRONT.order && FRONT.order.order_id")
+    stored = sql(pg, "select brief from orders where order_id=$1", [xoid])[0]['brief'] if xoid else {}
+    check('X1 old tab: no switch_ad on the page, and its note is refused by the server (nothing stored)', 'switch_ad' not in keys and 'page_outdated' in r and stored == {}, (keys, r, stored))
+    ctx.close()
+
+    # X2. a page missing a tool the agent needs does not start a conversation; it offers a refresh
+    ctx = new_ctx(browser)
+    def more_tools(route):
+        resp = route.fetch(); j = resp.json(); j['agent_client_tools'] = j['agent_client_tools'] + ['future_tool']
+        route.fulfill(response=resp, body=json.dumps(j))
+    ctx.route(re.compile(r'.*/api/config\?fresh=.*'), more_tools)
+    pg, errs = home(ctx)
+    pg.click('.h3 [data-open]'); pg.wait_for_timeout(1200)
+    bar = pg.locator('#fbar')
+    check('X2 missing tool: no widget, a refresh bar instead', pg.evaluate('!window.__el') and bar.is_visible() and 'רענון' in bar.inner_text(), bar.inner_text() if bar.count() else None)
+    ctx.close()
+
+    # X3. an existing order that loads slowly: a loading bar, then the agent gets the real state (never "none")
+    ctx = new_ctx(browser); pg, errs = home(ctx); chat(pg)
+    pg.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מוסך'})"); xoid = pg.evaluate("FRONT.order.order_id")
+    pg.reload(); pg.wait_for_timeout(400)
+    PATCH = "window.__f0 = window.__f0 || window.fetch; window.fetch = function(u, i){ if (/\\/api\\/order\\?order_id=/.test(String(u)) && (!i || i.method === 'GET')) return %s; return window.__f0(u, i); }; 0"
+    pg.evaluate(PATCH % "new Promise(function(r){ setTimeout(r, 3000); }).then(function(){ return window.__f0(u, i); })")
+    pg.click('.h3 [data-open]'); pg.wait_for_timeout(800)
+    loading = pg.locator('#fbar').is_visible() and 'טוענים' in pg.locator('#fbar').inner_text() and pg.evaluate('!window.__el')
+    pg.wait_for_function('window.__el && window.__el.clientTools', timeout=8000)
+    dv = pg.evaluate('window.__dv')
+    check('X3 slow order: loading bar first, then real context and status', loading and 'מוסך' in dv['known_context'] and dv['payment_status'] == 'pending' and dv['order_id'] == xoid, (loading, dv.get('known_context'), dv.get('payment_status')))
+    ctx.close()
+
+    # X4. the order cannot be loaded: retry offered, the order stays in the browser, retry works
+    ctx = new_ctx(browser); pg, errs = home(ctx); chat(pg)
+    pg.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'קונדיטוריה'})"); xoid = pg.evaluate("FRONT.order.order_id")
+    pg.reload(); pg.wait_for_timeout(400)
+    pg.evaluate(PATCH % "Promise.reject(new TypeError('network'))")
+    pg.click('.h3 [data-open]'); pg.wait_for_timeout(1200)
+    bar = pg.locator('#fbar')
+    failed_ok = bar.is_visible() and 'לנסות שוב' in bar.inner_text() and pg.evaluate('!window.__el') and pg.evaluate("FRONT.order && FRONT.order.order_id") == xoid
+    pg.evaluate("window.fetch = window.__f0; 0")
+    bar.locator('button').click(); pg.wait_for_function('window.__el && window.__el.clientTools', timeout=8000)
+    check('X4 load failure: retry bar, order kept, retry opens the agent with the real context', failed_ok and 'קונדיטוריה' in pg.evaluate('window.__dv.known_context'), failed_ok)
+    ctx.close()
+
+    # X5. a failed new_ad blocks business notes in code; the previous order is untouched and no order is added
+    ctx = new_ctx(browser); pg, errs = home(ctx); chat(pg)
+    pg.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'ניקוי ספות'})"); xoid = pg.evaluate("FRONT.order.order_id")
+    n0 = n_orders(pg)
+    pg.route(re.compile(r'.*/api/order$'), lambda r: r.fulfill(status=500, body='{}') if r.request.method == 'POST' else r.continue_())
+    r1 = pg.evaluate("window.__el.clientTools.switch_ad({mode:'new_ad'})")
+    r2 = pg.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מספרה'})")
+    row = sql(pg, "select brief from orders where order_id=$1", [xoid])[0]
+    check('X5 failed switch: NOT DONE, the next note is NOT SAVED, previous order unchanged, no new order',
+          r1.startswith('NOT DONE') and r2.startswith('NOT SAVED') and row['brief'] == {'business_type': 'ניקוי ספות'} and n_orders(pg) == n0 and pg.evaluate("FRONT.order.order_id") == xoid, (r1, r2, row))
+    pg.unroute(re.compile(r'.*/api/order$'))
+    # X6. the answer to the creation is lost (server created it): the retry reuses it, no duplicate
+    lost = {'n': 0}
+    def lose_once(route):
+        if route.request.method == 'POST' and lost['n'] == 0:
+            lost['n'] = 1; route.fetch(); route.abort(); return
+        route.continue_()
+    pg.route(re.compile(r'.*/api/order$'), lose_once)
+    r3 = pg.evaluate("window.__el.clientTools.switch_ad({mode:'new_ad'})")
+    r4 = pg.evaluate("window.__el.clientTools.switch_ad({mode:'new_ad'})")
+    xoid2 = pg.evaluate("FRONT.order.order_id")
+    r5 = pg.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מספרה'})")
+    rows = {x['order_id']: x for x in sql(pg, "select order_id, brief, agent_links from orders where order_id = any($1)", [[xoid, xoid2]])}
+    check('X6 lost answer then retry: exactly one new order, link moved to it, note saved there, previous order unchanged',
+          r3.startswith('NOT DONE') and r4.startswith('DONE') and n_orders(pg) == n0 + 1 and xoid2 != xoid and r5 == 'SAVED: business_type'
+          and rows[xoid2]['brief'] == {'business_type': 'מספרה'} and rows[xoid]['brief'] == {'business_type': 'ניקוי ספות'}
+          and pg.evaluate('window.__dv.front_link') in rows[xoid2]['agent_links'] and pg.evaluate('window.__dv.front_link') not in rows[xoid]['agent_links'], (r3, r4, r5, rows))
+    check('X7 no JS errors (robustness)', not errs, errs)
+    ctx.close()
+
     # ── D2. a paid order with an open brief is never paid again from the chat; a finished one is not reused ──
     ctx = new_ctx(browser); page = ctx.new_page(); errors = []; page.on('pageerror', lambda e: errors.append(str(e)))
     page.goto(BASE + '/'); page.wait_for_timeout(500); page.click('#cbAll')
@@ -204,10 +297,10 @@ with sync_playwright() as p:
     page.evaluate("document.querySelector('.h3 [data-open]').click()"); page.wait_for_function('window.__el && window.__el.clientTools', timeout=5000); page.wait_for_timeout(300)   # the open-order bar covers the button
     dv = page.evaluate('window.__dv')
     check('Q6 after the brief is done, a home chat is a new sale, not tied to the old order', dv['phase'] == 'sales' and dv['order_id'] == '' and dv['payment_status'] == 'none', dv)
-    page.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מוסך'})"); page.wait_for_timeout(500)
+    q7 = page.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מוסך'})"); page.wait_for_timeout(500)
     new_oid = page.evaluate("FRONT.order.order_id")
     old_brief = sql(page, "select brief from orders where order_id=$1", [paid_oid])[0]['brief']
-    check('Q7 notes from the new sale go to a new order, the paid one is untouched', new_oid != paid_oid and old_brief.get('business_type') == 'מועדון סנוקר', (paid_oid, new_oid, old_brief))
+    check('Q7 notes from the new sale go to a new order, the paid one is untouched', new_oid != paid_oid and old_brief.get('business_type') == 'מועדון סנוקר', (paid_oid, new_oid, old_brief, q7))
     check('Q8 no JS errors', not errors, errors)
     ctx.close()
 

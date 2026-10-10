@@ -44,7 +44,7 @@ createServer(async (req, res) => {
       const handler = mod[req.method];
       if (!handler) { res.writeHead(405); return res.end(); }
       const headers = new Headers(); for (const [k, v] of Object.entries(req.headers)) headers.set(k, Array.isArray(v) ? v.join(',') : v);
-      headers.set('x-forwarded-for', '127.0.0.1');
+      headers.set('x-forwarded-for', req.headers['x-forwarded-for'] || '127.0.0.1');   // a test context may act as its own visitor
       const r = await handler(new Request('http://localhost' + req.url, { method: req.method, headers, body: ['GET', 'HEAD'].includes(req.method) ? undefined : body }));
       res.writeHead(r.status, Object.fromEntries(r.headers)); return res.end(Buffer.from(await r.arrayBuffer()));
     }
