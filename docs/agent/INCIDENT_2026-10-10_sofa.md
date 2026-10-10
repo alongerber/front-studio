@@ -37,3 +37,20 @@
 - מקומיות: unit 68/68 (חדש: S1–S5), e2e 96/96 (חדש: DS1–DS6). PGlite ושירותים מדומים, לא שירותים אמיתיים.
 - ElevenLabs: נוצרו בדיקות 21–24 (test_9801m4k4myjyep7acg151eg2h7ba, test_4001m4k4n4n0e8vr5b7fkgfgyap8, test_6801m4k4n9g2eab9t1ew4kbpz3eh, test_5301m4k4ng9ffqpb36b5hbnv2pjs). לא הורצו, כי הן בתשלום.
 - לא אומת: שהסוכנת אכן שואלת לפני switch_ad בשיחה אמיתית ושהכלי עובד מול הווידג'ט האמיתי. נדרשת בדיקה ידנית ב־Preview.
+
+## בדיקה ידנית: מספרה (conv_6101m4kzy73ke44sy8jz4dp6d1mx, 11/10 01:46, agtvrsn_6501)
+הוכח (ElevenLabs + לוג Vercel):
+- switch_ad(new_ad) נקרא ונכשל: "Client tool with name switch_ad is not defined on client". הדף בדפדפן לא הכיר את הכלי.
+- הסוכנת המשיכה ושמרה שלוש הערות (business_type, audience, tone) למרות הכישלון. זו הפרה של "רק אחרי DONE".
+- "Tool called successfully" של save_brief_note לא אומר כלום: הכלי מוגדר expects_response=false, ולכן ElevenLabs לא מחכה לתשובה מהדף.
+- הדפדפן הזה החזיק את FR-Y7J2-SNQA (ששולמה), לא את FR-ES9A-FDHN. known_context ריק ו-payment_status=none, כלומר בדיקת ההזמנה לא חזרה תוך 1.5 שניות.
+- webhook התקבל 22:47:52Z בפריסה dpl_4CYm (45d5611, כוללת switch_ad): processed … linked.
+
+השערה (לא נבדק במסד הנתונים):
+- הטאב נטען לפני פריסת 9030e6d (14:49Z) ורץ עם JS ישן. השרת עצמו כבר כולל את switch_ad.
+- ההערות נשמרו להזמנה חדשה: לפי הקוד, ensureOrder(fresh) רואה ש-SNQA שולמה ויוצר הזמנה חדשה עם front_link. ה-webhook שויך להזמנה החדשה ביותר עם הקישור. אם בדיקת הסטטוס נכשלה, ההערות לא נשמרו כלל. לא בדקתי.
+- FR-ES9A-FDHN לא השתנתה: היא לא נמצאה בדפדפן הזה. לפי הקוד אין לשיחה הזו מסלול אליה. לא אומת במסד.
+
+לקחים:
+- כלי client עם expects_response=false אינו ראיה לשמירה.
+- טאב פתוח מלפני פריסה מריץ כלים ישנים מול פרומפט חדש.
