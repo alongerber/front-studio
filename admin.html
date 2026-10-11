@@ -159,7 +159,9 @@ function load(){
       ((d.rejected_webhooks||[]).length?'<details><summary>webhooks שנדחו בגלל חתימה ('+d.rejected_webhooks.length+')</summary><table>'+d.rejected_webhooks.map(function(w){
         return '<tr><td>'+esc(w.provider)+'</td><td dir="ltr">'+esc(w.event_id)+'</td><td dir="ltr">'+esc(w.event_type||'')+'</td><td>'+esc(dt(w.received_at))+'</td></tr>';}).join('')+'</table></details>':'')+
       ((d.meta_waiting||[]).length?'<details><summary>Meta Purchase ממתינים — הסיבה ('+d.meta_waiting.length+')</summary><table>'+d.meta_waiting.map(function(m){
-        return '<tr><td dir="ltr">'+esc(m.order_id)+'</td><td>'+esc(MW[m.last_error]||m.last_error||'טרם נוסה')+'</td><td>'+esc(m.attempts)+' ניסיונות</td></tr>';}).join('')+'</table></details>':'');
+        return '<tr><td dir="ltr">'+esc(m.order_id)+'</td><td>'+esc(MW[m.last_error]||m.last_error||'טרם נוסה')+'</td><td>'+esc(m.attempts)+' ניסיונות</td></tr>';}).join('')+'</table></details>':'')+
+      (d.readiness?'<details'+(d.readiness.ok?'':' open')+'><summary>מוכנות לייצור ('+esc(d.readiness.environment)+'): '+(d.readiness.ok?'<span class="ok">הכול מוגדר</span>':'<span class="err">חסר '+d.readiness.checks.filter(function(c){return !c.ok;}).length+'</span>')+'</summary><table>'+
+        d.readiness.checks.map(function(c){ return '<tr><td>'+(c.ok?'<span class="ok">✓</span>':'<span class="err">✗</span>')+'</td><td>'+esc(c.what)+'</td></tr>'; }).join('')+'</table></details>':'');
     $('sources').innerHTML='<tr><th>מקור</th><th>קמפיין</th><th>סשנים</th><th>פתחו את מיטל</th><th>לחצו לשלם</th></tr>'+(d.sources.map(function(r){
       return '<tr><td>'+esc(r.source)+'</td><td>'+esc(r.campaign||'—')+'</td><td class="n">'+esc(r.sessions)+'</td><td class="n">'+rate(r.agent_open,r.sessions)+'</td><td class="n">'+rate(r.checkout_click,r.sessions)+'</td></tr>';}).join('')||'<tr><td class="muted" colspan="5">אין עדיין</td></tr>');
     $('paidsrc').innerHTML=d.paid_by_source.map(function(r){return '<tr><td>'+esc(r.source)+'</td><td class="n">'+esc(r.paid)+'</td></tr>';}).join('')||'<tr><td class="muted">אין רכישות בתקופה</td></tr>';

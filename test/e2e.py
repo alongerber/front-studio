@@ -399,13 +399,20 @@ with sync_playwright() as p:
     page.goto(BASE + '/admin')
     r = page.evaluate("fetch('/api/admin/summary').then(function(r){return r.status;})")
     check('H4 dashboard data refused without sign-in (server, not just a hidden page)', r == 401, r)
-    page.fill('#em', 'owner@front.test'); page.click('#sendLink'); page.wait_for_timeout(800)
+    page.fill('#em', 'owner@front.test'); page.check('#remember'); page.click('#sendLink'); page.wait_for_timeout(800)
     body = ctl(page, '/__test/lastmail')['body']
     link = urllib.parse.parse_qs(body)['link'][0]; tok = link.split('#login=')[1]
     check('H5 link requested; the page does not show it', 'נשלח' in page.locator('#lmsg').inner_text() and tok not in page.content(), page.locator('#lmsg').inner_text())
     page.goto('about:blank'); page.goto(link.replace('https://front.test', BASE)); page.wait_for_selector('#app:not([hidden])', timeout=5000)
     check('H6 the mailed link signs in and leaves no token in the address bar', '#login' not in page.url, page.url)
+    ck = [c for c in ctx.cookies() if c['name'] == 'front_admin']
+    store = page.evaluate("JSON.stringify(Object.assign({}, localStorage)) + JSON.stringify(Object.assign({}, sessionStorage))")
+    check('H6b "remember me": HttpOnly cookie kept ~30 days, nothing in page storage', len(ck) == 1 and ck[0]['httpOnly'] and ck[0]['sameSite'] == 'Strict'
+          and 29 * 86400 < ck[0]['expires'] - time.time() <= 30 * 86400 and 'front_admin' not in store and 'Basic' not in store, (ck, store))
+    page.goto(BASE + '/admin'); page.wait_for_selector('#app:not([hidden])', timeout=5000)
+    check('H6c a remembered device opens the dashboard directly', page.locator('#app').is_visible())
     page.click('#logout'); page.wait_for_timeout(500)
+    check('H6d sign-out clears the cookie', not [c for c in ctx.cookies() if c['name'] == 'front_admin'])
     page.goto('about:blank'); page.goto(link.replace('https://front.test', BASE)); page.wait_for_timeout(1200)
     check('H7 the same link does not work twice', page.locator('#login').is_visible() and 'נוצל' in page.locator('#lmsg').inner_text(), page.locator('#lmsg').inner_text())
     check('H8 no JS errors (admin link)', not errors, errors)

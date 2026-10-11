@@ -334,6 +334,7 @@
   // release) is stopped here and offered a refresh; the order and the chat link survive a reload (local/session storage).
   F.agentReady = function (tools) {
     return api('/api/config?fresh=' + Date.now()).then(function (c) {
+      if (c && c.agent_id) CFG.agent = c.agent_id;          // the server decides which agent this environment uses
       var need = (c && c.agent_client_tools) || [], have = Object.keys(tools || {});
       var missing = need.filter(function (n) { return have.indexOf(n) < 0; });
       if (missing.length || (c.page_protocol && c.page_protocol > F.PROTO)) {
