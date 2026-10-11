@@ -220,6 +220,22 @@ with sync_playwright() as p:
     check('X2 missing tool: no widget, a refresh bar instead', pg.evaluate('!window.__el') and bar.is_visible() and 'רענון' in bar.inner_text(), bar.inner_text() if bar.count() else None)
     ctx.close()
 
+    # X8. production with no agent configured: the server sends no agent; the page never falls back to the test agent
+    ctx = new_ctx(browser)
+    def no_agent(route):
+        resp = route.fetch(); j = resp.json(); j.update({'environment': 'production', 'test_mode': False, 'agent_id': None, 'agent_error': 'agent_not_configured'})
+        route.fulfill(response=resp, body=json.dumps(j))
+    ctx.route(re.compile(r'.*/api/config(\?.*)?$'), no_agent)
+    pg, errs = home(ctx)
+    pg.click('.h3 [data-open]'); pg.wait_for_timeout(1200)
+    bar = pg.locator('#fbar')
+    txt = bar.inner_text() if bar.count() else ''
+    no_widget = pg.evaluate("!window.__el && !document.querySelector('elevenlabs-convai')")
+    no_test_agent = pg.evaluate("document.documentElement.outerHTML.indexOf('agent_5801m4a74w3dfawt9hdjhbe1nrjc') < 0 && !FRONT.CFG.agent")
+    check('X8 no agent in production: no widget, "unavailable" bar with WhatsApp, the test agent is never used',
+          no_widget and no_test_agent and 'השיחה אינה זמינה' in txt and 'וואטסאפ' in txt, (no_widget, no_test_agent, txt))
+    ctx.close()
+
     # X3. an existing order that loads slowly: a loading bar, then the agent gets the real state (never "none")
     ctx = new_ctx(browser); pg, errs = home(ctx); chat(pg)
     pg.evaluate("window.__el.clientTools.save_brief_note({field:'business_type', value:'מוסך'})"); xoid = pg.evaluate("FRONT.order.order_id")

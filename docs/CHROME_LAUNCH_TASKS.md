@@ -44,7 +44,7 @@
 | `PAYPAL_MERCHANT_ID` | Merchant ID של חשבון ה-PayPal **העסקי האמיתי** (ראו א3) | Production |
 | `PAYPAL_WEBHOOK_ID` | מזהה ה-webhook שייווצר ב-א3 | Production |
 
-`ELEVENLABS_AGENT_ID` חובה. בלעדיו הקוד חוזר לסוכנת הבדיקה, ושיחות של סוכנת הייצור נזרקות (`api/elevenlabs/webhook.js:155`).
+`ELEVENLABS_AGENT_ID` חובה. בלעדיו השיחה באתר מוצגת כ"לא זמינה" (עם וואטסאפ), נרשמת שגיאת הגדרה בלוג, ושיחות לא נקלטות. בייצור אין חזרה לסוכנת הבדיקה.
 
 ### א3 · PayPal Live
 מסך: https://developer.paypal.com/dashboard/applications/live

@@ -8,7 +8,7 @@
   var F = window.FRONT = window.FRONT || {};
   var meta = document.querySelector('meta[name="front-build"]');
   var CFG = F.CFG = {
-    pixel: '871649018702910', clarity: 'xdrn5fa9p1', agent: 'agent_5801m4a74w3dfawt9hdjhbe1nrjc',
+    pixel: '871649018702910', clarity: 'xdrn5fa9p1', agent: '',   // set only by the server (/api/config)
     version: meta ? meta.content : 'v5', wa: '972559501280', price: 1290, product: 'ad_1290'
   };
 
@@ -334,7 +334,8 @@
   // release) is stopped here and offered a refresh; the order and the chat link survive a reload (local/session storage).
   F.agentReady = function (tools) {
     return api('/api/config?fresh=' + Date.now()).then(function (c) {
-      if (c && c.agent_id) CFG.agent = c.agent_id;          // the server decides which agent this environment uses
+      CFG.agent = (c && c.agent_id) || '';                   // the server decides which agent this environment uses
+      if (!CFG.agent) return agentUnavailable(c && c.agent_error || 'no_agent');
       var need = (c && c.agent_client_tools) || [], have = Object.keys(tools || {});
       var missing = need.filter(function (n) { return have.indexOf(n) < 0; });
       if (missing.length || (c.page_protocol && c.page_protocol > F.PROTO)) {
@@ -343,8 +344,18 @@
         return false;
       }
       return true;
-    }, function () { return true; });                      // config unreachable: the agent still works; tools are checked by the server
+    }, function () { return CFG.agent ? true : agentUnavailable('config_unreachable'); });   // never guess an agent
   };
+  // No agent for this environment (missing configuration): say so plainly and offer WhatsApp. Never a test agent.
+  function agentUnavailable(reason) {
+    report('agent_unavailable', new Error(reason));
+    track('agent_unavailable', { reason: String(reason).slice(0, 60) });
+    F.bar('השיחה אינה זמינה כרגע. אפשר לכתוב לנו בוואטסאפ ונחזור אליכם.', 'לוואטסאפ', function () {
+      track('whatsapp_click', {}, { cta: 'agent_unavailable' });
+      location.href = 'https://wa.me/' + CFG.wa;
+    });
+    return false;
+  }
   // vars: {phase, known_context, payment_status, opening_line}. Ids are added here.
   F.openAgent = function (vars, tools, where, opts) {
     return F.agentReady(tools).then(function (ok) { return ok ? openWidget(vars, tools, where, opts) : null; });

@@ -152,7 +152,11 @@ export const POST = handle(async (request) => {
   const d = evt.data || {};
   const convId = clip(d.conversation_id, 120);
   if (!convId) return json({ ok: true, ignored: 'no_conversation_id' });
-  if (cfg.elevenlabs.agentId && d.agent_id && d.agent_id !== cfg.elevenlabs.agentId) return json({ ok: true, ignored: 'other_agent' });
+  if (!cfg.elevenlabs.agentId) {
+    console.error('[elevenlabs webhook] CONFIGURATION ERROR: ELEVENLABS_AGENT_ID is not set in ' + cfg.environment + '; conversation ' + convId + ' ignored');
+    return json({ ok: true, ignored: 'agent_not_configured' });
+  }
+  if (d.agent_id && d.agent_id !== cfg.elevenlabs.agentId) return json({ ok: true, ignored: 'other_agent' });
   const eventKey = `${evt.type || 'unknown'}:${convId}`;
   const isAudio = evt.type === 'post_call_audio';                         // audio is never stored
 
