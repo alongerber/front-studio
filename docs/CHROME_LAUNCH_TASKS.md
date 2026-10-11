@@ -90,7 +90,7 @@
 2. אותו טוקן מ-א5 → `META_CAPI_TOKEN`, **Preview, branch `v5`**, Sensitive.
 3. לפתוח את ה-Preview פעם אחת כדי שתיבנה פריסה חדשה עם המשתנים: Vercel → Deployments → הפריסה האחרונה של v5 → Redeploy. **רק ב-Preview.**
 
-## חלק ד · סגירת הגישה הזמנית הישנה
+## חלק ד · סגירת הגישה הזמנית הישנה — ✅ בוצע ואומת (11/10)
 מסך: https://vercel.com/alons-projects-65a14969/front-studio/Ag6EFeJiev57u9hspAzqxJyQQpES
 ⋯ → Delete. זו הפריסה `front-studio-mfjerfz94-…`, שנבנתה עם הסיסמה הזמנית. **לא** למחוק פריסה אחרת, ובמיוחד לא את הפריסה האחרונה של v5 או את Production.
 
@@ -118,7 +118,7 @@
 ### ה3 · השלמת אפיון והעברה להפקה
 באותו חלון: להשלים את האפיון ולשלוח ("שליחת האפיון"). לבדוק ב-Gmail שהגיע לאלון `[preview] אפיון הושלם · FR-Y7J2-SNQA`. **לא** אמור להגיע מייל ללקוח, כי זו לא סביבת ייצור. בדשבורד, הכרטיס יראה "אפיון: הושלם" ושלב "כתיבת תסריט (מוסק)".
 
-### ה4 · webhook חוזר (רק Claude in Chrome)
+### ה4 · webhook חוזר (רק Claude in Chrome) — ⛔ חסום (11/10): לא נמצא ב-PayPal אירוע של SNQA. לא לבצע עד שמסלול ה-webhook יאומת
 מסך: https://developer.paypal.com/dashboard/ → מצב **Sandbox** → Event Logs / Webhooks Events (לא בדקתי את שם התפריט המדויק).
 1. לאתר אירוע `PAYMENT.CAPTURE.COMPLETED` של Capture `076940725B8327510`, ששייך ל-webhook `2GM46818V44253024`.
 2. Resend, **פעם אחת**.

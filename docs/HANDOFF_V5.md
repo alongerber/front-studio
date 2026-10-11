@@ -29,11 +29,22 @@
   - **לא נבדקה** אף פעולה בדשבורד החי, כי היא דורשת כניסה של אלון.
 - **SNQA:** מייל אישור, קישור חזרה, השלמת אפיון ו-Resend **טרם נבדקו**. ההוראות ב-`docs/CHROME_LAUNCH_TASKS.md` חלק ה.
 
+### עדכון 11/10 (אחרי Claude in Chrome)
+- **הפריסה הישנה `dpl_Ag6EFeJiev57u9hspAzqxJyQQpES` נמחקה.** המחיקה אומתה בכרום. הגישה הזמנית סגורה.
+- **Resend ל-SNQA חסום:** כרום לא מצא ב-PayPal Sandbox אירוע webhook של SNQA. לכן מסלול ה-webhook (קבלה, אימות חתימה, משלוח חוזר בלי כפילות) **לא נבדק בשירות אמיתי**.
+- כרום בודק עכשיו את קישור ההמשך, מייל האישור והאפיון. אין עדיין תוצאות.
+- אבחון PayPal (קריאה בלבד):
+  - ה-Preview מגיש Client ID שמתחיל ב-`BAAA5BMYnYO1…` (ציבורי, מ-`/api/config`).
+  - ב-Vercel, `PAYPAL_WEBHOOK_ID`=`2GM46818V44253024` (תיאור: "front-v5-preview") נוסף ב-9/10 22:01 UTC. `PAYPAL_CLIENT_ID` ו-`PAYPAL_CLIENT_SECRET` נוספו רק ב-22:10–22:11, אחרי מחיקת כפילויות.
+  - **לא אומת** שה-Client ID וה-webhook שייכים לאותה אפליקציית Sandbox.
+  - לוגי Vercel לא מראים קריאות webhook מוצלחות (הקוד לא כותב ללוג בהצלחה), ולכן הם לא מעידים אם PayPal שלח אירוע.
+
 ### מה נשאר להשקה
 1. בדיקות SNQA (חלק ה). מייל: לאשר הגעה מתוך Gmail. הצלחה ב-Make לא מספיקה.
 2. Production (חלקים א–ב): מסד נפרד, PayPal Live ו-webhook שלו, `ELEVENLABS_AGENT_ID`=8501, webhook ייצור ב-ElevenLabs ושיוכו לסוכנת 8501, `MAKE_NOTIFY_URL`, Meta, `SITE_URL`, `CRON_SECRET`.
 3. Meta Test Events ב-Preview (חלק ג).
-4. מחיקת הפריסה `dpl_Ag6EFeJiev57u9hspAzqxJyQQpES` (חלק ד).
+4. ~~מחיקת הפריסה `dpl_Ag6EFeJiev57u9hspAzqxJyQQpES`~~ — בוצע ואומת בכרום (11/10).
+4א. מסלול webhook של PayPal: לאמת שה-webhook שייך לאפליקציה של ה-Client ID, ואז בדיקה אחת שתסגור את המסלול (ראו סיכום האבחון).
 5. אישור אלון למיזוג v5 → main. רק אחרי 1–4.
 
 ## בדיקות אחרי כניסה לדשבורד — 10/10 (תוצאות בפועל)
