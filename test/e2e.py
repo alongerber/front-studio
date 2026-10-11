@@ -395,21 +395,53 @@ with sync_playwright() as p:
     page.goto(BASE + '/admin'); page.click('#login summary'); page.fill('#u', 'alon'); page.fill('#pw', 'wrong'); page.click('#go'); page.wait_for_timeout(800)
     check('H1 wrong password refused', page.locator('#login').is_visible())
     page.fill('#pw', 'correct horse battery staple'); page.click('#go'); page.wait_for_selector('#app:not([hidden])', timeout=5000)
+    # default screen: the owner's work view, test orders marked, no Sandbox money shown as revenue
+    ops_visible = page.locator('#p-ops').is_visible() and not page.locator('#p-measure').is_visible() and not page.locator('#p-tech').is_visible()
+    env_txt = page.locator('#envbar').inner_text() if page.locator('#envbar').is_visible() else ''
+    tiles = page.locator('#tiles').inner_text()
+    check('H11 default tab is the work view; the test environment is stated; no revenue figure from Sandbox',
+          ops_visible and 'סביבת בדיקה' in env_txt and 'הכנסות: אין' in tiles and '₪' not in tiles, (ops_visible, env_txt, tiles))
+    work = page.locator('#work').inner_text()
+    paid_row = sql(page, "select order_id from orders where paid_at is not null order by created_at desc limit 1", [])
+    check('H12 work table: customer, payment, brief, production stage, delivery target, next action; test orders tagged',
+          all(h in work for h in ['לקוח', 'תשלום', 'אפיון', 'שלב הפקה', 'יעד מסירה', 'הפעולה הבאה']) and (not paid_row or (paid_row[0]['order_id'] in work and 'בדיקה' in work)), work[:400])
+    check('H12b technical data is not on the default screen', 'webhook' not in page.locator('#p-ops').inner_text().lower() and 'purchase_verified' not in page.locator('#p-ops').inner_text())
+    # search by order number: every click answers; it never creates an order
+    n0 = sql(page, "select count(*)::int c from orders", [])[0]['c']
+    page.fill('#findId', ''); page.click('#find'); page.wait_for_timeout(200); m_empty = page.locator('#appmsg').inner_text()
+    page.fill('#findId', 'abc'); page.click('#find'); page.wait_for_timeout(200); m_bad = page.locator('#appmsg').inner_text()
+    page.fill('#findId', 'FR-ZZZZ-ZZZZ'); page.click('#find'); page.wait_for_timeout(1200); m_nf = page.locator('#appmsg').inner_text(); nf_card = page.locator('#dcard').inner_text()
+    page.evaluate("document.getElementById('dclose').click()")
+    n1 = sql(page, "select count(*)::int c from orders", [])[0]['c']
+    check('H13 search: empty, wrong format and unknown number each get a clear message; no order is created',
+          'כתבו מספר הזמנה' in m_empty and 'FR-ABCD-1234' in m_bad and 'לא נמצאה' in m_nf and 'לא נמצאה' in nf_card and n0 == n1, (m_empty, m_bad, m_nf, n0, n1))
+    if paid_row:
+        page.fill('#findId', paid_row[0]['order_id'].lower()); page.click('#find'); page.wait_for_selector('#detail:not([hidden]) #tech', timeout=5000)
+        card = page.locator('#dcard').inner_text()
+        tech_closed = page.evaluate("!document.getElementById('tech').open")
+        check('H14 search opens the order: next action first, test order stated, technical diagnosis collapsed',
+              'הפעולה הבאה' in card and 'הזמנת בדיקה' in card and tech_closed and sql(page, "select count(*)::int c from orders", [])[0]['c'] == n0, card[:300])
+        page.evaluate("document.getElementById('dclose').click()")
+    page.click('#t-measure')
     funnel = page.locator('#funnel').inner_text()
-    check('H2 funnel shows absolute numbers next to rates', re.search(r'\d+ / \d+', funnel) is not None, funnel[:300])
-    page.locator('#recent tr.click').first.click(); page.wait_for_selector('#detail:not([hidden])')
-    check('H3 order detail opens (brief visible to production)', 'מספרה' in page.locator('#dcard').inner_text() or 'קיבלנו' in page.locator('#dcard').inner_text() or True)
+    check('H2 funnel (measurement tab) shows absolute numbers next to rates', re.search(r'\d+ / \d+', funnel) is not None, funnel[:300])
     orders_txt = page.locator('#orders').inner_text()
-    check('H9 outside production the sum is labelled as test payments, not revenue', 'סכום תשלומי בדיקה — לא כסף אמיתי' in orders_txt and 'הכנסה' not in orders_txt, orders_txt[:300])
+    check('H9 outside production no sum is shown as revenue', 'אין — סביבת בדיקה' in orders_txt and 'הכנסה (' not in orders_txt and '₪' not in orders_txt, orders_txt[:300])
+    page.click('#t-tech')
+    page.locator('#recent tr.click').first.click(); page.wait_for_selector('#detail:not([hidden]) #tech')
+    check('H3 order detail opens from the technical tab', page.locator('#dcard').is_visible())
+    page.evaluate("document.getElementById('dclose').click()")
     paid = sql(page, "select order_id from orders where paid_at is not null and paypal_order_id is not null order by created_at desc limit 1", [])
     if paid:
-        page.evaluate("id => document.querySelector('#recent tr[data-o=\"'+id+'\"]').click()", paid[0]['order_id']); page.wait_for_selector('#ppchk', timeout=5000)
+        page.evaluate("id => document.querySelector('#recent tr[data-o=\"'+id+'\"]').click()", paid[0]['order_id']); page.wait_for_selector('#ppchk', state='attached', timeout=5000)
+        page.evaluate("document.getElementById('tech').open = true")
         page.evaluate("document.getElementById('ppchk').click()"); page.wait_for_function("document.getElementById('ppres').innerText.indexOf('Capture') >= 0", timeout=8000)
         res = page.locator('#ppres').inner_text()
         check('H10 PayPal check from the order: capture id, amount and currency shown, verified', 'מאומת מול PayPal' in res and '1290.00 ILS' in res and 'CAP-' in res, res[:400])
     else:
         check('H10 PayPal check from the order (needs a paid PayPal order in the run)', False, 'no paid order')
-    page.screenshot(path='test/out-admin.png', full_page=True)
+    page.evaluate("document.getElementById('dclose') && document.getElementById('dclose').click()"); page.click('#t-ops'); page.wait_for_timeout(200)
+    page.screenshot(path=os.environ.get('SHOT_DIR', 'test') + '/out-admin.png', full_page=True)
     ctx.close()
     # ── H2. admin sign-in by a mailed one-time link; the server refuses the API without a session ──
     ctx = new_ctx(browser); page = ctx.new_page(); errors = []; page.on('pageerror', lambda e: errors.append(str(e)))

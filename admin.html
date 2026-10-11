@@ -37,6 +37,18 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--ink2)}
 .pill{display:inline-block;padding:1px 8px;border-radius:10px;border:1px solid var(--line);font-size:12.5px}
 #detail{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:20px 10px;z-index:9}
 #detail .card{max-width:860px;width:100%}
+.tabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 14px;color:var(--ink2)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--gold);font-weight:600}
+.envbar{background:#3a2f12;border:1px solid #6b5520;color:#f6e3b0;border-radius:8px;padding:10px 14px;margin-bottom:14px}
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:14px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}.tile b{display:block;font-size:24px;font-weight:700}.tile span{color:var(--ink3);font-size:13px}
+.task{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}.task:last-child{border-bottom:0}
+.task p{margin:0}.task .who{color:var(--ink2);font-size:13.5px}
+.tag{display:inline-block;font-size:12px;padding:0 7px;border-radius:9px;background:#3a2f12;color:#f6e3b0;margin-inline-start:6px;vertical-align:1px}
+.st-ok{color:var(--ok)}.st-wait{color:var(--warn)}.st-no{color:var(--ink3)}.st-bad{color:var(--err)}
+.status{min-height:1.4em;font-size:13.5px}
+td.act{font-weight:600}
 </style>
 </head>
 <body>
@@ -46,7 +58,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--ink2)}
   <input id="em" type="email" autocomplete="email" dir="ltr" placeholder="האימייל שלך">
   <label class="muted" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="remember"> לזכור אותי במכשיר הזה ל-30 יום</label>
   <button class="p" id="sendLink">שלחו לי קישור כניסה</button>
-  <p class="muted" id="lmsg" aria-live="polite">הקישור תקף לרבע שעה ולכניסה אחת. בלי "לזכור אותי" הכניסה נגמרת כשסוגרים את הדפדפן (ולכל היותר אחרי 12 שעות).</p>
+  <p class="muted" id="lmsg" role="status" aria-live="polite">הקישור תקף לרבע שעה ולכניסה אחת. בלי "לזכור אותי" הכניסה נגמרת כשסוגרים את הדפדפן (ולכל היותר אחרי 12 שעות).</p>
   <details><summary>כניסה עם משתמש וסיסמה</summary>
     <div style="display:grid;gap:10px;margin-top:10px">
       <label for="u" class="muted">משתמש</label><input id="u" autocomplete="username" placeholder="משתמש">
@@ -61,22 +73,50 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--ink2)}
     <h1>פרונט · דשבורד <span class="muted" id="env"></span></h1>
     <div style="display:flex;gap:8px;align-items:center">
       <select id="days" style="width:auto"><option value="1">יום</option><option value="7" selected>7 ימים</option><option value="30">30 יום</option><option value="90">90 יום</option></select>
-      <input id="findId" dir="ltr" placeholder="FR-XXXX-XXXX" style="width:150px"><button id="find">פתיחת הזמנה</button>
+      <label for="findId" class="muted">חיפוש לפי מספר הזמנה</label>
+      <input id="findId" dir="ltr" placeholder="FR-XXXX-XXXX" style="width:150px"><button id="find">חיפוש</button>
       <button id="reload">רענון</button><button id="logout">יציאה</button>
     </div>
   </div>
+  <p class="status" id="appmsg" role="status" aria-live="polite"></p>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="t-ops" aria-controls="p-ops" aria-selected="true">עבודה שוטפת</button>
+    <button role="tab" id="t-measure" aria-controls="p-measure" aria-selected="false">מדידה</button>
+    <button role="tab" id="t-tech" aria-controls="p-tech" aria-selected="false">אבחון טכני</button>
+  </div>
+
+  <div id="p-ops" role="tabpanel" aria-labelledby="t-ops">
+    <div class="envbar" id="envbar" hidden></div>
+    <div class="tiles" id="tiles"></div>
+    <section class="card" style="margin-bottom:14px"><h2>משימות לביצוע</h2><div id="tasks"></div></section>
+    <section class="card"><div class="bar" style="margin-bottom:8px"><h2 style="margin:0">לקוחות והזמנות</h2>
+      <label class="muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="showAll" style="width:auto"> להציג גם הזמנות שנפתחו ולא שולמו</label></div>
+      <div class="scroll"><table id="work"></table></div>
+      <details style="margin-top:12px"><summary>מה המערכת עוד לא יודעת</summary><div class="muted" style="margin-top:6px;line-height:1.7">
+        שלב ההפקה, תאריך המסירה בפועל ועיכובים מצד הלקוח לא נשמרים היום, ולכן הם לא מוצגים כאן. "יעד מסירה" מחושב בלבד:
+        7 ימי עסקים (א׳–ה׳) מרגע התשלום, בלי חגים ובלי עיכובי לקוח. אחרי "אפיון הושלם" המשימה נשארת "לכתוב תסריט" עד שיתווסף שדה שלב.</div></details>
+    </section>
+  </div>
+
+  <div id="p-measure" role="tabpanel" aria-labelledby="t-measure" hidden>
   <div class="grid">
     <section class="card wide"><h2>משפך</h2><div class="scroll"><table id="funnel"></table></div>
       <p class="muted" id="fnote"></p></section>
     <section class="card"><h2>הזמנות ותשלום</h2><div class="kv" id="orders"></div></section>
     <section class="card"><h2>שיחות עם מיטל</h2><div class="kv" id="convs"></div><h2 style="margin-top:12px">שלב אחרון בשיחה</h2><table id="stage"></table></section>
     <section class="card"><h2>זמן פעיל (אומדן)</h2><div class="kv" id="time"></div><h2 style="margin-top:12px">מכשירים</h2><table id="devices"></table></section>
-    <section class="card"><h2>תקינות ושגיאות</h2><table id="health"></table><div id="healthx"></div>
-      <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button id="recover">לנסות שוב עכשיו</button><span class="muted" id="rmsg">ניסיון חוזר רץ גם אוטומטית פעם ביום</span></div></section>
     <section class="card wide"><h2>מקורות (ייחוס האתר)</h2><div class="scroll"><table id="sources"></table></div>
       <h2 style="margin-top:12px">רכישות לפי מקור</h2><table id="paidsrc"></table>
       <p class="muted" style="margin-top:8px">הוצאה וחשיפות ממטא: חיבור קריאה נפרד, עוד לא מחובר. ייחוס מטא וייחוס האתר הם שני מספרים שונים.</p></section>
-    <section class="card wide"><h2>הזמנות אחרונות</h2><div class="scroll"><table id="recent"></table></div></section>
+  </div>
+  </div>
+
+  <div id="p-tech" role="tabpanel" aria-labelledby="t-tech" hidden>
+  <div class="grid">
+    <section class="card"><h2>תקינות ושגיאות</h2><table id="health"></table><div id="healthx"></div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button id="recover">לנסות שוב עכשיו</button><span class="muted" id="rmsg" role="status">ניסיון חוזר רץ גם אוטומטית פעם ביום</span></div></section>
+    <section class="card wide"><h2>הזמנות (נתונים גולמיים)</h2><div class="scroll"><table id="recent"></table></div></section>
+  </div>
   </div>
 </div>
 
@@ -93,12 +133,12 @@ function api(path,body){
   return fetch(path,{method:body?'POST':'GET',cache:'no-store',credentials:'same-origin',headers:body?{'content-type':'application/json'}:{},body:body?JSON.stringify(body):undefined})
     .then(function(r){return r.json().catch(function(){return{};}).then(function(j){if(r.status===401){signedOut();throw new Error('unauthorized');} if(!r.ok) throw new Error(j.error||('http_'+r.status)); return j;});});
 }
-function login(){ var u=$('u').value.trim(), p=$('pw').value; $('pw').value='';
+function login(){ var u=$('u').value.trim(), p=$('pw').value; if(!u||!p){ $('lmsg').textContent='צריך משתמש וסיסמה.'; return; } $('pw').value=''; $('lmsg').textContent='נכנסים…';
   post({action:'password',remember:$('remember').checked},{authorization:'Basic '+btoa(unescape(encodeURIComponent(u+':'+p)))}).then(function(){ return load(); },
     function(e){ $('lmsg').textContent=e.message==='admin_not_configured'?'הכניסה עוד לא הוגדרה בשרת.':'שם משתמש או סיסמה שגויים.'; }); }
 function post(body,headers){ return fetch('/api/admin/login',{method:'POST',cache:'no-store',credentials:'same-origin',headers:Object.assign({'content-type':'application/json'},headers||{}),body:JSON.stringify(body)})
   .then(function(r){ return r.json().catch(function(){return{};}).then(function(j){ if(!r.ok) throw new Error(j.error||('http_'+r.status)); return j; }); }); }
-function sendLink(){ var b=$('sendLink'), em=$('em').value.trim(); if(!em) return; b.disabled=true;
+function sendLink(){ var b=$('sendLink'), em=$('em').value.trim(); if(!em){ $('lmsg').textContent='כתבו את כתובת האימייל שלכם.'; $('em').focus(); return; } b.disabled=true; $('lmsg').textContent='שולחים…';
   try{ if($('remember').checked) localStorage.setItem('front_admin_remember','1'); else localStorage.removeItem('front_admin_remember'); }catch(e){}
   post({action:'request',email:em}).then(function(){ $('lmsg').textContent='אם הכתובת מורשית, נשלח אליה קישור כניסה. אפשר לסגור את הדף ולפתוח את הקישור מהמייל.'; },
     function(e){ $('lmsg').textContent=e.message==='send_failed'?'לא הצלחנו לשלוח את המייל כרגע. נסו שוב בעוד דקה.':e.message==='admin_not_configured'?'הכניסה במייל עוד לא הוגדרה בשרת.':'משהו השתבש. נסו שוב בעוד דקה.'; })
@@ -119,7 +159,17 @@ $('logout').onclick=logout;
 $('recover').onclick=function(){ var b=this; b.disabled=true; $('rmsg').textContent='רץ…';
   api('/api/admin/recover',{}).then(function(r){ $('rmsg').textContent='הושלם: '+r.repaired_payments+' תשלומים תוקנו · '+r.conversations_replayed+' שיחות שוחזרו · '+
     r.meta.filter(function(x){return x.ok;}).length+' Purchase נשלחו · '+r.notify.filter(function(x){return x.ok;}).length+' מיילים נשלחו'; load(); },
-    function(e){ $('rmsg').textContent='שגיאה: '+e.message; }).then(function(){ b.disabled=false; }); }; $('reload').onclick=function(){load();}; $('days').onchange=function(){load();};
+    function(e){ $('rmsg').textContent='שגיאה: '+e.message; }).then(function(){ b.disabled=false; }); }; $('reload').onclick=function(){ refresh('מרענן…'); }; $('days').onchange=function(){ refresh('טוען…'); };
+function msg(t,cls){ var m=$('appmsg'); m.className='status '+(cls||''); m.textContent=t||''; }
+function refresh(label){ var b=$('reload'); b.disabled=true; msg(label);
+  return load().then(function(){ msg('עודכן '+new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),'st-ok'); },
+    function(e){ if(e.message!=='unauthorized') msg('לא הצלחנו לטעון את הנתונים ('+e.message+'). אפשר ללחוץ "רענון" שוב.','st-bad'); })
+    .then(function(){ b.disabled=false; }); }
+// tabs
+var TABS=['ops','measure','tech'];
+function tab(name){ TABS.forEach(function(t){ $('t-'+t).setAttribute('aria-selected',String(t===name)); $('p-'+t).hidden=t!==name; }); }
+TABS.forEach(function(t){ $('t-'+t).onclick=function(){ tab(t); }; });
+$('showAll').onchange=function(){ if(LAST) renderOps(LAST); };
 
 function pct(a,b){ return b? (Math.round(a/b*1000)/10)+'%' : '—'; }
 function rate(a,b){ return '<span class="n">'+esc(a)+' / '+esc(b)+'</span> <span class="muted">('+pct(a,b)+')</span>'; }
@@ -129,7 +179,8 @@ function dt(v){ if(!v) return '—'; var d=new Date(v); return d.toLocaleString(
 
 function load(){
   return api('/api/admin/summary?days='+$('days').value).then(function(d){
-    $('login').hidden=true; $('app').hidden=false; $('env').textContent='· '+d.environment+' · '+d.days+' ימים';
+    $('login').hidden=true; $('app').hidden=false; $('env').textContent='· '+(d.environment==='production'?'לקוחות אמיתיים':'סביבת בדיקה ('+d.environment+')');
+    LAST=d; renderOps(d);
     var f=d.funnel, top=f[0].count||0;
     $('funnel').innerHTML='<tr><th>שלב</th><th>מספר</th><th>מהשלב הקודם</th><th>מהכניסות</th><th>מקור</th></tr>'+f.map(function(s,i){
       var prev=i?f[i-1]:null, same=function(a,b){return a.source===b.source;};
@@ -140,7 +191,7 @@ function load(){
     kv($('orders'),[['הזמנות שנפתחו',esc(o.created)],['נוצר תשלום בפייפאל',rate(o.checkout_created,o.created)],['רכישות מאומתות',rate(o.paid,o.created)],
       ['· פייפאל',esc(o.paid_paypal)],['· ביט (ידני)',esc(o.paid_bit)],['רכישה ישירה (בלי מיטל)',rate(o.paid_direct,o.paid)],
       ['אפיון הושלם',rate(o.brief_done,o.paid)],['שולם, אפיון לא הושלם 24+ שעות','<span class="'+(o.brief_overdue?'warn':'')+'">'+esc(o.brief_overdue)+'</span>'],
-      ['בבדיקה (pending)',esc(o.pending)],['נכשלו',esc(o.failed)],['הוחזרו',esc(o.refunded)],[d.environment==='production'?'הכנסה (אחרי החזרים)':'סכום תשלומי בדיקה — לא כסף אמיתי',esc(o.revenue)+' ₪']]);
+      ['בבדיקה (pending)',esc(o.pending)],['נכשלו',esc(o.failed)],['הוחזרו',esc(o.refunded)]].concat(d.environment==='production'?[['הכנסה (אחרי החזרים)',esc(o.revenue)+' ₪']]:[['הכנסות','<span class="muted">אין — סביבת בדיקה, כל התשלומים כאן הם Sandbox</span>']]));
     var c=d.conversations;
     kv($('convs'),[['שיחות (webhook)',esc(c.total)],['התחברו',rate(c.connected,c.total)],['עם הודעת לקוח',rate(c.with_user_message,c.total)],['נכשלו','<span class="'+(c.failed?'err':'')+'">'+esc(c.failed)+'</span>'],
       ['משויכות להזמנה',rate(c.linked_to_order,c.total)],['משך חציוני',c.median_duration_secs==null?'—':esc(Math.round(c.median_duration_secs))+' שנ׳']]);
@@ -166,19 +217,103 @@ function load(){
       return '<tr><td>'+esc(r.source)+'</td><td>'+esc(r.campaign||'—')+'</td><td class="n">'+esc(r.sessions)+'</td><td class="n">'+rate(r.agent_open,r.sessions)+'</td><td class="n">'+rate(r.checkout_click,r.sessions)+'</td></tr>';}).join('')||'<tr><td class="muted" colspan="5">אין עדיין</td></tr>');
     $('paidsrc').innerHTML=d.paid_by_source.map(function(r){return '<tr><td>'+esc(r.source)+'</td><td class="n">'+esc(r.paid)+'</td></tr>';}).join('')||'<tr><td class="muted">אין רכישות בתקופה</td></tr>';
     $('recent').innerHTML='<tr><th>הזמנה</th><th>נוצרה</th><th>סטטוס</th><th>שולם</th><th>אפיון</th><th>שם</th><th>מקור</th><th>שיחות</th></tr>'+(d.recent_orders.map(function(r){
-      return '<tr class="click" data-o="'+esc(r.order_id)+'"><td dir="ltr">'+esc(r.order_id)+'</td><td>'+dt(r.created_at)+'</td><td><span class="pill">'+esc(r.status)+'</span></td><td>'+(r.paid_at?'<span class="ok">'+esc(r.paid_via)+'</span>':'—')+'</td><td>'+(r.brief_done_at?'<span class="ok">הושלם</span>':'—')+'</td><td>'+esc(r.name||'—')+'</td><td>'+esc(r.source||'—')+'</td><td class="n">'+esc(r.conversations)+'</td></tr>';}).join('')||'<tr><td class="muted" colspan="8">אין הזמנות</td></tr>');
-    document.querySelectorAll('#recent tr.click').forEach(function(tr){ tr.onclick=function(){ openOrder(tr.getAttribute('data-o')); }; });
+      return '<tr class="click" data-o="'+esc(r.order_id)+'"><td dir="ltr">'+esc(r.order_id)+(r.environment!=='production'?' <span class="tag">בדיקה</span>':'')+'</td><td>'+dt(r.created_at)+'</td><td><span class="pill">'+esc(r.status)+'</span></td><td>'+(r.paid_at?'<span class="ok">'+esc(r.paid_via)+'</span>':'—')+'</td><td>'+(r.brief_done_at?'<span class="ok">הושלם</span>':'—')+'</td><td>'+esc(r.name||'—')+'</td><td>'+esc(r.source||'—')+'</td><td class="n">'+esc(r.conversations)+'</td></tr>';}).join('')||'<tr><td class="muted" colspan="8">אין הזמנות</td></tr>');
+    document.querySelectorAll('#recent tr.click').forEach(function(tr){ tr.onclick=function(){ openOrder(tr.getAttribute('data-o')).catch(function(){}); }; });
   });
 }
 
+/* ── work view: built only from stored fields; nothing here is guessed ── */
+var LAST=null;
+var BRIEF_LABEL={business_type:'סוג העסק',business_name:'שם העסק',promote:'מה מקדמים',audience:'למי זה מיועד',customer_questions:'מה לקוחות שואלים',
+  past_experience:'ניסיון קודם',concern:'חשש שעלה',avoid:'מה לא להגיד',call_to_action:'מה הצופה צריך לעשות',tone:'טון',contact_details:'פרטים בפרסומת',other:'עוד'};
+function isTest(r,d){ return (r.environment||d.environment)!=='production'; }
+function payState(r){
+  if(r.status==='refunded') return ['הוחזר','st-bad'];
+  if(r.status==='partially_refunded') return ['החזר חלקי','st-wait'];
+  if(r.paid_at) return ['שולם · '+(r.paid_via==='bit_manual'?'ביט':'PayPal'),'st-ok'];
+  if(r.status==='pending') return ['ממתין לאישור ב-PayPal','st-wait'];
+  if(r.status==='failed') return ['התשלום נכשל','st-bad'];
+  return ['לא שולם','st-no'];
+}
+function briefState(r){
+  if(r.brief_done_at) return ['הושלם','st-ok'];
+  if(r.brief_started_at||Number(r.brief_fields)>0) return ['בתהליך','st-wait'];
+  return ['לא התחיל','st-no'];
+}
+// Delivery target per the approved terms: 7 business days (Sun–Thu) from payment. No holidays, no customer delays.
+function dueDate(paid){ var d=new Date(paid), n=0; while(n<7){ d.setDate(d.getDate()+1); var w=d.getDay(); if(w!==5&&w!==6) n++; } return d; }
+function day(d){ return d.toLocaleDateString('he-IL',{weekday:'short',day:'numeric',month:'numeric'}); }
+function nextAction(r){
+  var h=r.paid_at?(Date.now()-new Date(r.paid_at))/36e5:0;
+  if(r.status==='refunded') return {t:'אין — ההזמנה הוחזרה',task:false};
+  if(r.paid_at&&r.brief_done_at) return {t:'לכתוב תסריט ולשלוח ללקוח לאישור',task:true,pri:1};
+  if(r.paid_at&&h>=24) return {t:'להזכיר ללקוח להשלים את האפיון',task:true,pri:2};
+  if(r.paid_at) return {t:'לחכות שהלקוח ישלים את האפיון',task:false};
+  if(r.status==='pending') return {t:'לבדוק את התשלום ב-PayPal',task:true,pri:0};
+  if(r.phone) return {t:'לא שילם · אפשר לפנות אליו אם רוצים',task:false};
+  return {t:'אין — לא השאיר פרטים ולא שילם',task:false};
+}
+function who(r){ return esc(r.name||'בלי שם')+(r.business?' · '+esc(r.business):'')+(r.phone?' · <span dir="ltr">'+esc(r.phone)+'</span>':''); }
+function renderOps(d){
+  var rows=d.recent_orders||[], test=d.environment!=='production';
+  $('envbar').hidden=!test;
+  $('envbar').textContent='סביבת בדיקה: כל ההזמנות כאן הן הזמנות בדיקה (PayPal Sandbox). אין כאן לקוחות אמיתיים ואין הכנסות.';
+  var paid=rows.filter(function(r){return r.paid_at&&r.status!=='refunded';});
+  var acts=rows.map(function(r){return {r:r,a:nextAction(r)};}), tasks=acts.filter(function(x){return x.a.task;});
+  tasks.sort(function(x,y){ return x.a.pri-y.a.pri || new Date(x.r.paid_at||x.r.created_at)-new Date(y.r.paid_at||y.r.created_at); });
+  var h=d.health||{}, tech=(h.emails_failed||0)+(h.paypal_webhook_errors||0)+(h.captured_not_marked||0)+(h.elevenlabs_unprocessed||0)+(h.meta_gave_up||0);
+  $('tiles').innerHTML=
+    '<div class="tile"><b>'+tasks.length+'</b><span>משימות פתוחות</span></div>'+
+    '<div class="tile"><b>'+paid.length+'</b><span>'+(test?'הזמנות בדיקה ששולמו':'לקוחות ששילמו')+'</span></div>'+
+    '<div class="tile"><b>'+paid.filter(function(r){return !r.brief_done_at;}).length+'</b><span>ממתינים להשלמת אפיון</span></div>'+
+    '<div class="tile"><b>'+(test?'—':esc(d.orders&&d.orders.revenue)+' ₪')+'</b><span>'+(test?'הכנסות: אין בסביבת בדיקה':'הכנסות ב-'+esc(d.days)+' ימים, אחרי החזרים')+'</span></div>';
+  $('tasks').innerHTML=(tech?'<div class="task"><div><p class="st-bad">יש '+tech+' תקלות טכניות (מיילים, תשלומים או שיחות)</p><p class="who">הפירוט בלשונית "אבחון טכני"</p></div><button data-tab="tech">לפרטים</button></div>':'')+
+    (tasks.length?tasks.map(function(x){ var r=x.r;
+      return '<div class="task"><div><p>'+esc(x.a.t)+(isTest(r,d)?'<span class="tag">בדיקה</span>':'')+'</p><p class="who">'+who(r)+' · <span dir="ltr">'+esc(r.order_id)+'</span>'+
+        (r.paid_at?' · יעד מסירה '+esc(day(dueDate(r.paid_at))):'')+'</p></div><button data-o="'+esc(r.order_id)+'">פתיחה</button></div>'; }).join('')
+      :(tech?'':'<p class="muted">אין משימות פתוחות.</p>'));
+  var shown=$('showAll').checked?rows:rows.filter(function(r){ return r.paid_at||r.status==='pending'||r.status==='refunded'||r.phone; });
+  $('work').innerHTML='<tr><th>לקוח</th><th>תשלום</th><th>אפיון</th><th>שלב הפקה</th><th>יעד מסירה</th><th>הפעולה הבאה</th></tr>'+
+    (shown.map(function(r){ var p=payState(r), b=briefState(r), a=nextAction(r), due=r.paid_at&&r.status!=='refunded'?dueDate(r.paid_at):null;
+      return '<tr class="click" data-o="'+esc(r.order_id)+'"><td>'+who(r)+(isTest(r,d)?'<span class="tag">בדיקה</span>':'')+'<div class="muted" dir="ltr" style="text-align:right">'+esc(r.order_id)+'</div></td>'+
+        '<td class="'+p[1]+'">'+esc(p[0])+'</td><td class="'+b[1]+'">'+esc(b[0])+'</td>'+
+        '<td class="st-no">'+(r.paid_at&&r.brief_done_at?'לא מתועד':'—')+'</td>'+
+        '<td>'+(due?esc(day(due))+(due<new Date()?' <span class="st-wait">(עבר)</span>':''):'—')+'</td><td class="act">'+esc(a.t)+'</td></tr>'; }).join('')
+     ||'<tr><td colspan="6" class="muted">'+(rows.length?'אין הזמנות ששולמו. אפשר לסמן "להציג גם הזמנות שנפתחו ולא שולמו".':'אין הזמנות עדיין.')+'</td></tr>');
+  document.querySelectorAll('#work tr.click, #tasks button[data-o]').forEach(function(el){ el.onclick=function(){ openOrder(el.getAttribute('data-o')).catch(function(){}); }; });
+  document.querySelectorAll('#tasks button[data-tab]').forEach(function(el){ el.onclick=function(){ tab(el.getAttribute('data-tab')); }; });
+}
+
 var META_ST={pending:'ממתין לשליחה',no_consent:'ממתין להסכמה לפרסום',cancelled_refund:'בוטל (החזר)',expired:'פג (מעל 7 ימים)',failed:'נכשל'};
+function showDetail(html){ $('dcard').innerHTML=html; $('detail').hidden=false; }
 function openOrder(id){
-  api('/api/admin/order?order_id='+encodeURIComponent(id)).then(function(d){
-    var o=d.order, c=o.contact||{}, b=o.brief||{};
+  showDetail('<div class="bar"><h1 dir="ltr">'+esc(id)+'</h1><button id="dclose">סגירה</button></div><p class="muted" role="status">טוען את ההזמנה…</p>');
+  $('dclose').onclick=function(){ $('detail').hidden=true; };
+  return api('/api/admin/order?order_id='+encodeURIComponent(id)).then(function(d){
+    var o=d.order, c=o.contact||{}, b=o.brief||{}, test=(o.environment||'')!=='production';
+    var row={status:o.status,paid_at:o.paid_at,paid_via:o.paid_via,brief_done_at:o.brief_done_at,brief_started_at:o.brief_started_at,brief_fields:Object.keys(b).length,phone:c.phone,created_at:o.created_at};
+    var p=payState(row), bs=briefState(row), na=nextAction(row), due=o.paid_at&&o.status!=='refunded'?dueDate(o.paid_at):null;
     var k=d.checks||{}, yes=function(v){return v===true?'<span class="ok">כן</span>':v===false?'<span class="err">לא</span>':'<span class="muted">לא נבדק</span>';};
     var NOTE={paid:'הודעה לאלון: תשלום מאומת',receipt:'ללקוח: אישור תשלום + קישור',finish:'אפיון הושלם (לאלון וללקוח)'};
     var html='<div class="bar"><h1 dir="ltr">'+esc(o.order_id)+'</h1><button id="dclose">סגירה</button></div>'+
-      '<h2>אימות תשלום (מהרשומות בשרת)</h2><div class="kv" id="checks">'+
+      (test?'<p class="envbar">הזמנת בדיקה (סביבת '+esc(o.environment)+'). לא לקוח אמיתי, והסכום אינו הכנסה.</p>':'')+
+      '<h2>הפעולה הבאה</h2><p style="font-weight:600;margin-bottom:12px">'+esc(na.t)+'</p>'+
+      '<div class="kv"><b>לקוח</b><span>'+esc(c.name||'—')+'</span><b>טלפון</b><span dir="ltr">'+esc(c.phone||'—')+'</span><b>אימייל</b><span dir="ltr">'+esc(c.email||'—')+'</span>'+
+      '<b>תשלום</b><span class="'+p[1]+'">'+esc(p[0])+(o.paid_at?' · '+esc(dt(o.paid_at)):'')+'</span>'+
+      '<b>אפיון</b><span class="'+bs[1]+'">'+esc(bs[0])+(o.brief_done_at?' · '+esc(dt(o.brief_done_at)):'')+'</span>'+
+      '<b>שלב הפקה</b><span class="muted">'+(o.paid_at&&o.brief_done_at?'לא מתועד במערכת':'—')+'</span>'+
+      '<b>יעד מסירה</b><span>'+(due?esc(day(due))+' <span class="muted">(מחושב: 7 ימי עסקים מהתשלום)</span>':'—')+'</span>'+
+      '<b>נפתחה</b><span>'+esc(dt(o.created_at))+'</span></div>'+
+      '<h2 style="margin-top:14px">מה הלקוח סיפר (אפיון)</h2><div class="kv">'+(Object.keys(b).length?Object.keys(b).map(function(key){return '<b>'+esc(BRIEF_LABEL[key]||key)+'</b><span>'+esc(b[key])+'</span>';}).join(''):'<span class="muted">עוד לא נשמרו פרטים</span>')+'</div>'+
+      '<h2 style="margin-top:14px">שיחות עם מיטל</h2>'+(d.awaiting_conversation_data?'<p class="warn">ממתין לנתוני שיחה</p>':'')+(d.conversation_data_missing?'<p class="err">נפתחה שיחה אבל נתוני השיחה לא הגיעו מעל שעה. הפירוט באבחון הטכני.</p>':'')+
+      (d.conversations.length?d.conversations.map(function(cv){
+        return '<div style="margin-top:8px"><span class="muted">'+esc(dt(cv.started_at||cv.received_at))+' · '+esc(cv.duration_secs)+' שנ׳ · '+esc(cv.user_turns)+' הודעות לקוח</span>'+
+          '<p>'+esc(cv.summary||'')+'</p><details><summary>תמלול</summary><div class="tr">'+(cv.transcript||[]).map(function(t){return '<p class="'+(t.role==='user'?'u':'')+'"><b>'+(t.role==='user'?'לקוח':'מיטל')+':</b> '+esc(t.message)+'</p>';}).join('')+'</div></details></div>';}).join(''):(d.awaiting_conversation_data||d.conversation_data_missing?'':'<p class="muted">אין שיחה משויכת</p>'))+
+      (o.paid_at?'':'<h2 style="margin-top:14px">אישור תשלום בביט (ידני)</h2><p class="muted">צילום מסך אינו הוכחה. מאשרים רק אחרי שרואים את הכסף בחשבון.</p>'+
+        '<div style="display:grid;gap:8px;margin-top:8px"><input id="mref" placeholder="אסמכתה מביט / מהבנק"><input id="mnote" placeholder="הערה (לא חובה)">'+
+        '<label><input type="checkbox" id="mseen" style="width:auto"> ראיתי את התשלום בחשבון</label><button class="p" id="mgo">אישור תשלום</button><p id="mmsg" class="muted" role="status"></p></div>')+
+      '<details id="tech" style="margin-top:16px"><summary><b>אבחון טכני</b> — אימות תשלום, webhooks, מיילים, אירועים</summary>'+
+      '<div class="kv" id="checks" style="margin-top:8px">'+
       '<b>סביבה</b><span>'+esc(k.environment)+'</span>'+
       '<b>תשלומים שהושלמו</b><span>'+esc(k.completed_payments)+' · captures שונים: '+esc(k.distinct_captures)+'</span>'+
       (k.has_payment?
@@ -188,45 +323,50 @@ function openOrder(id){
       '<b>purchase_verified</b><span>'+(Number(k.purchase_verified_events)===1?'<span class="ok">1</span>':'<span class="err">'+esc(k.purchase_verified_events)+' (צפוי 1 להזמנה ששולמה)</span>')+'</span>'
       :'<b>תשלום</b><span class="muted">טרם שולם — אין סכום, מטבע או purchase_verified לאמת</span>')+
       '<b>webhook של פייפאל</b><span>'+esc(k.webhook_deliveries)+' משלוחים · מתוכם '+esc(k.webhook_resends)+' חוזרים (נקלטו ולא עובדו שוב)</span>'+
-      '<b>Meta Purchase</b><span>'+esc(k.meta_purchase)+(k.meta_sent_as?' · נשלח כ-'+esc(k.meta_sent_as):'')+'</span></div>'+
-      (o.paypal_order_id?'<div style="margin:8px 0"><button id="ppchk">בדיקה מול PayPal (קריאה בלבד)</button><div id="ppres" class="kv"></div></div>':'')+
+      '<b>Meta Purchase</b><span>'+(d.meta?(d.meta.status==='sent'?'<span class="ok">נשלח</span>'+(k.meta_sent_as?' · כ-'+esc(k.meta_sent_as):''):'<span class="warn">'+esc(META_ST[d.meta.status]||d.meta.status)+' ('+esc(d.meta.attempts)+' ניסיונות) '+esc(d.meta.last_error||'')+'</span>'):'<span class="muted">לא בתור (לא שולם)</span>')+'</span>'+
+      '<b>מקור</b><span>'+esc(o.attribution&&o.attribution.last&&o.attribution.last.utm_source||'—')+'</span>'+
+      '<b>הסכמה</b><span>מדידה: '+esc(o.consent&&o.consent.analytics)+' · פרסום: '+esc(o.consent&&o.consent.ads)+'</span></div>'+
+      (o.paypal_order_id?'<div style="margin:8px 0"><button id="ppchk">בדיקה מול PayPal (קריאה בלבד)</button><div id="ppres" class="kv" role="status"></div></div>':'')+
       '<details><summary>webhooks ('+(d.webhooks||[]).length+')</summary><table>'+(d.webhooks||[]).map(function(w){return '<tr><td dir="ltr">'+esc(w.event_type)+'</td><td>'+esc(dt(w.received_at))+'</td><td>'+esc(w.deliveries)+' משלוחים</td><td>'+(w.processed_at?'עובד':'<span class="warn">לא עובד</span>')+'</td><td>'+esc(w.error||'')+'</td></tr>';}).join('')+'</table></details>'+
       '<details><summary>מיילים בתור ('+(d.notify||[]).length+')</summary><table>'+(d.notify||[]).map(function(n){return '<tr><td>'+esc(NOTE[n.action]||n.action)+'</td><td>'+esc(n.status)+'</td><td>'+esc(n.attempts)+' ניסיונות</td><td>'+esc(n.sent_at?dt(n.sent_at):'')+'</td><td>'+esc(n.last_error||'')+'</td></tr>';}).join('')+'</table></details>'+
-      '<div class="kv"><b>סטטוס</b><span>'+esc(o.status)+'</span><b>שולם</b><span>'+(o.paid_at?esc(dt(o.paid_at))+' · '+esc(o.paid_via)+(o.status==='refunded'?' · <span class="err">הוחזר</span>':o.status==='partially_refunded'?' · <span class="warn">החזר חלקי</span>':''):'לא')+'</span>'+
-      '<b>אפיון הושלם</b><span>'+(o.brief_done_at?esc(dt(o.brief_done_at)):'לא')+'</span><b>שם</b><span>'+esc(c.name||'—')+'</span><b>טלפון</b><span dir="ltr">'+esc(c.phone||'—')+'</span>'+
-      '<b>אימייל</b><span dir="ltr">'+esc(c.email||'—')+'</span><b>מקור</b><span>'+esc(o.attribution&&o.attribution.last&&o.attribution.last.utm_source||'—')+'</span>'+
-      '<b>הסכמה</b><span>מדידה: '+esc(o.consent&&o.consent.analytics)+' · פרסום: '+esc(o.consent&&o.consent.ads)+'</span>'+
-      '<b>Meta Purchase</b><span>'+(d.meta?(d.meta.status==='sent'?'<span class="ok">נשלח</span>':'<span class="warn">'+esc(META_ST[d.meta.status]||d.meta.status)+' ('+esc(d.meta.attempts)+' ניסיונות) '+esc(d.meta.last_error||'')+'</span>'):'<span class="muted">לא בתור (לא שולם)</span>')+'</span></div>'+
-      '<h2 style="margin-top:14px">אפיון</h2><div class="kv">'+(Object.keys(b).length?Object.keys(b).map(function(k){return '<b>'+esc(k)+'</b><span>'+esc(b[k])+'</span>';}).join(''):'<span class="muted">ריק</span>')+'</div>'+
-      '<h2 style="margin-top:14px">שיחות</h2>'+(d.awaiting_conversation_data?'<p class="warn">ממתין לנתוני שיחה</p>':'')+(d.conversation_data_missing?'<p class="err">נפתחה שיחה אבל נתוני השיחה לא הגיעו מעל שעה. לבדוק את ה-webhook של ElevenLabs.</p>':'')+
-      (d.conversations.length?d.conversations.map(function(cv){
-        return '<div style="margin-top:8px"><span class="muted">'+esc(dt(cv.started_at||cv.received_at))+' · '+esc(cv.duration_secs)+' שנ׳ · '+esc(cv.user_turns)+' הודעות לקוח · '+esc(cv.status)+'</span>'+
-          '<p>'+esc(cv.summary||'')+'</p><details><summary>תמלול</summary><div class="tr">'+(cv.transcript||[]).map(function(t){return '<p class="'+(t.role==='user'?'u':'')+'"><b>'+(t.role==='user'?'לקוח':'מיטל')+':</b> '+esc(t.message)+'</p>';}).join('')+'</div></details></div>';}).join(''):(d.awaiting_conversation_data||d.conversation_data_missing?'':'<p class="muted">אין שיחה משויכת</p>'))+
-      '<h2 style="margin-top:14px">תשלומים</h2><table>'+(d.payments.map(function(p){return '<tr><td>'+esc(p.provider)+'</td><td>'+esc(p.status)+'</td><td class="n">'+esc(p.amount)+' '+esc(p.currency)+'</td><td>'+esc(p.verified_by||'')+' '+esc(p.reference||'')+'</td><td>'+esc(dt(p.created_at))+'</td></tr>';}).join('')||'<tr><td class="muted">אין</td></tr>')+'</table>'+
-      (o.paid_at?'':'<h2 style="margin-top:14px">אישור תשלום בביט (ידני)</h2><p class="muted">צילום מסך אינו הוכחה. מאשרים רק אחרי שרואים את הכסף בחשבון.</p>'+
-        '<div style="display:grid;gap:8px;margin-top:8px"><input id="mref" placeholder="אסמכתה מביט / מהבנק"><input id="mnote" placeholder="הערה (לא חובה)">'+
-        '<label><input type="checkbox" id="mseen" style="width:auto"> ראיתי את התשלום בחשבון</label><button class="p" id="mgo">אישור תשלום</button><p id="mmsg" class="muted"></p></div>')+
+      '<details><summary>תשלומים ('+d.payments.length+')</summary><table>'+(d.payments.map(function(pm){return '<tr><td>'+esc(pm.provider)+'</td><td>'+esc(pm.status)+'</td><td class="n">'+esc(pm.amount)+' '+esc(pm.currency)+'</td><td>'+esc(pm.verified_by||'')+' '+esc(pm.reference||'')+'</td><td>'+esc(dt(pm.created_at))+'</td></tr>';}).join('')||'<tr><td class="muted">אין</td></tr>')+'</table></details>'+
       '<details><summary>אירועים ('+d.events.length+')</summary><div class="tr">'+d.events.map(function(e){return '<p>'+esc(dt(e.occurred_at))+' · '+esc(e.event_name)+' <span class="muted">'+esc(e.channel)+'</span></p>';}).join('')+'</div></details>'+
-      '<details><summary>יומן אדמין ('+d.audit.length+')</summary><div class="tr">'+d.audit.map(function(a){return '<p>'+esc(dt(a.at))+' · '+esc(a.admin_user)+' · '+esc(a.action)+'</p>';}).join('')+'</div></details>';
-    $('dcard').innerHTML=html; $('detail').hidden=false;
+      '<details><summary>יומן אדמין ('+d.audit.length+')</summary><div class="tr">'+d.audit.map(function(a){return '<p>'+esc(dt(a.at))+' · '+esc(a.admin_user)+' · '+esc(a.action)+'</p>';}).join('')+'</div></details>'+
+      '</details>';
+    showDetail(html);
     $('dclose').onclick=function(){ $('detail').hidden=true; };
-    if($('ppchk')) $('ppchk').onclick=function(){ var b=$('ppchk'); b.disabled=true; $('ppres').innerHTML='<span class="muted">בודק…</span>';
+    if($('ppchk')) $('ppchk').onclick=function(){ var bt=$('ppchk'); bt.disabled=true; $('ppres').innerHTML='<span class="muted">בודק…</span>';
       api('/api/admin/paypal-check?order_id='+encodeURIComponent(o.order_id)).then(function(r){
         var yn=function(v){return v===true?'<span class="ok">תואם</span>':v===false?'<span class="err">לא תואם</span>':'<span class="muted">לא נבדק</span>';};
         $('ppres').innerHTML='<b>תוצאה</b><span>'+(r.verified?'<span class="ok">מאומת מול PayPal</span>':'<span class="err">לא מאומת</span>')+' · '+esc(r.paypal_env)+' · '+esc(dt(r.checked_at))+'</span>'+
           '<b>הזמנת PayPal</b><span dir="ltr">'+esc(r.paypal_order.id)+' · '+esc(r.paypal_order.status||r.paypal_order.error||'—')+'</span>'+
-          (r.captures.length?r.captures.map(function(c){return '<b>Capture</b><span dir="ltr">'+esc(c.capture_id)+'</span><b>סטטוס ב-PayPal</b><span>'+(c.found_at_paypal?esc(c.paypal_status):'<span class="err">לא נמצא ב-PayPal ('+esc(c.paypal_http)+')</span>')+' · '+esc(c.create_time?dt(c.create_time):'')+'</span>'+
-            '<b>סכום</b><span>'+esc(c.amount)+' '+esc(c.currency)+' · סכום '+yn(c.matches.amount)+' · מטבע '+yn(c.matches.currency)+'</span>'+
-            '<b>שיוך</b><span>custom_id '+yn(c.matches.order)+' · מוטב '+yn(c.matches.payee)+' · ברשומות: '+(c.in_database?'כן':'<span class="err">לא</span>')+'</span>';}).join(''):'<b>Captures</b><span class="err">אין</span>');
-      },function(e){ $('ppres').innerHTML='<span class="err">שגיאה: '+esc(e.message)+'</span>'; }).then(function(){ b.disabled=false; }); };
-    if($('mgo')) $('mgo').onclick=function(){
+          (r.captures.length?r.captures.map(function(cp){return '<b>Capture</b><span dir="ltr">'+esc(cp.capture_id)+'</span><b>סטטוס ב-PayPal</b><span>'+(cp.found_at_paypal?esc(cp.paypal_status):'<span class="err">לא נמצא ב-PayPal ('+esc(cp.paypal_http)+')</span>')+' · '+esc(cp.create_time?dt(cp.create_time):'')+'</span>'+
+            '<b>סכום</b><span>'+esc(cp.amount)+' '+esc(cp.currency)+' · סכום '+yn(cp.matches.amount)+' · מטבע '+yn(cp.matches.currency)+'</span>'+
+            '<b>שיוך</b><span>custom_id '+yn(cp.matches.order)+' · מוטב '+yn(cp.matches.payee)+' · ברשומות: '+(cp.in_database?'כן':'<span class="err">לא</span>')+'</span>';}).join(''):'<b>Captures</b><span class="err">אין</span>');
+      },function(e){ $('ppres').innerHTML='<span class="err">שגיאה: '+esc(e.message)+'</span>'; }).then(function(){ bt.disabled=false; }); };
+    if($('mgo')) $('mgo').onclick=function(){ var bt=$('mgo'); bt.disabled=true; $('mmsg').textContent='שומר…';
       api('/api/admin/verify-manual',{order_id:o.order_id,reference:$('mref').value.trim(),note:$('mnote').value.trim(),confirm_seen_in_account:$('mseen').checked})
-        .then(function(){ openOrder(o.order_id); load(); },function(e){ $('mmsg').textContent=e.message==='reference_required'?'צריך אסמכתה.':e.message==='confirm_seen_in_account_required'?'צריך לסמן שראית את הכסף בחשבון.':'שגיאה: '+e.message; });
+        .then(function(){ openOrder(o.order_id); load(); },function(e){ bt.disabled=false; $('mmsg').textContent=e.message==='reference_required'?'צריך אסמכתה.':e.message==='confirm_seen_in_account_required'?'צריך לסמן שראית את הכסף בחשבון.':'שגיאה: '+e.message; });
     };
-  }).catch(function(e){ alert('שגיאה: '+e.message); });
+  }).catch(function(e){
+    if(e.message==='unauthorized'){ $('detail').hidden=true; return; }
+    var nf=e.message==='not_found'||e.message==='http_404';
+    showDetail('<div class="bar"><h1 dir="ltr">'+esc(id)+'</h1><button id="dclose">סגירה</button></div><p class="err" role="alert">'+
+      (nf?'לא נמצאה הזמנה עם המספר הזה בסביבה הזו.':'לא הצלחנו לטעון את ההזמנה ('+esc(e.message)+'). אפשר לנסות שוב.')+'</p>');
+    $('dclose').onclick=function(){ $('detail').hidden=true; };
+    throw e;
+  });
 }
 $('detail').addEventListener('click',function(e){ if(e.target===$('detail')) $('detail').hidden=true; });
-$('find').onclick=function(){ var v=$('findId').value.trim().toUpperCase(); if(/^FR-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(v)) openOrder(v); };
+// Search opens an existing order by its number. It never creates an order (orders are created only by customers on the site).
+function find(){ var b=$('find'), v=$('findId').value.trim().toUpperCase();
+  if(!v){ msg('כתבו מספר הזמנה, למשל FR-ABCD-1234, ואז "חיפוש".','st-wait'); $('findId').focus(); return; }
+  if(!/^FR-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(v)){ msg('מספר הזמנה נראה כך: FR-ABCD-1234 (FR, ארבעה תווים, ארבעה תווים).','st-wait'); $('findId').focus(); return; }
+  b.disabled=true; msg('מחפש את '+v+'…');
+  openOrder(v).then(function(){ msg(''); },function(e){ msg(e.message==='not_found'||e.message==='http_404'?'לא נמצאה הזמנה '+v+' בסביבה הזו.':'החיפוש נכשל ('+e.message+').','st-bad'); })
+    .then(function(){ b.disabled=false; });
+}
+$('find').onclick=find; $('findId').addEventListener('keydown',function(e){ if(e.key==='Enter') find(); });
 // A remembered session opens the dashboard directly; otherwise the sign-in form stays.
 if(!/^#login=/.test(location.hash)) load().catch(function(){ signedOut(); });
 })();
