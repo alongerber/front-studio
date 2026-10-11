@@ -1,0 +1,587 @@
+[
+ {
+  "name": "A1 consent banner shown on first visit",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "A2 no tracking request before a choice",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "A3 no Meta pixel / Clarity before a choice",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "A4 \"only necessary\" → still nothing sent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "A5 no analytics cookie without consent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "A6 no JS errors (home, denied)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "B1 pixel PageView after ads consent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "B2 checkout sheet with PayPal buttons opens",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "B3 order token removed from the address bar",
+  "ok": true,
+  "detail": "http://localhost:8787/thanks"
+ },
+ {
+  "name": "B4 thanks shows paid from the server",
+  "ok": true,
+  "detail": "התשלום התקבל"
+ },
+ {
+  "name": "B5 browser never sent Purchase",
+  "ok": true,
+  "detail": "[['init', '871649018702910'], ['track', 'PageView']]"
+ },
+ {
+  "name": "B6 order paid in DB",
+  "ok": true,
+  "detail": "[{'status': 'paid', 'paid_via': 'paypal', 'attribution': {'last': {'ts': '1791684665058', 'ad_id': '123', 'fbclid': 'IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ },
+ {
+  "name": "B7 fbclid kept whole (194 chars) on the order",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "B8 fbc built from the full fbclid",
+  "ok": true,
+  "detail": "{'ip': '203.0.113.3', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791684665058.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ },
+ {
+  "name": "B9 exactly one purchase_verified",
+  "ok": true,
+  "detail": "1"
+ },
+ {
+  "name": "B10 one CAPI Purchase sent by the server",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "B11 tracked landing_view",
+  "ok": true,
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'section_view', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+ },
+ {
+  "name": "B11 tracked consent_updated",
+  "ok": true,
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'section_view', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+ },
+ {
+  "name": "B11 tracked cta_click",
+  "ok": true,
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'section_view', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+ },
+ {
+  "name": "B11 tracked checkout_presented",
+  "ok": true,
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'section_view', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+ },
+ {
+  "name": "B11 tracked checkout_clicked",
+  "ok": true,
+  "detail": "['landing_view', 'consent_updated', 'section_view', 'cta_click', 'section_view', 'checkout_presented', 'checkout_clicked', 'time_summary', 'landing_view']"
+ },
+ {
+  "name": "B12 no JS errors (checkout)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "B13 reloading thanks does not add a purchase",
+  "ok": true,
+  "detail": "1"
+ },
+ {
+  "name": "C1 /thanks with no order shows \"not found\"",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "C2 /thanks creates no purchase",
+  "ok": true,
+  "detail": "(1, 1)"
+ },
+ {
+  "name": "D1 widget gets a link key, no token",
+  "ok": true,
+  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'R62EhnUimyWJtz_TLk8kMEOQdlkO7mIW', 'anonymous_id': 'ab26e18f-ed14-4467-9af2-d6a527caacb2', 'session_id': 'c755c8e2-225c-4549-b529-9aacdc271010', "
+ },
+ {
+  "name": "D2 save_brief_note returns the real result only after the server saved",
+  "ok": true,
+  "detail": "SAVED: business_type"
+ },
+ {
+  "name": "D3 note stored on the server before payment",
+  "ok": true,
+  "detail": "{'brief': {'business_type': 'מספרה בחולון'}, 'agent_links': ['R62EhnUimyWJtz_TLk8kMEOQdlkO7mIW'], 'paid_at': None}"
+ },
+ {
+  "name": "D4 order carries this tab's link key",
+  "ok": true,
+  "detail": "['R62EhnUimyWJtz_TLk8kMEOQdlkO7mIW']"
+ },
+ {
+  "name": "D5 not paid",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "D6a open_payment reports NOT OPENED when the window is not on screen",
+  "ok": true,
+  "detail": "NOT OPENED: the payment window could not be shown on this screen. Do not say it opened. Say there is a display problem and offer WhatsApp."
+ },
+ {
+  "name": "D6 open_payment shows checkout and says OPENED (customer still has to click)",
+  "ok": true,
+  "detail": "OPENED: TEST ENVIRONMENT, only a PayPal sandbox test payment is shown, no real money. Do not mention Bit. The customer must click to pay. Opening the window is not a payment."
+ },
+ {
+  "name": "D7 checkout reused the pre-payment order (brief kept)",
+  "ok": true,
+  "detail": "('FR-6867-XQ3T', 'FR-6867-XQ3T')"
+ },
+ {
+  "name": "D8 known brief shown from the server",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "D9 contact saved",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "D10 brief-phase widget told payment is verified (from server)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "D11 brief completed and stored",
+  "ok": true,
+  "detail": "{'brief': {'promote': 'תספורת גברים', 'business_type': 'מספרה בחולון'}, 'brief_done_at': '2026-10-11T02:11:18.539Z', 'contact': {'name': 'דנה', 'email': 'dana@example.com', 'phone': '050-1234567'}}"
+ },
+ {
+  "name": "D12 no JS errors (agent + brief)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "DS1 re-entry: same order, previous details passed and marked as from a previous chat",
+  "ok": true,
+  "detail": "נשמר בשיחה קודמת בדפדפן הזה (אותה הזמנה, עוד לא שולמה): tone: סופר קומי; business_type: מועדון בינגו"
+ },
+ {
+  "name": "DS2 change_direction: same order, brief emptied, previous details kept as an event",
+  "ok": true,
+  "detail": "('DONE: the previous direction was archived (kept, not deleted) and this ad now starts with empty details. Treat known_context as replaced. Save the new details with save_brief_note.', {'brief': {}}, [{'props': {'previous': {'tone': 'סופר קומי', 'business_type': 'מועדון בינגו'}}}])"
+ },
+ {
+  "name": "DS3 new_ad: a new order with this tab's link key, the previous one untouched",
+  "ok": true,
+  "detail": "('DONE: a new ad was started; the previous ad and its details stay as they were. Treat known_context as not relevant to this ad. Save the new details with save_brief_note.', {'FR-6CSB-GN6E': {'order_id': 'FR-6CSB-GN6E', 'brief': {'business_type': 'ניקוי ספות'}, 'agent_links': []}, 'FR-TY7P-7GDJ': {'"
+ },
+ {
+  "name": "DS4 one new order only (no order per chat opening)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "DS5 an unknown mode is refused",
+  "ok": true,
+  "detail": "NOT DONE: mode must be new_ad or change_direction. Ask the customer which one they mean."
+ },
+ {
+  "name": "DS6 no JS errors (switch)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "X1 old tab: no switch_ad on the page, and its note is refused by the server (nothing stored)",
+  "ok": true,
+  "detail": "(['open_payment', 'show_payment', 'show_whatsapp', 'save_brief_note'], 'not saved: page_outdated', {})"
+ },
+ {
+  "name": "X2 missing tool: no widget, a refresh bar instead",
+  "ok": true,
+  "detail": "יש גרסה חדשה של האתר. רענון ימשיך מאותה נקודה, בלי לאבד את מה שכבר נשמר.\nלרענן עכשיו"
+ },
+ {
+  "name": "X3 slow order: loading bar first, then real context and status",
+  "ok": true,
+  "detail": "(True, 'נשמר בשיחה קודמת בדפדפן הזה (אותה הזמנה, עוד לא שולמה): business_type: מוסך', 'pending')"
+ },
+ {
+  "name": "X4 load failure: retry bar, order kept, retry opens the agent with the real context",
+  "ok": true,
+  "detail": "True"
+ },
+ {
+  "name": "X5 failed switch: NOT DONE, the next note is NOT SAVED, previous order unchanged, no new order",
+  "ok": true,
+  "detail": "('NOT DONE: could not update the order. Nothing about the new business can be saved now. Do not say it changed; tell the customer there is a technical problem and offer WhatsApp.', 'NOT SAVED: the ad switch did not complete, so nothing is saved for the new business. Do not say it was saved. Tell the"
+ },
+ {
+  "name": "X6 lost answer then retry: exactly one new order, link moved to it, note saved there, previous order unchanged",
+  "ok": true,
+  "detail": "('NOT DONE: could not update the order. Nothing about the new business can be saved now. Do not say it changed; tell the customer there is a technical problem and offer WhatsApp.', 'DONE: a new ad was started; the previous ad and its details stay as they were. Treat known_context as not relevant to "
+ },
+ {
+  "name": "X7 no JS errors (robustness)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "Q2 order page opening line makes no payment claim",
+  "ok": true,
+  "detail": "תודה על ההזמנה. את מועדון סנוקר כבר הכרנו, עכשיו נדייק מה הפרסומת צריכה להגיד. איזה שירות או מוצר הכי חשוב לכם לקדם?"
+ },
+ {
+  "name": "Q3 home chat with a paid, open order continues the brief",
+  "ok": true,
+  "detail": "{'phase': 'brief', 'known_context': 'פרטי ההזמנה ששולמה: business_type: מועדון סנוקר', 'payment_status': 'verified', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'O9mGn-YTjaTO5mKVkMT_U-xaq88ASs1u', 'anonymous_id': '62157799-4d77-4c0b-8461-199868a893b0', 'session_id': '9cae7be"
+ },
+ {
+  "name": "Q4 open_payment refuses to charge an already paid order",
+  "ok": true,
+  "detail": "NOT OPENED: the order in this browser is already paid (server-verified). Do not open payment again; continue the brief. For a second ad, offer WhatsApp."
+ },
+ {
+  "name": "Q5 no new order created",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Q6 after the brief is done, a home chat is a new sale, not tied to the old order",
+  "ok": true,
+  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'O9mGn-YTjaTO5mKVkMT_U-xaq88ASs1u', 'anonymous_id': '62157799-4d77-4c0b-8461-199868a893b0', 'session_id': '9cae7be3-1c73-4cdd-952e-dbc7fc231a6a', "
+ },
+ {
+  "name": "Q7 notes from the new sale go to a new order, the paid one is untouched",
+  "ok": true,
+  "detail": "('FR-CSXS-ZYUF', 'FR-QXWH-MKAZ', {'business_type': 'מועדון סנוקר'}, 'SAVED: business_type')"
+ },
+ {
+  "name": "Q8 no JS errors",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "E1 wrong token → order not shown",
+  "ok": true,
+  "detail": "התשלום בבדיקה"
+ },
+ {
+  "name": "F1 cancelled checkout is not paid",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "F3 order without a call carries no agent link (no false \"waiting for call data\")",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "F2 order without consent stores no ids",
+  "ok": true,
+  "detail": "{'paid_at': None, 'consent': {'ads': 'denied', 'analytics': 'denied'}, 'anonymous_id': None}"
+ },
+ {
+  "name": "G1 (simulated FB UA) checkout renders, no errors",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "I1 order created with ads consent and matching data",
+  "ok": true,
+  "detail": "{'consent': {'ads': 'granted', 'analytics': 'granted'}, 'meta_user': {'ip': '203.0.113.16', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791684702695.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ },
+ {
+  "name": "I2 withdrawing ads consent updates the order and drops matching data",
+  "ok": true,
+  "detail": "{'consent': {'ads': 'denied', 'analytics': 'granted'}, 'meta_user': None}"
+ },
+ {
+  "name": "I3 no JS errors (consent change)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "J1 unpaid: send to production is disabled and explained",
+  "ok": true,
+  "detail": "אפשר לשמור פרטים כבר עכשיו. שליחה להפקה נפתחת אחרי שהתשלום מאושר."
+ },
+ {
+  "name": "J2 paid: send enabled",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "J3 empty brief: the page asks for the missing details",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "J4 completed with the minimum content",
+  "ok": true,
+  "detail": "{'brief': {'promote': 'טיפול שנתי', 'business_type': 'מוסך'}, 'brief_done_at': '2026-10-11T02:11:49.231Z'}"
+ },
+ {
+  "name": "J5 no JS errors (order page)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "H1 wrong password refused",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "H2 funnel shows absolute numbers next to rates",
+  "ok": true,
+  "detail": "שלב\tמספר\tמהשלב הקודם\tמהכניסות\tמקור\nכניסות (מסכימים למדידה)\n\t11\t—\t—\tevents\nפתחו את מיטל\n\t8\t8 / 11 (72.7%)\t8 / 11 (72.7%)\tevents\nבקשת התחלת שיחה\n\t8\t8 / 8 (100%)\t8 / 11 (72.7%)\tevents\nהודעה ראשונה של לקוח\n\t0\tמקור שונה\tמקור שונה\tconversations (webhook, באיחור)\nהוצג תשלום\n\t1\tמקור שונה\t1 / 11 (9.1%)\tevent"
+ },
+ {
+  "name": "H3 order detail opens (brief visible to production)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "H9 outside production the sum is labelled as test payments, not revenue",
+  "ok": true,
+  "detail": "הזמנות שנפתחו\n14\nנוצר תשלום בפייפאל\n5 / 14 (35.7%)\nרכישות מאומתות\n4 / 14 (28.6%)\n· פייפאל\n4\n· ביט (ידני)\n0\nרכישה ישירה (בלי מיטל)\n2 / 4 (50%)\nאפיון הושלם\n3 / 4 (75%)\nשולם, אפיון לא הושלם 24+ שעות\n0\nבבדיקה (pending)\n0\nנכשלו\n0\nהוחזרו\n0\nסכום תשלומי בדיקה — לא כסף אמיתי\n5160 ₪"
+ },
+ {
+  "name": "H10 PayPal check from the order: capture id, amount and currency shown, verified",
+  "ok": true,
+  "detail": "תוצאה\nמאומת מול PayPal · sandbox · 11.10.2026, 2:11\nהזמנת PayPal\nPP5 · COMPLETED\nCapture\nCAP-PP5\nסטטוס ב-PayPal\nCOMPLETED · 10.10.2026, 2:57\nסכום\n1290.00 ILS · סכום תואם · מטבע תואם\nשיוך\ncustom_id תואם · מוטב תואם · ברשומות: כן"
+ },
+ {
+  "name": "H4 dashboard data refused without sign-in (server, not just a hidden page)",
+  "ok": true,
+  "detail": "401"
+ },
+ {
+  "name": "H5 link requested; the page does not show it",
+  "ok": true,
+  "detail": "אם הכתובת מורשית, נשלח אליה קישור כניסה. אפשר לסגור את הדף ולפתוח את הקישור מהמייל."
+ },
+ {
+  "name": "H6 the mailed link signs in and leaves no token in the address bar",
+  "ok": true,
+  "detail": "http://localhost:8787/admin"
+ },
+ {
+  "name": "H6b \"remember me\": HttpOnly cookie kept ~30 days, nothing in page storage",
+  "ok": true,
+  "detail": "([{'name': 'front_admin', 'value': 'anaU0tucDgBsUdg1MLEKO38oY3qUnWbNzMbmDJIDAIg', 'domain': 'localhost', 'path': '/api/admin', 'expires': 1794276712.181897, 'httpOnly': True, 'secure': True, 'sameSite': 'Strict'}], '{}{}')"
+ },
+ {
+  "name": "H6c a remembered device opens the dashboard directly",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "H6d sign-out clears the cookie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "H7 the same link does not work twice",
+  "ok": true,
+  "detail": "הקישור כבר נוצל או שפג תוקפו. אפשר לבקש קישור חדש."
+ },
+ {
+  "name": "H8 no JS errors (admin link)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "K1 every \"talk\" button opens the agent",
+  "ok": true,
+  "detail": "[('hero', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('work', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('offer', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('final', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('checkout', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('dock', 'מה העסק שלכם, ומה הייתם רוצים לקדם?')]"
+ },
+ {
+  "name": "K2 agent opens with the one first question",
+  "ok": true,
+  "detail": "[('hero', 'מה העסק שלכם, ומה הייתם רוצים לקדם?'), ('work', 'מה העסק שלכם, ומה הייתם רוצים לקדם?')]"
+ },
+ {
+  "name": "K3 every \"order\" button opens checkout",
+  "ok": true,
+  "detail": "[('topbar', True), ('hero', True), ('work', True), ('offer', True), ('final', True), ('dock', True)]"
+ },
+ {
+  "name": "K4 price on page and in checkout is 1,290 and labelled final",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "K5 no banned words in the marketing copy",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "K6 no JS errors (landing)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "L1 approved copy is on the page (hero, examples, package, about)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "L2 examples are marked as concept work, no client claims",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "L3 order window: Tab stays inside, Escape closes and focus returns to the button",
+  "ok": true,
+  "detail": "([True, True, True, True, True, True, True, True, True, True, True, True], 'מספיק לפרסם טונה. עכשיו אותי')"
+ },
+ {
+  "name": "L4 text and buttons meet 4.5:1 contrast",
+  "ok": true,
+  "detail": "[['.h3__sub', 9.25], ['.h3__offer', 16.32], ['.h3 .btn', 6.65], ['.ordr small', 9.25], ['.lead', 8.8], ['.inc span', 9.25], ['.steps span', 8.8], ['.q button', 16.32], ['footer a', 5.72], ['.terms', 5.72]]"
+ },
+ {
+  "name": "L5 mobile: price and both buttons come before the loop video, talk button within the first screen and a half",
+  "ok": true,
+  "detail": "[499, 569, 412, 680]"
+ },
+ {
+  "name": "L8b mobile hero: whole frame (contain, 9:16 box), not taller than 62% of the screen, inside the width",
+  "ok": true,
+  "detail": "{'fit': 'contain', 'ratio': 0.562, 'h': 490, 'w': 275, 'vw': 390, 'poster': './assets/hero-sign.webp'}"
+ },
+ {
+  "name": "L8c desktop hero: whole frame (contain, 9:16 box), within the first screen, sign video",
+  "ok": true,
+  "detail": "{'fit': 'contain', 'ratio': 0.563, 'h': 756, 'w': 425, 'vw': 1440, 'poster': './assets/hero-sign.webp'}"
+ },
+ {
+  "name": "L6 /terms page exists, linked from the footer",
+  "ok": true,
+  "detail": "תנאי ההזמנה"
+ },
+ {
+  "name": "L6 /accessibility page exists, linked from the footer",
+  "ok": true,
+  "detail": "נגישות"
+ },
+ {
+  "name": "L7 accessibility page makes no compliance claim",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "L8 footer links: terms, privacy, accessibility",
+  "ok": true,
+  "detail": "['https://wa.me/972559501280?text=%D7%94%D7%99%D7%99', '/terms', 'https://frontvid.netlify.app/privacy', '/accessibility', '#']"
+ },
+ {
+  "name": "T1 test banner says no money moves",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "T2 no Bit option or Bit copy is visible",
+  "ok": true,
+  "detail": "[False]"
+ },
+ {
+  "name": "T3 Bit is refused and never opens WhatsApp",
+  "ok": true,
+  "detail": "('bit_disabled_in_test', [])"
+ },
+ {
+  "name": "T5 agent is told: test environment, PayPal sandbox only, no Bit offered",
+  "ok": true,
+  "detail": "סביבת בדיקה: רק תשלום בדיקה בפייפאל, בלי כסף אמיתי. אין ביט."
+ },
+ {
+  "name": "T4 in production the banner is absent and Bit is offered",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "T6 in production the agent may offer PayPal or Bit",
+  "ok": true,
+  "detail": "פייפאל (גם בכרטיס אשראי בלי חשבון) או ביט"
+ },
+ {
+  "name": "T7 direct order closed without a delivery time: no PayPal, no Bit, clear message",
+  "ok": true,
+  "detail": "('ההזמנה עוד לא פתוחה: זמן האספקה חסר בהגדרות. אפשר לדבר עם מיטל או לכתוב לנו בוואטסאפ.', [])"
+ },
+ {
+  "name": "T8 closed checkout: Bit refused and the agent is told not to open payment",
+  "ok": true,
+  "detail": "('checkout_closed_delivery_time', 'ההזמנה עוד לא פתוחה לתשלום. אל תפעילי open_payment; הציעי וואטסאפ.')"
+ },
+ {
+  "name": "T9 checkout shows the approved delivery time and the customer-delay rule before paying",
+  "ok": true,
+  "detail": "זמן אספקה: 7 ימי עסקים מרגע ההזמנה"
+ },
+ {
+  "name": "M1 consent banner up → mobile bar hidden",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "M2 hero buttons off screen → mobile bar shown, page padded by its height",
+  "ok": true,
+  "detail": "(True, 71, 71)"
+ },
+ {
+  "name": "M3 the bar does not cover the end of the page",
+  "ok": true,
+  "detail": "(772.8125, 773)"
+ },
+ {
+  "name": "M4 no sideways scroll on mobile",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "M5 agent open → mobile bar hidden",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "R1 reduced motion: hero loop does not autoplay, pause/play control shown",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "R2 reduced motion: content is visible without scrolling effects",
+  "ok": true,
+  "detail": ""
+ }
+]
