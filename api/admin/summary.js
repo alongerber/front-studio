@@ -1,11 +1,12 @@
 // Dashboard data (admin only).
 import { json, handle } from '../../lib/util.js';
 import { requireAdmin } from '../../lib/admin.js';
-import { summary, recentOrders } from '../../lib/report.js';
+import { DUE_RULE } from '../../lib/production.js';
+import { summary, recentOrders, workOrders } from '../../lib/report.js';
 
 export const GET = handle(async (request) => {
   await requireAdmin(request);
   const days = Math.max(1, Math.min(90, parseInt(new URL(request.url).searchParams.get('days') || '7', 10) || 7));
-  const [s, orders] = await Promise.all([summary(days), recentOrders(200)]);
-  return json({ ok: true, ...s, recent_orders: orders });
+  const [s, orders, work] = await Promise.all([summary(days), recentOrders(100), workOrders()]);
+  return json({ ok: true, ...s, recent_orders: orders, recent_more: orders.length === 100, work_orders: work, due_rule: DUE_RULE });
 });

@@ -3,7 +3,7 @@
 import { q, one } from '../lib/db.js';
 import { cfg } from '../lib/config.js';
 import { json, handle, readBody, clientIp, clip, isUuid, isOrderId, sha256, safeEqual, deviceOf } from '../lib/util.js';
-import { rateLimit } from '../lib/store.js';
+import { rateLimit, tokenFits } from '../lib/store.js';
 
 // event name → allowed prop keys (anything else is dropped silently)
 export const BROWSER_EVENTS = {
@@ -50,8 +50,8 @@ function cleanPath(p) {
 
 async function tokenOk(orderId, token) {
   if (!isOrderId(orderId) || typeof token !== 'string' || token.length < 20) return false;
-  const o = await one(`SELECT token_hash FROM orders WHERE order_id = $1 AND environment = $2`, [orderId, cfg.environment]);
-  return !!o && safeEqual(o.token_hash, sha256(token));
+  const o = await one(`SELECT order_id, token_hash FROM orders WHERE order_id = $1 AND environment = $2`, [orderId, cfg.environment]);
+  return !!o && tokenFits(o, token);
 }
 
 export const POST = handle(async (request) => {

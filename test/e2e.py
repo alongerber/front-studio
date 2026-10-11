@@ -444,7 +444,51 @@ with sync_playwright() as p:
     else:
         check('H10 PayPal check from the order (needs a paid PayPal order in the run)', False, 'no paid order')
     page.evaluate("document.getElementById('dclose') && document.getElementById('dclose').click()"); page.click('#t-ops'); page.wait_for_timeout(200)
-    page.screenshot(path=os.environ.get('SHOT_DIR', 'test') + '/out-admin.png', full_page=True)
+    SD = os.environ.get('SHOT_DIR', 'test')
+    # ── production stage, delays, continuation link (one paid order) ──
+    po = sql(page, "select order_id from orders where paid_at is not null and status <> 'refunded' order by created_at desc limit 1", [])[0]['order_id']
+    def card(oid):
+        page.fill('#findId', oid); page.click('#find'); page.wait_for_selector('#detail:not([hidden]) #stGo', timeout=6000)
+    card(po)
+    page.select_option('#stSel', 'script_writing'); page.click('#stGo'); page.wait_for_function("document.getElementById('stMsg') && document.getElementById('stMsg').innerText.indexOf('עודכן') >= 0", timeout=6000)
+    page.select_option('#stSel', 'in_production')
+    page.evaluate("var b=document.getElementById('stGo'); b.click(); b.click();"); page.wait_for_timeout(1500)
+    page.reload(); page.wait_for_selector('#app:not([hidden])', timeout=6000); card(po)
+    ctext = page.locator('#dcard').inner_text()
+    log_n = sql(page, "select count(*)::int c from order_stage_log where order_id=$1", [po])[0]['c']
+    tasks_txt = page.locator('#tasks').inner_text()
+    check('H15 stage saved on the server: survives a reload, logged once per change (double click ignored), tasks follow the stage',
+          'בהפקה' in ctext and 'מוסק' not in ctext.split('שלב הפקה')[1][:80] and log_n == 2 and 'להפיק את הפרסומת' in tasks_txt, (log_n, tasks_txt[:200]))
+    page.locator('#dcard details:has(#dlGo) summary').click()
+    page.evaluate("var b=document.getElementById('dlGo'); b.click(); b.click();"); page.wait_for_timeout(1500)
+    page.reload(); page.wait_for_selector('#app:not([hidden])', timeout=6000); card(po)
+    n_delays = sql(page, "select count(*)::int c from order_delays where order_id=$1 and cancelled_at is null", [po])[0]['c']
+    check('H16 a customer delay is stored once (double click), shown after reload as open', n_delays == 1 and 'עיכוב פתוח' in page.locator('#dcard').inner_text(), n_delays)
+    vp = page.viewport_size; page.set_viewport_size({'width': 900, 'height': 2600}); page.wait_for_timeout(200)
+    page.screenshot(path=SD + '/admin-order-card.png'); page.set_viewport_size(vp)
+    # continuation link: copy only says "copied" when the clipboard accepted it; the link opens this order in another browser
+    page.click('#lkGo'); page.wait_for_selector('#lkOut:not([hidden])', timeout=6000)
+    url = page.input_value('#lkUrl')
+    page.evaluate("navigator.clipboard.writeText = function(){ return Promise.reject(new Error('denied')); }; 0"); page.click('#lkCopy'); page.wait_for_timeout(200)
+    copied_fail = page.locator('#lkCopied').inner_text()
+    page.evaluate("navigator.clipboard.writeText = function(){ return Promise.resolve(); }; 0"); page.click('#lkCopy'); page.wait_for_timeout(200)
+    copied_ok = page.locator('#lkCopied').inner_text()
+    other = new_ctx(browser); op = other.new_page(); op.goto(url.replace('https://front.test', BASE)); op.wait_for_timeout(1500)
+    opened = op.evaluate("window.FRONT && FRONT.order && FRONT.order.order_id")
+    other.close()
+    audit = sql(page, "select details::text d from admin_audit where action='continuation_link_issued' and order_id=$1", [po])
+    tok = url.split('&t=')[1]
+    check('H17 continuation link: opens this order in another browser; "copied" only when the copy worked; the token is not in the audit',
+          opened == po and copied_ok == 'הועתק' and 'הועתק' != copied_fail and 'ידנית' in copied_fail and audit and tok not in audit[0]['d'], (opened, copied_ok, copied_fail))
+    page.evaluate("document.getElementById('dclose').click()")
+    # search answers a server error too
+    page.route(re.compile(r'.*/api/admin/order\?.*'), lambda r: r.fulfill(status=500, body='{"ok":false,"error":"server_error"}', content_type='application/json'))
+    page.fill('#findId', po); page.click('#find'); page.wait_for_timeout(800)
+    m_err = page.locator('#appmsg').inner_text()
+    page.unroute(re.compile(r'.*/api/admin/order\?.*'))
+    check('H18 search: a server error is shown, not silence', 'נכשל' in m_err, m_err)
+    page.evaluate("document.getElementById('dclose') && document.getElementById('dclose').click()"); page.click('#t-ops'); page.fill('#findId', ''); page.click('#reload'); page.wait_for_timeout(800)
+    page.screenshot(path=SD + '/out-admin.png', full_page=True)
     ctx.close()
     # ── H2. admin sign-in by a mailed one-time link; the server refuses the API without a session ──
     ctx = new_ctx(browser); page = ctx.new_page(); errors = []; page.on('pageerror', lambda e: errors.append(str(e)))
@@ -463,8 +507,20 @@ with sync_playwright() as p:
           and 29 * 86400 < ck[0]['expires'] - time.time() <= 30 * 86400 and 'front_admin' not in store and 'Basic' not in store, (ck, store))
     page.goto(BASE + '/admin'); page.wait_for_selector('#app:not([hidden])', timeout=5000)
     check('H6c a remembered device opens the dashboard directly', page.locator('#app').is_visible())
+    page.wait_for_selector('#setpw:not([hidden])', timeout=4000)
+    page.fill('#np1', 'a good long pass 1'); page.fill('#np2', 'a good long pass 1'); page.click('#npgo'); page.wait_for_function("document.getElementById('npmsg').innerText.indexOf('נשמרה') >= 0", timeout=5000)
+    stored = sql(page, "select password_hash from admin_credentials", [])
+    check('H19 password set right after a link sign-in; only a scrypt hash is stored', len(stored) == 1 and stored[0]['password_hash'].startswith('scrypt$') and 'good long' not in stored[0]['password_hash'])
     page.click('#logout'); page.wait_for_timeout(500)
     check('H6d sign-out clears the cookie', not [c for c in ctx.cookies() if c['name'] == 'front_admin'])
+    page.fill('#em', 'owner@front.test'); page.fill('#lpw', 'wrong password x'); page.click('#pwLogin'); page.wait_for_timeout(800)
+    bad_msg = page.locator('#lmsg').inner_text()
+    page.fill('#lpw', 'a good long pass 1'); page.check('#remember'); page.click('#pwLogin'); page.wait_for_selector('#app:not([hidden])', timeout=5000)
+    ck2 = [c for c in ctx.cookies() if c['name'] == 'front_admin']
+    page.goto('about:blank'); page.goto(BASE + '/admin'); page.wait_for_selector('#app:not([hidden])', timeout=5000)
+    check('H20 email + password with "remember me": wrong password refused with a message; right one opens, cookie ~30 days, reopens directly',
+          'לא נכונים' in bad_msg and len(ck2) == 1 and ck2[0]['httpOnly'] and 29 * 86400 < ck2[0]['expires'] - time.time() <= 30 * 86400 and page.locator('#app').is_visible(), bad_msg)
+    page.click('#logout'); page.wait_for_timeout(500)
     page.goto('about:blank'); page.goto(link.replace('https://front.test', BASE)); page.wait_for_timeout(1200)
     check('H7 the same link does not work twice', page.locator('#login').is_visible() and 'נוצל' in page.locator('#lmsg').inner_text(), page.locator('#lmsg').inner_text())
     check('H8 no JS errors (admin link)', not errors, errors)
