@@ -410,14 +410,17 @@ with sync_playwright() as p:
     n0 = sql(page, "select count(*)::int c from orders", [])[0]['c']
     page.fill('#findId', ''); page.click('#find'); page.wait_for_timeout(200); m_empty = page.locator('#appmsg').inner_text()
     page.fill('#findId', 'abc'); page.click('#find'); page.wait_for_timeout(200); m_bad = page.locator('#appmsg').inner_text()
+    SD = os.environ.get('SHOT_DIR', 'test')
+    page.fill('#findId', ''); page.click('#find'); page.wait_for_timeout(150); page.screenshot(path=SD + '/admin-search-empty.png', clip={'x': 0, 'y': 0, 'width': 1280, 'height': 170})
     page.fill('#findId', 'FR-ZZZZ-ZZZZ'); page.click('#find'); page.wait_for_timeout(1200); m_nf = page.locator('#appmsg').inner_text(); nf_card = page.locator('#dcard').inner_text()
+    page.screenshot(path=SD + '/admin-search-notfound.png')
     page.evaluate("document.getElementById('dclose').click()")
     n1 = sql(page, "select count(*)::int c from orders", [])[0]['c']
     check('H13 search: empty, wrong format and unknown number each get a clear message; no order is created',
           'כתבו מספר הזמנה' in m_empty and 'FR-ABCD-1234' in m_bad and 'לא נמצאה' in m_nf and 'לא נמצאה' in nf_card and n0 == n1, (m_empty, m_bad, m_nf, n0, n1))
     if paid_row:
         page.fill('#findId', paid_row[0]['order_id'].lower()); page.click('#find'); page.wait_for_selector('#detail:not([hidden]) #tech', timeout=5000)
-        card = page.locator('#dcard').inner_text()
+        card = page.locator('#dcard').inner_text(); page.screenshot(path=SD + '/admin-search-found.png')
         tech_closed = page.evaluate("!document.getElementById('tech').open")
         check('H14 search opens the order: next action first, test order stated, technical diagnosis collapsed',
               'הפעולה הבאה' in card and 'הזמנת בדיקה' in card and tech_closed and sql(page, "select count(*)::int c from orders", [])[0]['c'] == n0, card[:300])
