@@ -92,11 +92,13 @@ section{padding-block:clamp(72px,10vw,128px);position:relative}
 .h3 h1 .l2{color:var(--acc)}
 .h3__sub{margin-top:22px;font-size:clamp(18px,1.9vw,22px);line-height:1.55;color:var(--ink2);max-width:30em;text-wrap:pretty}
 .h3__offer{margin-top:20px;font-size:clamp(17px,1.6vw,19px);line-height:1.55;max-width:32em;padding-inline-start:16px;border-inline-start:3px solid var(--acc)}
-.h3__price{margin-top:22px;display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 12px}
+.h3__price{margin-top:22px;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}
 .h3__price b{font-weight:900;font-size:clamp(34px,4vw,48px);letter-spacing:-.02em;white-space:nowrap}
-.h3__price span{font-size:17px;color:var(--ink2)}
+.h3__price span{font-size:clamp(18px,1.8vw,22px);color:var(--ink2)}
 @media(max-width:899px){
+  .h3{min-height:0}
   .h3__in{padding-top:70px;gap:26px}
+  .h3__t{order:1}.h3__m{order:2}
   .h3__m{max-width:none;aspect-ratio:auto;height:min(42svh,420px);border-radius:18px}
   .h3__m video{object-position:50% 18%}
   .h3__cta .btn{flex:1 1 100%}
@@ -109,6 +111,11 @@ section{padding-block:clamp(72px,10vw,128px);position:relative}
 }
 
 /* ── 2 · work ── */
+.ordr{display:inline-flex;flex-direction:column;gap:6px}
+.ordr small{font-size:14.5px;color:var(--ink2);text-align:center}
+@media(max-width:899px){.ordr{flex:1 1 100%}.ordr .btn{width:100%}}
+.offer__sub{margin-top:14px;font-size:18px;color:var(--ink2)}
+.about__c{margin-top:22px;font-size:18px;color:var(--ink2)}
 .work{background:var(--bg2)}
 .work__g{display:grid;gap:22px;margin-top:44px}
 @media(min-width:760px){.work__g{grid-template-columns:repeat(3,1fr)}}
@@ -255,13 +262,16 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
       </figcaption>
     </figure>
     <div class="h3__t">
-      <h1 id="h1"><span>הוא עשה את שלו.</span><span class="l2">עכשיו תור העסק שלכם.</span></h1>
-      <p class="h3__sub">לכל עסק הסיפור שלו. ולכל פרסומת הדמות שמתאימה לה.<br>הוא לא מגיע אוטומטית עם החשבונית.</p>
-      <p class="h3__offer">פרסומת למוצר או לשירות שלכם — רעיון, תסריט, עריכה, מוזיקה, כתוביות ושילוב הלוגו. בלי שתצטרכו להצטלם.</p>
-      <p class="h3__price"><b>1,290 ₪</b><span>— המחיר הסופי</span></p>
+      <h1 id="h1"><span>הרגע עצרתם בשביל טונה.</span><span class="l2">מה יגרום ללקוחות לבחור דווקא בכם?</span></h1>
+      <p class="h3__sub">הפרסומת לא צריכה לספר הכול על העסק. היא צריכה לתת סיבה להתעניין בו.</p>
+      <p class="h3__offer">נמצא את הסיבה הזאת, נכתוב לה תסריט ונתאים לה דמות. אתם לא צריכים להצטלם.</p>
+      <p class="h3__price"><span>פרסומת מלאה ב־</span><b>1,290 ₪</b></p>
       <div class="ctas h3__cta" id="heroCta">
         <button class="btn" type="button" data-open="chat" data-cta="hero" data-cta-target="agent">בואו נדבר על הפרסומת שלי</button>
-        <button class="tlink" type="button" data-checkout="hero" data-cta="hero" data-cta-target="checkout">כבר החלטתם? להזמנה</button>
+        <span class="ordr">
+          <button class="btn btn--o" type="button" data-checkout="hero" data-cta="hero" data-cta-target="checkout" aria-describedby="heroOrderNote">מספיק לפרסם טונה. עכשיו אותי</button>
+          <small id="heroOrderNote">להזמנת פרסומת · 1,290 ₪</small>
+        </span>
       </div>
     </div>
   </div>
@@ -271,8 +281,8 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
 <section class="work" id="work" data-section="reel">
   <div class="w">
     <p class="eyebrow rv">דוגמאות</p>
-    <h2 class="h2 rv">אותו סטודיו. דמויות אחרות לגמרי.</h2>
-    <p class="lead rv">כל פרסומת נבנית מאפס סביב העסק: הרעיון, הדמות והסגנון. לא מחליפים מוצר בסרטון של מישהו אחר.</p>
+    <h2 class="h2 rv">הפרסומת שלכם לא מגיעה עם הדוגמן מהטונה.</h2>
+    <p class="lead rv">נבחר דמות, סיפור וסגנון שמתאימים למה שאתם מוכרים.</p>
     <div class="work__g">
       <article class="wk rv">
         <div class="wk__v">
@@ -305,7 +315,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
         <div><h3>מוסך שכונתי</h3><p>בעל מקצוע אמיתי למראה, והפקה שלא מתביישת בזה.</p></div>
       </article>
     </div>
-    <p class="work__note rv">הדוגמאות הן עבודות קונספט של פרונט, לא לקוחות. <b>הפרסומת שלכם תיראה אחרת</b> — כי העסק שלכם אחר.</p>
+    <p class="work__note rv">כל הדוגמאות כאן הן עבודות קונספט של פרונט, לא עבודות ללקוחות. <b>הפרסומת שלכם תיראה אחרת</b> — כי העסק שלכם אחר.</p>
     <div class="ctas rv">
       <button class="btn" type="button" data-open="chat" data-cta="work" data-cta-target="agent">בואו נדבר על הפרסומת שלי</button>
       <button class="tlink" type="button" data-checkout="work" data-cta="work" data-cta-target="checkout">כבר החלטתם? להזמנה</button>
@@ -317,32 +327,31 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
 <section id="offer" data-section="offer">
   <div class="w offer">
     <div>
-      <p class="eyebrow rv">מה מקבלים</p>
-      <h2 class="h2 rv">פרסומת אחת, גמורה.</h2>
-      <p class="offer__price rv" aria-label="1,290 שקלים, המחיר הסופי">1,290 ₪<small>המחיר הסופי. בלי מע״מ נוסף ובלי תוספות חובה.</small></p>
+      <p class="eyebrow rv">החבילה</p>
+      <h2 class="h2 rv">1,290 ₪. מהרעיון ועד ׳אפשר לפרסם׳.</h2>
+      <p class="offer__sub rv">המחיר הסופי, בלי תוספות. משולם במלואו בהזמנה, לפני האפיון.</p>
       <div class="ctas rv">
-        <button class="btn" type="button" data-checkout="offer" data-cta="offer" data-cta-target="checkout">להזמנה — 1,290 ₪</button>
+        <button class="btn" type="button" data-checkout="offer" data-cta="offer" data-cta-target="checkout">להזמנת פרסומת · 1,290 ₪</button>
         <button class="tlink" type="button" data-open="chat" data-cta="offer" data-cta-target="agent">עוד לא בטוחים? בואו נדבר</button>
       </div>
       <p class="terms rv">תשלום בפייפאל (גם בכרטיס אשראי, בלי חשבון)<span class="bitc"> או בביט</span>. הקבלה נשלחת אחרי שהתשלום מאושר.</p>
     </div>
     <div class="rv">
       <ul class="inc">
-        <li><b>רעיון ותסריט</b><span>נכתבים לעסק שלכם, ומגיעים אליכם לאישור לפני שמפיקים.</span></li>
-        <li><b>דמות וסגנון</b><span>נבחרים לפי הרעיון ומתוארים בתסריט. אתם לא מצטלמים.</span></li>
-        <li><b>עריכה ומוזיקה</b><span>קצב, חיתוכים וסאונד.</span></li>
-        <li><b>כתוביות</b><span>רוב הצופים בלי סאונד. הם יקראו.</span></li>
-        <li><b>הלוגו שלכם</b><span>שילוב הלוגו הקיים בסרטון.</span></li>
-        <li><b>30–40 שניות</b><span>מותאמת להעלאה לרשתות.</span></li>
-        <li><b>סבב תיקונים אחד</b><span>הערות מרוכזות על טקסט, כתוביות, מוזיקה וקצב. תיקון של טעות שלנו לא נספר בסבב.</span></li>
-        <li><b>7 ימי עסקים</b><span>מרגע ההזמנה ועד הפרסומת המוכנה. עיכוב מצדכם במסירת חומרים, בהשלמת האפיון או באישור התסריט דוחה את מועד המסירה בהתאם.</span></li>
+        <li><b>אפיון ורעיון</b><span>שיחה קצרה על העסק, ורעיון שנכתב בשבילו.</span></li>
+        <li><b>תסריט לאישור</b><span>מגיע אליכם לאישור לפני שמפיקים.</span></li>
+        <li><b>דמות וקול</b><span>נבחרים לפי הרעיון. אתם לא מצטלמים.</span></li>
+        <li><b>סרטון של 30–40 שניות</b><span>מותאם להעלאה לרשתות.</span></li>
+        <li><b>עריכה, מוזיקה וכתוביות</b><span>קצב, חיתוכים, סאונד, וכתוביות למי שצופה בלי קול.</span></li>
+        <li><b>שילוב הלוגו</b><span>הלוגו הקיים שלכם, בתוך הסרטון.</span></li>
+        <li><b>סבב תיקונים אחד</b><span>על הפרסומת המוכנה, עם הערות מרוכזות על טקסט, כתוביות, מוזיקה וקצב. תיקון של טעות שלנו לא נספר בסבב.</span></li>
+        <li><b>7 ימי עסקים</b><span>מרגע ההזמנה. עיכוב מצדכם במסירת חומרים, בהשלמת האפיון או באישור התסריט דוחה את מועד המסירה בהתאם.</span></li>
       </ul>
       <div class="notinc">
         <h3>מה לא כלול</h3>
         <ul>
-          <li>ניהול קמפיין ותקציב הקידום ברשתות. את התקציב משלמים ישירות לפלטפורמה.</li>
-          <li>עיצוב לוגו חדש.</li>
-          <li>צילום וליהוק שחקנים.</li>
+          <li>הפצה וניהול קמפיין, כולל תקציב הקידום ברשתות.</li>
+          <li>עיצוב לוגו חדש, צילום וליהוק שחקנים.</li>
           <li>שינוי רעיון או דמות אחרי שאישרתם את התסריט. זה מתומחר בנפרד.</li>
           <li>גרסאות או פורמטים נוספים. על אלה מדברים בנפרד.</li>
         </ul>
@@ -357,10 +366,20 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
     <p class="eyebrow rv">איך זה עובד</p>
     <h2 class="h2 rv">שלושה צעדים, ואתם לא מול מצלמה באף אחד מהם.</h2>
     <ol class="steps">
-      <li class="rv"><b>בוחרים כיוון</b><span>מספרים למיטל, הסוכנת שלנו, מה העסק ומה רוצים לקדם. או מדלגים ישר להזמנה.</span></li>
+      <li class="rv"><b>מדברים או מזמינים</b><span>מספרים למיטל, הסוכנת שלנו, מה העסק ומה רוצים לקדם. או מדלגים ישר להזמנה.</span></li>
       <li class="rv"><b>מזמינים</b><span>1,290 ₪ בפייפאל<span class="bitc"> או בביט</span>. מקבלים מספר הזמנה וקישור אישי.</span></li>
-      <li class="rv"><b>משלימים אפיון ומתקדמים להפקה</b><span>מה שכבר סיפרתם לא נשאל שוב. אחר כך תסריט לאישור, הפקה וסבב תיקונים.</span></li>
+      <li class="rv"><b>אפיון, תסריט והפקה</b><span>משלימים אפיון בכתב או בקול. מה שכבר סיפרתם לא נשאל שוב. התסריט מגיע לאישור, ואחרי ההפקה יש סבב תיקונים אחד.</span></li>
     </ol>
+  </div>
+</section>
+
+<!-- 4b · About -->
+<section data-section="about" class="about">
+  <div class="w about__in">
+    <p class="eyebrow rv">מי אנחנו</p>
+    <h2 class="h2 rv">פרונט היא סטודיו לפרסומות קצרות לעסקים.</h2>
+    <p class="lead rv">את פרונט מנהל אלון גרבר. הוא אחראי על כל פרסומת, מהרעיון ועד שהיא מוכנה לפרסום.</p>
+    <p class="about__c rv">רוצים לדבר עם בן אדם? <a href="#" data-wa="היי אלון, יש לי שאלה על פרסומת לעסק" class="tlink">וואטסאפ לאלון</a> · <span dir="ltr">055-950-1280</span></p>
   </div>
 </section>
 
@@ -373,7 +392,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a1">זה מתאים גם לשירות, לא רק למוצר?</button><div id="a1" hidden>כן. מוסך, קליניקה, שיפוצים או מורה פרטי — כל דבר שאפשר להסביר למה כדאי לבחור בו. הרעיון נכתב סביב מה שאתם נותנים ללקוח.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a2">חייבים להצטלם?</button><div id="a2" hidden>לא. הדמות בפרסומת היא לא אתם, ואף אחד מכם לא עומד מול מצלמה.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a3">מי בוחר את הדמות?</button><div id="a3" hidden>אנחנו מציעים דמות שמתאימה לרעיון, והיא מתוארת בתסריט שמגיע אליכם לאישור. לא מתאים לכם? אומרים לפני שמפיקים.</div></div>
-      <div class="q"><button type="button" aria-expanded="false" aria-controls="a4">מה כלול, ומה לא?</button><div id="a4" hidden>רעיון, תסריט, דמות, עריכה, מוזיקה, כתוביות ושילוב הלוגו הקיים, באורך 30–40 שניות, עם סבב תיקונים אחד (הערות מרוכזות על טקסט, כתוביות, מוזיקה וקצב), תוך 7 ימי עסקים מרגע ההזמנה. עיכוב מצדכם במסירת חומרים, בהשלמת האפיון או באישור התסריט דוחה את מועד המסירה בהתאם. שינוי רעיון או דמות אחרי אישור התסריט מתומחר בנפרד. לא כלולים: ניהול קמפיין ותקציב קידום ברשתות, עיצוב לוגו חדש, צילום וליהוק שחקנים, וגרסאות נוספות.</div></div>
+      <div class="q"><button type="button" aria-expanded="false" aria-controls="a4">מה כלול, ומה לא?</button><div id="a4" hidden>אפיון ורעיון, תסריט לאישור, דמות וקול, עריכה, מוזיקה, כתוביות ושילוב הלוגו הקיים, באורך 30–40 שניות, עם סבב תיקונים אחד (הערות מרוכזות על טקסט, כתוביות, מוזיקה וקצב), תוך 7 ימי עסקים מרגע ההזמנה. עיכוב מצדכם במסירת חומרים, בהשלמת האפיון או באישור התסריט דוחה את מועד המסירה בהתאם. שינוי רעיון או דמות אחרי אישור התסריט מתומחר בנפרד. לא כלולים: הפצה, ניהול קמפיין ותקציב קידום ברשתות, עיצוב לוגו חדש, צילום וליהוק שחקנים, וגרסאות נוספות.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a5">מה קורה אחרי התשלום?</button><div id="a5" hidden>התשלום המלא, 1,290 ₪, משולם בהזמנה ולפני האפיון. מקבלים מספר הזמנה וקישור אישי, וממשיכים לאפיון עם מיטל — בכתב או בקול. מה שכבר סיפרתם לפני ההזמנה שמור ולא נשאל שוב. אחרי שהאפיון נשלח, התסריט מגיע אליכם לאישור, ורק אז מפיקים.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a6">מי זו מיטל?</button><div id="a6" hidden>הסוכנת של פרונט, לא בן אדם. היא עוזרת להבין אם זה מתאים לכם ושומרת את מה שסיפרתם להזמנה. מעדיפים לדבר עם בן אדם? <a href="#" data-wa="היי, יש לי שאלה על פרסומת לעסק" class="tlink">וואטסאפ</a>.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a7">זה מבטיח לקוחות?</button><div id="a7" hidden>לא, וגם אף אחד אחר לא יכול להבטיח. מה שאנחנו עושים: פרסומת שגורמת לעצור ולהבין מה אתם מוכרים. מה שקורה אחר כך תלוי גם בהצעה, בקהל ובכמה מהר עונים.</div></div>
@@ -398,7 +417,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
 <footer>
   <div class="w">
     <span>© 2026 פרונט · <span dir="ltr">055-950-1280</span></span>
-    <span><a href="#" data-wa="היי">וואטסאפ</a> · <a href="https://frontvid.netlify.app/privacy" target="_blank" rel="noopener">פרטיות</a> · <a href="#" data-consent-open>הגדרות מדידה</a></span>
+    <span><a href="#" data-wa="היי">וואטסאפ</a> · <a href="/terms">תנאי ההזמנה</a> · <a href="https://frontvid.netlify.app/privacy" target="_blank" rel="noopener">פרטיות</a> · <a href="/accessibility">נגישות</a> · <a href="#" data-consent-open>הגדרות מדידה</a></span>
   </div>
 </footer>
 

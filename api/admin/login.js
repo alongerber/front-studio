@@ -1,11 +1,12 @@
-// Admin sign-in without a password: a one-time link (15 minutes) mailed to ADMIN_EMAIL, exchanged for a session (12 hours).
+// Admin sign-in without a password: a one-time link (15 minutes) mailed to ADMIN_EMAIL, exchanged for a session cookie
+// (12 hours and this browser session, or 30 days with "remember me").
 // The link carries the token in the fragment (#login=…), so it never reaches a server log or a Referer.
 import { cfg } from '../../lib/config.js';
 import { q, one } from '../../lib/db.js';
 import { json, handle, readJson, httpError, clientIp, sha256, newToken } from '../../lib/util.js';
 import { rateLimit } from '../../lib/store.js';
 import { notify } from '../../lib/notify.js';
-import { endSession, LOGIN_TTL_MIN, SESSION_TTL_HOURS } from '../../lib/admin.js';
+import { endSession, newSession, requireAdmin, clearCookie, LOGIN_TTL_MIN } from '../../lib/admin.js';
 
 export const POST = handle(async (request) => {
   const b = await readJson(request, 2 * 1024);
@@ -37,12 +38,18 @@ export const POST = handle(async (request) => {
     const row = await one(`UPDATE admin_tokens SET used_at = now()
                            WHERE token_hash = $1 AND kind = 'login' AND used_at IS NULL AND expires_at > now() RETURNING email`, [sha256(t)]);
     if (!row || row.email !== cfg.admin.email) throw httpError(401, 'link_invalid');
-    const session = newToken();
-    await q(`INSERT INTO admin_tokens (token_hash, kind, email, expires_at) VALUES ($1, 'session', $2, now() + make_interval(hours => $3))`,
-      [sha256(session), row.email, SESSION_TTL_HOURS]);
-    return json({ ok: true, session, hours: SESSION_TTL_HOURS });
+    const s = await newSession(row.email, !!b.remember);
+    return json({ ok: true, hours: s.hours, remembered: !!b.remember }, 200, { 'set-cookie': s.cookie });
   }
 
-  if (b.action === 'logout') { await endSession(request); return json({ ok: true }); }
+  // Username + password (Basic) is checked once and exchanged for the same kind of cookie session:
+  // the page never keeps the password, not even for this tab.
+  if (b.action === 'password') {
+    const who = await requireAdmin(request);
+    const s = await newSession(cfg.admin.email || who, !!b.remember);
+    return json({ ok: true, hours: s.hours, remembered: !!b.remember }, 200, { 'set-cookie': s.cookie });
+  }
+
+  if (b.action === 'logout') { await endSession(request); return json({ ok: true }, 200, { 'set-cookie': clearCookie() }); }
   throw httpError(400, 'bad_action');
 });

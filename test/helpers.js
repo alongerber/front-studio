@@ -105,8 +105,10 @@ export async function call(handler, method, path, opts) {
   const r = await handler(req(method, path, opts));
   const text = await r.text();
   let data = null; try { data = JSON.parse(text); } catch { data = text; }
-  return { status: r.status, data };
+  return { status: r.status, data, headers: r.headers };
 }
+// The admin session cookie a response set, ready to send back as a Cookie header.
+export const adminCookie = (r) => { const m = /front_admin=([A-Za-z0-9_-]+)/.exec(r.headers.get('set-cookie') || ''); return m ? { cookie: 'front_admin=' + m[1] } : null; };
 export const basic = (u = ADMIN.user, p = ADMIN.pass) => ({ authorization: 'Basic ' + Buffer.from(u + ':' + p).toString('base64') });
 export const ppHeaders = (sig = 'good') => ({
   'paypal-transmission-id': 't1', 'paypal-transmission-time': new Date().toISOString(), 'paypal-transmission-sig': sig,

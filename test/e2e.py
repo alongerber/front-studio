@@ -435,6 +435,58 @@ with sync_playwright() as p:
     banned = [w for w in ['AI', 'בינה מלאכותית', 'דיגיטלי', 'פתרונות חדשניים', 'לשלב הבא', 'עוסק פטור'] if w in copy]
     check('K5 no banned words in the marketing copy', not banned, banned)
     check('K6 no JS errors (landing)', not errs, errs)
+    # ── L. launch: approved copy, mobile order of content, keyboard and focus, contrast, legal pages ──
+    copy_all = page.locator('main').inner_text()
+    need = ['הרגע עצרתם בשביל טונה.', 'מה יגרום ללקוחות לבחור דווקא בכם?', 'הפרסומת לא צריכה לספר הכול על העסק. היא צריכה לתת סיבה להתעניין בו.',
+            'נמצא את הסיבה הזאת, נכתוב לה תסריט ונתאים לה דמות. אתם לא צריכים להצטלם.', 'בואו נדבר על הפרסומת שלי', 'מספיק לפרסם טונה. עכשיו אותי',
+            'להזמנת פרסומת · 1,290 ₪', 'הפרסומת שלכם לא מגיעה עם הדוגמן מהטונה.', 'נבחר דמות, סיפור וסגנון שמתאימים למה שאתם מוכרים.',
+            '1,290 ₪. מהרעיון ועד ׳אפשר לפרסם׳.', 'אלון גרבר', 'קונספט']
+    missing = [x for x in need if x not in copy_all]
+    check('L1 approved copy is on the page (hero, examples, package, about)', not missing, missing)
+    check('L2 examples are marked as concept work, no client claims', 'עבודות קונספט' in copy_all and 'לקוחות שלנו' not in copy_all)
+    # keyboard: the order window keeps focus inside and returns it on Escape
+    page.evaluate("window.scrollTo(0,0)")
+    opener = page.locator('section[data-section=hero] [data-checkout]')
+    opener.focus(); page.keyboard.press('Enter'); page.wait_for_selector('#pay:not([hidden])')
+    inside = []
+    for _ in range(12):
+        page.keyboard.press('Tab'); inside.append(page.evaluate("document.getElementById('pay').contains(document.activeElement)"))
+    page.keyboard.press('Escape'); page.wait_for_timeout(200)
+    back = page.evaluate("document.activeElement && document.activeElement.textContent.trim()")
+    check('L3 order window: Tab stays inside, Escape closes and focus returns to the button', all(inside) and page.locator('#pay').is_hidden() and back == 'מספיק לפרסם טונה. עכשיו אותי', (inside, back))
+    # contrast of the main text and buttons (WCAG AA 4.5:1 for normal text)
+    ratios = page.evaluate(r"""() => {
+      const lum = c => { const v = c.match(/[\d.]+/g).slice(0,3).map(Number).map(x => { x/=255; return x<=0.03928? x/12.92 : Math.pow((x+0.055)/1.055,2.4); }); return 0.2126*v[0]+0.7152*v[1]+0.0722*v[2]; };
+      const mix = (fg, bg) => { const f = fg.match(/[\d.]+/g).map(Number), b = bg.match(/[\d.]+/g).map(Number), a = f[3] === undefined ? 1 : f[3];
+        return 'rgb(' + [0,1,2].map(i => Math.round(f[i]*a + b[i]*(1-a))).join(',') + ')'; };
+      const bgOf = el => { while (el) { const c = getComputedStyle(el).backgroundColor; if (c && !/rgba\(0, 0, 0, 0\)|transparent/.test(c)) return c; el = el.parentElement; } return 'rgb(20,18,16)'; };
+      const r = (el) => { const bg = bgOf(el), fg = mix(getComputedStyle(el).color, bg), a = lum(fg)+0.05, b = lum(bg)+0.05; return Math.round(Math.max(a,b)/Math.min(a,b)*100)/100; };
+      const sel = ['.h3__sub','.h3__offer','.h3 .btn','.ordr small','.lead','.inc span','.steps span','.q button','footer a','.terms'];
+      return sel.map(s => { const el = document.querySelector(s); return [s, el ? r(el) : null]; });
+    }""")
+    low = [x for x in ratios if x[1] is not None and x[1] < 4.5]
+    check('L4 text and buttons meet 4.5:1 contrast', not low, ratios)
+    ctx.close()
+    # mobile: the offer and both buttons are reachable early, the loop video does not push them down
+    mctx = browser.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
+    mctx.route(re.compile(r'https://(www\.paypal|unpkg|connect\.facebook|www\.clarity|fonts\.)'), lambda r: r.abort())
+    mp = mctx.new_page(); mp.goto(BASE + '/'); mp.wait_for_timeout(500); mp.click('#cbNone'); mp.wait_for_timeout(300)
+    tops = mp.evaluate("""() => ['section[data-section=hero] .btn[data-open]','section[data-section=hero] [data-checkout]','.h3__price','#loop'].map(s => Math.round(document.querySelector(s).getBoundingClientRect().top))""")
+    check('L5 mobile: price and both buttons come before the loop video, talk button within the first screen and a half', tops[0] < 844 * 1.5 and tops[1] < tops[3] and tops[2] < tops[3], tops)
+    mctx.close()
+    ctx = new_ctx(browser); page = ctx.new_page()
+    for path, title in (('/terms', 'תנאי ההזמנה'), ('/accessibility', 'נגישות')):
+        page.goto(BASE + path); page.wait_for_timeout(300)
+        h = page.locator('h1').inner_text() if page.locator('h1').count() else ''
+        check('L6 ' + path + ' page exists, linked from the footer', h == title, h)
+    page.goto(BASE + '/accessibility')
+    check('L7 accessibility page makes no compliance claim', 'איננו מצהירים על עמידה' in page.content() and 'עומד בתקן' not in page.content())
+    page.goto(BASE + '/'); page.wait_for_timeout(400)
+    links = page.evaluate("[...document.querySelectorAll('footer a')].map(a => a.getAttribute('href'))")
+    check('L8 footer links: terms, privacy, accessibility', '/terms' in links and '/accessibility' in links and any('privacy' in (l or '') for l in links), links)
+    ctx.close()
+    ctx = new_ctx(browser); page = ctx.new_page(); errs = []; page.on('pageerror', lambda e: errs.append(str(e)))
+    page.goto(BASE + '/'); page.wait_for_timeout(400); page.click('#cbNone')
     # ── T. test environment: a clear banner, no Bit, no route to a real transfer ──
     page.wait_for_selector('#testBar', timeout=4000)
     check('T1 test banner says no money moves', page.locator('#testBar').inner_text().strip() == 'סביבת בדיקה — אין להעביר כסף')

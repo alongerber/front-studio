@@ -93,7 +93,16 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
   F.openCheckoutSheet=open;
   document.getElementById('payX').onclick=close;
   sheet.addEventListener('click',function(e){ if(e.target===sheet) close(); });
-  addEventListener('keydown',function(e){ if(e.key==='Escape'&&!sheet.hidden) close(); });
+  addEventListener('keydown',function(e){
+    if(sheet.hidden) return;
+    if(e.key==='Escape'){ close(); return; }
+    if(e.key!=='Tab') return;                             // keep keyboard focus inside the open order window
+    var f=[].filter.call(sheet.querySelectorAll('button,a[href],input,select,textarea,iframe,[tabindex]:not([tabindex="-1"])'),function(x){ return !x.disabled&&x.getClientRects().length; });
+    if(!f.length) return;
+    var first=f[0], last=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey&&(document.activeElement===last||!sheet.contains(document.activeElement))){ e.preventDefault(); first.focus(); }
+  });
   document.querySelectorAll('[data-checkout]').forEach(function(b){ b.addEventListener('click',function(){ open(b.getAttribute('data-checkout')); }); });
   document.querySelectorAll('[data-bit]').forEach(function(b){ b.addEventListener('click',function(){
     if(!F.live||!F.checkoutOpen) return;                  // test environment or checkout closed: Bit does nothing

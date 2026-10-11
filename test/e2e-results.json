@@ -57,7 +57,7 @@
  {
   "name": "B6 order paid in DB",
   "ok": true,
-  "detail": "[{'status': 'paid', 'paid_via': 'paypal', 'attribution': {'last': {'ts': '1791674448300', 'ad_id': '123', 'fbclid': 'IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "[{'status': 'paid', 'paid_via': 'paypal', 'attribution': {'last': {'ts': '1791680004081', 'ad_id': '123', 'fbclid': 'IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "B7 fbclid kept whole (194 chars) on the order",
@@ -67,7 +67,7 @@
  {
   "name": "B8 fbc built from the full fbclid",
   "ok": true,
-  "detail": "{'ip': '203.0.113.3', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791674448300.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "{'ip': '203.0.113.3', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791680004081.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "B9 exactly one purchase_verified",
@@ -127,7 +127,7 @@
  {
   "name": "D1 widget gets a link key, no token",
   "ok": true,
-  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'nbJsfJ_UXr_tYM7kjy4ZbOG0672Evd3S', 'anonymous_id': 'ddc9582a-f4ca-4a6e-aafc-35d890c51571', 'session_id': '20eb4710-85f4-412e-aeee-47f328114a37', "
+  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'asqtH271t5jgXFmDEUBEObMLONzfdiyL', 'anonymous_id': 'ab3f5ad5-d00d-4253-82d2-2219334b91dd', 'session_id': '1215a40a-320c-4815-9eac-c623523c77db', "
  },
  {
   "name": "D2 save_brief_note returns the real result only after the server saved",
@@ -137,12 +137,12 @@
  {
   "name": "D3 note stored on the server before payment",
   "ok": true,
-  "detail": "{'brief': {'business_type': 'מספרה בחולון'}, 'agent_links': ['nbJsfJ_UXr_tYM7kjy4ZbOG0672Evd3S'], 'paid_at': None}"
+  "detail": "{'brief': {'business_type': 'מספרה בחולון'}, 'agent_links': ['asqtH271t5jgXFmDEUBEObMLONzfdiyL'], 'paid_at': None}"
  },
  {
   "name": "D4 order carries this tab's link key",
   "ok": true,
-  "detail": "['nbJsfJ_UXr_tYM7kjy4ZbOG0672Evd3S']"
+  "detail": "['asqtH271t5jgXFmDEUBEObMLONzfdiyL']"
  },
  {
   "name": "D5 not paid",
@@ -162,7 +162,7 @@
  {
   "name": "D7 checkout reused the pre-payment order (brief kept)",
   "ok": true,
-  "detail": "('FR-S7E3-ZXHG', 'FR-S7E3-ZXHG')"
+  "detail": "('FR-KJ8H-J3AG', 'FR-KJ8H-J3AG')"
  },
  {
   "name": "D8 known brief shown from the server",
@@ -182,7 +182,7 @@
  {
   "name": "D11 brief completed and stored",
   "ok": true,
-  "detail": "{'brief': {'promote': 'תספורת גברים', 'business_type': 'מספרה בחולון'}, 'brief_done_at': '2026-10-10T23:21:01.868Z', 'contact': {'name': 'דנה', 'email': 'dana@example.com', 'phone': '050-1234567'}}"
+  "detail": "{'brief': {'promote': 'תספורת גברים', 'business_type': 'מספרה בחולון'}, 'brief_done_at': '2026-10-11T00:53:37.950Z', 'contact': {'name': 'דנה', 'email': 'dana@example.com', 'phone': '050-1234567'}}"
  },
  {
   "name": "D12 no JS errors (agent + brief)",
@@ -202,7 +202,7 @@
  {
   "name": "DS3 new_ad: a new order with this tab's link key, the previous one untouched",
   "ok": true,
-  "detail": "('DONE: a new ad was started; the previous ad and its details stay as they were. Treat known_context as not relevant to this ad. Save the new details with save_brief_note.', {'FR-CG5J-ZH9N': {'order_id': 'FR-CG5J-ZH9N', 'brief': {'business_type': 'ניקוי ספות'}, 'agent_links': []}, 'FR-TFG2-36G6': {'"
+  "detail": "('DONE: a new ad was started; the previous ad and its details stay as they were. Treat known_context as not relevant to this ad. Save the new details with save_brief_note.', {'FR-A9MU-2D6D': {'order_id': 'FR-A9MU-2D6D', 'brief': {'business_type': 'ניקוי ספות'}, 'agent_links': []}, 'FR-BJZU-2KMK': {'"
  },
  {
   "name": "DS4 one new order only (no order per chat opening)",
@@ -262,7 +262,7 @@
  {
   "name": "Q3 home chat with a paid, open order continues the brief",
   "ok": true,
-  "detail": "{'phase': 'brief', 'known_context': 'פרטי ההזמנה ששולמה: business_type: מועדון סנוקר', 'payment_status': 'verified', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'q_eciVQ9VMxjfjWX3bn8R0KrJraBFzS6', 'anonymous_id': '212b03fc-ad0d-49c4-ae8e-b61c6359c526', 'session_id': 'bd38d65"
+  "detail": "{'phase': 'brief', 'known_context': 'פרטי ההזמנה ששולמה: business_type: מועדון סנוקר', 'payment_status': 'verified', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'zwqaXlw1P8eyXhc4qQzOS7NIbOuML1bD', 'anonymous_id': '8c597136-69a0-4c1d-91dd-7af5167bc380', 'session_id': '00e3c5e"
  },
  {
   "name": "Q4 open_payment refuses to charge an already paid order",
@@ -277,12 +277,12 @@
  {
   "name": "Q6 after the brief is done, a home chat is a new sale, not tied to the old order",
   "ok": true,
-  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'q_eciVQ9VMxjfjWX3bn8R0KrJraBFzS6', 'anonymous_id': '212b03fc-ad0d-49c4-ae8e-b61c6359c526', 'session_id': 'bd38d651-db83-43a8-8354-b4be7837d797', "
+  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'zwqaXlw1P8eyXhc4qQzOS7NIbOuML1bD', 'anonymous_id': '8c597136-69a0-4c1d-91dd-7af5167bc380', 'session_id': '00e3c5e8-ac42-45d3-bc72-efe7c5fc1b77', "
  },
  {
   "name": "Q7 notes from the new sale go to a new order, the paid one is untouched",
   "ok": true,
-  "detail": "('FR-RBDC-EWCD', 'FR-6ZA9-RQAA', {'business_type': 'מועדון סנוקר'}, 'SAVED: business_type')"
+  "detail": "('FR-MKFU-MW5M', 'FR-4YB7-T29X', {'business_type': 'מועדון סנוקר'}, 'SAVED: business_type')"
  },
  {
   "name": "Q8 no JS errors",
@@ -317,7 +317,7 @@
  {
   "name": "I1 order created with ads consent and matching data",
   "ok": true,
-  "detail": "{'consent': {'ads': 'granted', 'analytics': 'granted'}, 'meta_user': {'ip': '203.0.113.16', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791674486174.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "{'consent': {'ads': 'granted', 'analytics': 'granted'}, 'meta_user': {'ip': '203.0.113.16', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791680042141.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "I2 withdrawing ads consent updates the order and drops matching data",
@@ -347,7 +347,7 @@
  {
   "name": "J4 completed with the minimum content",
   "ok": true,
-  "detail": "{'brief': {'promote': 'טיפול שנתי', 'business_type': 'מוסך'}, 'brief_done_at': '2026-10-10T23:21:32.861Z'}"
+  "detail": "{'brief': {'promote': 'טיפול שנתי', 'business_type': 'מוסך'}, 'brief_done_at': '2026-10-11T00:54:08.842Z'}"
  },
  {
   "name": "J5 no JS errors (order page)",
@@ -377,7 +377,7 @@
  {
   "name": "H10 PayPal check from the order: capture id, amount and currency shown, verified",
   "ok": true,
-  "detail": "תוצאה\nמאומת מול PayPal · sandbox · 10.10.2026, 23:21\nהזמנת PayPal\nPP5 · COMPLETED\nCapture\nCAP-PP5\nסטטוס ב-PayPal\nCOMPLETED · 10.10.2026, 2:57\nסכום\n1290.00 ILS · סכום תואם · מטבע תואם\nשיוך\ncustom_id תואם · מוטב תואם · ברשומות: כן"
+  "detail": "תוצאה\nמאומת מול PayPal · sandbox · 11.10.2026, 0:54\nהזמנת PayPal\nPP5 · COMPLETED\nCapture\nCAP-PP5\nסטטוס ב-PayPal\nCOMPLETED · 10.10.2026, 2:57\nסכום\n1290.00 ILS · סכום תואם · מטבע תואם\nשיוך\ncustom_id תואם · מוטב תואם · ברשומות: כן"
  },
  {
   "name": "H4 dashboard data refused without sign-in (server, not just a hidden page)",
@@ -433,6 +433,51 @@
   "name": "K6 no JS errors (landing)",
   "ok": true,
   "detail": "[]"
+ },
+ {
+  "name": "L1 approved copy is on the page (hero, examples, package, about)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "name": "L2 examples are marked as concept work, no client claims",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "L3 order window: Tab stays inside, Escape closes and focus returns to the button",
+  "ok": true,
+  "detail": "([True, True, True, True, True, True, True, True, True, True, True, True], 'מספיק לפרסם טונה. עכשיו אותי')"
+ },
+ {
+  "name": "L4 text and buttons meet 4.5:1 contrast",
+  "ok": true,
+  "detail": "[['.h3__sub', 9.25], ['.h3__offer', 16.32], ['.h3 .btn', 6.65], ['.ordr small', 9.25], ['.lead', 8.8], ['.inc span', 9.25], ['.steps span', 8.8], ['.q button', 16.32], ['footer a', 5.72], ['.terms', 5.72]]"
+ },
+ {
+  "name": "L5 mobile: price and both buttons come before the loop video, talk button within the first screen and a half",
+  "ok": true,
+  "detail": "[499, 569, 412, 680]"
+ },
+ {
+  "name": "L6 /terms page exists, linked from the footer",
+  "ok": true,
+  "detail": "תנאי ההזמנה"
+ },
+ {
+  "name": "L6 /accessibility page exists, linked from the footer",
+  "ok": true,
+  "detail": "נגישות"
+ },
+ {
+  "name": "L7 accessibility page makes no compliance claim",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "L8 footer links: terms, privacy, accessibility",
+  "ok": true,
+  "detail": "['https://wa.me/972559501280?text=%D7%94%D7%99%D7%99', '/terms', 'https://frontvid.netlify.app/privacy', '/accessibility', '#']"
  },
  {
   "name": "T1 test banner says no money moves",
@@ -492,7 +537,7 @@
  {
   "name": "M3 the bar does not cover the end of the page",
   "ok": true,
-  "detail": "(772.6875, 773)"
+  "detail": "(772.765625, 773)"
  },
  {
   "name": "M4 no sideways scroll on mobile",

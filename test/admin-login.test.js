@@ -2,6 +2,7 @@
 import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { freshDb, sql, mock, call, basic } from './helpers.js';
+import { adminCookie } from './helpers.js';
 import * as login from '../api/admin/login.js';
 import * as summary from '../api/admin/summary.js';
 import * as adminOrder from '../api/admin/order.js';
@@ -35,8 +36,11 @@ test('A2. the link signs in once; the session opens the dashboard; nothing else 
   const t = tokenFromMail(mails()[0]);
   assert.equal((await dash({ authorization: 'Bearer ' + t })).status, 401, 'the link token itself is not a session');
   const r = await post({ action: 'redeem', token: t });
-  assert.equal(r.status, 200); assert.ok(r.data.session);
-  const auth = { authorization: 'Bearer ' + r.data.session };
+  assert.equal(r.status, 200); assert.equal(r.data.session, undefined, 'the session is never handed to page script');
+  const set = r.headers.get('set-cookie');
+  assert.match(set, /HttpOnly/); assert.match(set, /Secure/); assert.match(set, /SameSite=Strict/); assert.match(set, /Path=\/api\/admin/);
+  assert.doesNotMatch(set, /Max-Age/, 'without "remember me" it ends with the browser session');
+  const auth = adminCookie(r);
   assert.equal((await dash(auth)).status, 200);
   assert.equal((await call(adminOrder.GET, 'GET', '/api/admin/order?order_id=FR-AAAA-BBBB', { headers: auth })).status, 404, 'authorized; order just does not exist');
   assert.equal((await post({ action: 'redeem', token: t })).status, 401, 'one use only');
@@ -51,7 +55,7 @@ test('A3. expired links and sessions are refused; changing ADMIN_EMAIL ends old 
   assert.equal((await post({ action: 'redeem', token: t })).status, 401);
   await post({ action: 'request', email: OWNER });
   const r = await post({ action: 'redeem', token: tokenFromMail(mails()[1]) });
-  const auth = { authorization: 'Bearer ' + r.data.session };
+  const auth = adminCookie(r);
   assert.equal((await dash(auth)).status, 200);
   process.env.ADMIN_EMAIL = 'new@front.test';
   assert.equal((await dash(auth)).status, 401);
@@ -72,4 +76,16 @@ test('A5. without ADMIN_EMAIL there is no link sign-in; the password sign-in sti
   assert.equal((await post({ action: 'request', email: OWNER })).status, 503);
   assert.equal(mails().length, 0);
   assert.equal((await dash(basic())).status, 200);
+});
+
+test('A6. "remember me" keeps the device signed in for 30 days; a password is exchanged once for a cookie, never kept', async () => {
+  await post({ action: 'request', email: OWNER });
+  const r = await post({ action: 'redeem', token: tokenFromMail(mails()[0]), remember: true });
+  assert.match(r.headers.get('set-cookie'), /Max-Age=2592000/);
+  assert.equal((await dash(adminCookie(r))).status, 200);
+  const row = (await sql(`SELECT extract(epoch from (expires_at - now()))::int s FROM admin_tokens WHERE kind = 'session'`))[0];
+  assert.ok(row.s > 29 * 86400 && row.s <= 30 * 86400, 'server-side expiry is 30 days too');
+  const out = await post({ action: 'logout' }, adminCookie(r));
+  assert.match(out.headers.get('set-cookie'), /Max-Age=0/);
+  assert.equal((await dash(adminCookie(r))).status, 401, 'signed out on the server');
 });
