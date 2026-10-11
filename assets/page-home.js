@@ -189,25 +189,10 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
   document.querySelectorAll('video[data-video]').forEach(function(x){ F.observeVideo(x,x.getAttribute('data-video')); });
 })();
 
-/* ── hero video: muted, starts when visible, pausable; caption follows what he is holding ── */
+/* ── hero video: muted, starts when visible, pausable; reduced motion keeps the still image ── */
 (function(){
   var v=document.getElementById('loop'),b=document.getElementById('loopBtn'); if(!v)return;
-  var W=document.getElementById('loopW'),N=document.getElementById('loopN'),bar=document.getElementById('loopBar');
-  var SEG=[[0,'פרחים'],[2.45,'אינסטלציה'],[5.2,'נדל״ן'],[6.62,'קונדיטוריה'],[8.12,'מוסכים']], END=10;
-  var fills=SEG.map(function(sg,i){ var len=(SEG[i+1]?SEG[i+1][0]:END)-sg[0], el=document.createElement('i'), f=document.createElement('b');
-    el.style.flex=len; el.appendChild(f); bar.appendChild(el); return f; });
-  var cur=-1, RM=matchMedia('(prefers-reduced-motion: reduce)').matches, user=false, raf=0;
-  function idx(t){ for(var i=SEG.length-1;i>=0;i--) if(t>=SEG[i][0]) return i; return 0; }
-  function paint(){
-    var t=v.currentTime||0, d=v.duration||END, i=idx(t);
-    if(i!==cur){ cur=i; W.classList.add('out');
-      setTimeout(function(){ W.textContent=SEG[cur][1]; N.textContent='0'+(cur+1)+' / 0'+SEG.length; W.classList.remove('out'); },180); }
-    for(var k=0;k<fills.length;k++){ var s0=SEG[k][0], s1=SEG[k+1]?SEG[k+1][0]:d;
-      fills[k].style.transform='scaleX('+Math.max(0,Math.min(1,(t-s0)/(s1-s0)))+')'; }
-    if(!v.paused) raf=requestAnimationFrame(paint);
-  }
-  v.addEventListener('play',function(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(paint); });
-  v.addEventListener('seeked',paint);
+  var RM=matchMedia('(prefers-reduced-motion: reduce)').matches, user=false;
   function start(){ if(!v.src){v.src=v.dataset.src;} v.play().then(function(){b.hidden=false;}).catch(function(){}); }
   function setBtn(paused){ b.setAttribute('aria-pressed',paused?'true':'false'); b.setAttribute('aria-label',paused?'להפעיל את הסרטון':'לעצור את הסרטון'); }
   if(!RM){ new IntersectionObserver(function(es){es.forEach(function(e){

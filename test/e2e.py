@@ -1,3 +1,4 @@
+import os
 """Browser end-to-end tests against test/e2e-server.js (real pages, real API, PGlite, mocked PayPal/Meta/ElevenLabs SDKs).
 Run: node test/e2e-server.js 8787 &  then  python3 test/e2e.py
 """
@@ -480,7 +481,19 @@ with sync_playwright() as p:
     mp = mctx.new_page(); mp.goto(BASE + '/'); mp.wait_for_timeout(500); mp.click('#cbNone'); mp.wait_for_timeout(300)
     tops = mp.evaluate("""() => ['section[data-section=hero] .btn[data-open]','section[data-section=hero] [data-checkout]','.h3__price','#loop'].map(s => Math.round(document.querySelector(s).getBoundingClientRect().top))""")
     check('L5 mobile: price and both buttons come before the loop video, talk button within the first screen and a half', tops[0] < 844 * 1.5 and tops[1] < tops[3] and tops[2] < tops[3], tops)
+    HERO_FIT = """() => { const v = document.getElementById('loop'), r = v.getBoundingClientRect(), cs = getComputedStyle(v);
+      return {fit: cs.objectFit, ratio: Math.round(r.width / r.height * 1000) / 1000, h: Math.round(r.height), w: Math.round(r.width), vw: innerWidth, poster: v.getAttribute('poster')}; }"""
+    hm = mp.evaluate(HERO_FIT)
+    check('L8b mobile hero: whole frame (contain, 9:16 box), not taller than 62% of the screen, inside the width', hm['fit'] == 'contain' and abs(hm['ratio'] - 0.5625) < 0.01 and hm['h'] <= 844 * 0.62 and hm['w'] <= hm['vw'], hm)
+    mp.screenshot(path=os.environ.get('SHOT_DIR', '/tmp') + '/hero-390.png')
+    mp.locator('.h3__m').screenshot(path=os.environ.get('SHOT_DIR', '/tmp') + '/hero-390-video.png')
     mctx.close()
+    dctx = new_ctx(browser); dp = dctx.new_page(); dp.set_viewport_size({'width': 1440, 'height': 900}); dp.goto(BASE + '/'); dp.wait_for_timeout(500)
+    if dp.locator('#cbNone').count(): dp.click('#cbNone'); dp.wait_for_timeout(300)
+    hd = dp.evaluate(HERO_FIT)
+    check('L8c desktop hero: whole frame (contain, 9:16 box), within the first screen, sign video', hd['fit'] == 'contain' and abs(hd['ratio'] - 0.5625) < 0.01 and hd['h'] <= 900 and 'hero-sign' in (hd['poster'] or ''), hd)
+    dp.screenshot(path=os.environ.get('SHOT_DIR', '/tmp') + '/hero-1440.png')
+    dctx.close()
     ctx = new_ctx(browser); page = ctx.new_page()
     for path, title in (('/terms', 'תנאי ההזמנה'), ('/accessibility', 'נגישות')):
         page.goto(BASE + path); page.wait_for_timeout(300)

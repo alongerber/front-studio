@@ -19,7 +19,7 @@
 <meta name="theme-color" content="#141210">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="image" href="./assets/hero-poster.webp" fetchpriority="high">
+<link rel="preload" as="image" href="./assets/hero-sign.webp" fetchpriority="high">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap">
 <style>
 :root{
@@ -67,22 +67,13 @@ section{padding-block:clamp(72px,10vw,128px);position:relative}
   opacity:0;pointer-events:none;transition:opacity .3s}
 .top.on .top__c{opacity:1;pointer-events:auto}
 
-/* ── 1 · HERO: the presenter from the ad, still handing over products ── */
+/* ── 1 · HERO: the presenter from the tuna ad, with a cardboard sign; shown whole (contain, own 9:16 ratio) ── */
 .h3{padding:0;min-height:100svh;display:grid;align-items:center}
 .h3__in{display:grid;gap:34px;align-items:center;padding-block:84px 56px}
-.h3__m{position:relative;margin:0;border-radius:22px;overflow:hidden;background:#0d0c0a;aspect-ratio:9/16;
+.h3__m{position:relative;margin:0;border-radius:22px;overflow:hidden;background:#d9d3c9;aspect-ratio:9/16;
   width:100%;max-width:420px;margin-inline:auto;box-shadow:0 30px 80px rgba(0,0,0,.45)}
-.h3__m video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.h3__m::after{content:"";position:absolute;inset:auto 0 0 0;height:30%;background:linear-gradient(to top,rgba(0,0,0,.62),transparent);pointer-events:none}
-.h3__cap{position:absolute;z-index:2;inset-inline:18px;bottom:30px;display:flex;align-items:center;justify-content:space-between;gap:14px}
-.h3__lab{display:flex;align-items:baseline;gap:10px}
-.h3__n{direction:ltr;font-size:13px;font-weight:700;letter-spacing:.1em;color:var(--acc)}
-.h3__w{font-size:19px;font-weight:700;transition:opacity .25s var(--ease)}
-.h3__w.out{opacity:0}
-.h3__bar{position:absolute;z-index:2;inset-inline:18px;bottom:18px;display:flex;gap:4px;direction:ltr}
-.h3__bar i{display:block;height:2px;border-radius:2px;background:rgba(244,239,230,.25);position:relative;overflow:hidden}
-.h3__bar i b{position:absolute;inset:0;background:var(--acc);transform-origin:left;transform:scaleX(0)}
-.h3__pause{width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;
+.h3__m video{display:block;width:100%;height:100%;object-fit:contain}
+.h3__pause{position:absolute;z-index:2;inset-inline-end:14px;bottom:14px;width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;
   background:rgba(20,18,16,.55);box-shadow:inset 0 0 0 1px rgba(244,239,230,.3);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .h3__pause svg{width:12px;height:12px;fill:var(--ink)}
 .h3__pause[aria-pressed="true"] svg .pz{display:none}
@@ -99,8 +90,7 @@ section{padding-block:clamp(72px,10vw,128px);position:relative}
   .h3{min-height:0}
   .h3__in{padding-top:70px;gap:26px}
   .h3__t{order:1}.h3__m{order:2}
-  .h3__m{max-width:none;aspect-ratio:auto;height:min(42svh,420px);border-radius:18px}
-  .h3__m video{object-position:50% 18%}
+  .h3__m{height:min(58svh,520px);width:auto;max-width:100%;border-radius:18px}
   .h3__cta .btn{flex:1 1 100%}
 }
 @media(min-width:900px){
@@ -247,19 +237,15 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
 
 <main id="main">
 
-<!-- 1 · HERO — same presenter as the ad, still holding whatever you sell -->
+<!-- 1 · HERO — the tuna-ad presenter with his sign -->
 <section class="h3" aria-labelledby="h1" data-section="hero">
   <div class="w h3__in">
     <figure class="h3__m">
-      <video id="loop" muted loop playsinline preload="none" poster="./assets/hero-poster.webp" data-src="./assets/hero.mp4"
-        aria-label="הדוגמן מהפרסומת מקבל לידיו כל פעם מוצר אחר: זר פרחים, מפתח צינורות, דגם של בית, עוגה והגה של רכב"></video>
-      <div class="h3__bar" id="loopBar" aria-hidden="true"></div>
-      <figcaption class="h3__cap">
-        <span class="h3__lab" aria-hidden="true"><span class="h3__n" id="loopN">01 / 05</span><span class="h3__w" id="loopW">פרחים</span></span>
-        <button class="h3__pause" id="loopBtn" type="button" aria-label="לעצור את הסרטון" aria-pressed="false" hidden>
-          <svg viewBox="0 0 12 12" aria-hidden="true"><g class="pz"><rect x="2" y="1" width="3" height="10"/><rect x="7" y="1" width="3" height="10"/></g><path class="pl" d="M3 1.2v9.6L10.5 6z"/></svg>
-        </button>
-      </figcaption>
+      <video id="loop" muted loop playsinline preload="none" width="720" height="1280" poster="./assets/hero-sign.webp" data-src="./assets/hero-sign.mp4"
+        aria-label="הדוגמן מפרסומת הטונה, בחליפה, מחזיק פחית טונה ושלט קרטון: עשיתי פרסומת לטונה. מעדיף לעסק שלכם."></video>
+      <button class="h3__pause" id="loopBtn" type="button" aria-label="לעצור את הסרטון" aria-pressed="false" hidden>
+        <svg viewBox="0 0 12 12" aria-hidden="true"><g class="pz"><rect x="2" y="1" width="3" height="10"/><rect x="7" y="1" width="3" height="10"/></g><path class="pl" d="M3 1.2v9.6L10.5 6z"/></svg>
+      </button>
     </figure>
     <div class="h3__t">
       <h1 id="h1"><span>הרגע עצרתם בשביל טונה.</span><span class="l2">מה יגרום ללקוחות לבחור דווקא בכם?</span></h1>
