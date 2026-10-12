@@ -1,4 +1,37 @@
-# מעבר לייצור — מה קיים ומה חסר (נבדק 11/10/2026, עודכן אחרי הכנת סוכנת הייצור)
+# מעבר לייצור — מה קיים ומה חסר (נבדק שוב 12/10/2026)
+
+**בדיקה 12/10 (קריאה בלבד):**
+- **משתני סביבה ב-Vercel:** בפרויקט `front-studio` **אין אף משתנה עם יעד Production**. כל המשתנים מוגדרים ל-Preview, בענף v5.
+  - `hiddenProductionEnvCount: 0`.
+  - גם משתני מסד הנתונים (אינטגרציית Neon, store `store_kFS6BrZ6i2imB1uk`) מחוברים ל-Preview בלבד.
+- **פריסה:** Production (`front-studio.vercel.app`) עדיין מריץ את `main`, האתר הישן.
+- **ElevenLabs:** לסוכנת הייצור `agent_8501m4mbsfasegqbr208yx71ctm7` עדיין **לא משויך webhook post-call**.
+- **PayPal Live:** לא בדקתי. אין לי גישה לחשבון Live. האפליקציה, ה-webhook ומזהה המוכר נבדקים ב-developer.paypal.com.
+
+### רשימה מדויקת — מה להגדיר ב-Vercel → Production לפני המיזוג
+| משתנה | חובה | ערך / מקור |
+|---|---|---|
+| `DATABASE_URL` | כן | מסד Neon **חדש ונפרד** לייצור (לא `front-v5-preview`) |
+| `PAYPAL_ENV` | כן | `live` |
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | כן | אפליקציית Live |
+| `PAYPAL_WEBHOOK_ID` | כן | webhook Live אל `<SITE_URL>/api/paypal/webhook` עם 6 האירועים |
+| `PAYPAL_MERCHANT_ID` | כן | חשבון המוכר Live |
+| `ELEVENLABS_AGENT_ID` | כן | `agent_8501m4mbsfasegqbr208yx71ctm7` |
+| `ELEVENLABS_WEBHOOK_SECRET` | כן | מה-webhook post-call החדש, אחרי שיוכו ל-8501 |
+| `MAKE_NOTIFY_URL` | כן | אותו תרחיש 7867409 (מבחין בין סביבות לפי `environment`) |
+| `ADMIN_EMAIL` | כן | `alongerber@gmail.com` |
+| `SITE_URL` | כן | הכתובת הסופית, עם https |
+| `META_PIXEL_ID` | כן | `871649018702910` |
+| `META_CAPI_TOKEN` | כן | טוקן Conversions API |
+| `CRON_SECRET` | כן | מחרוזת אקראית ארוכה |
+| `DELIVERY_TIME_TEXT` | לא | ברירת המחדל בקוד היא הנוסח שאושר: "7 ימי עסקים מרגע ההזמנה" |
+| `CONSENT_MODE` | לא | ברירת מחדל `opt_in` |
+| `NOTIFY_TEST_RECIPIENTS`, `META_TEST_EVENT_CODE`, `ADMIN_USER`, `ADMIN_PASSWORD_HASH`, `FRONT_ENV` | **אסור** בייצור | |
+
+הדשבורד בודק את כל הרשימה הזו ("מוכנות לייצור", `lib/readiness.js`), חוץ מ-`DELIVERY_TIME_TEXT` ו-`CONSENT_MODE`, שיש להם ברירת מחדל.
+
+---
+
 
 **מצב Production היום:** הפרויקט `front-studio` מגיש את האתר הישן מ-`main` (commit `384324d`, פריסה `dpl_76YzovmsTUzQu7S5VZ4MJsdxRrS8`) בכתובת https://front-studio.vercel.app. ב-Production מוגדרים **0 משתני סביבה** (`hiddenProductionEnvCount: 0`). גרסת v5 קיימת רק ב-Preview.
 
