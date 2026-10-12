@@ -443,6 +443,12 @@ with sync_playwright() as p:
         check('H10 PayPal check from the order: capture id, amount and currency shown, verified', 'מאומת מול PayPal' in res and '1290.00 ILS' in res and 'CAP-' in res, res[:400])
     else:
         check('H10 PayPal check from the order (needs a paid PayPal order in the run)', False, 'no paid order')
+    page.evaluate("document.getElementById('dclose') && document.getElementById('dclose').click()")
+    ctl(page, '/__test/webhooks', {'webhooks': [{'id': 'WH-1', 'url': 'https://front.test/api/paypal/webhook', 'event_types': [{'name': 'PAYMENT.CAPTURE.COMPLETED'}]}]})
+    page.click('#t-tech'); page.click('#ppconn'); page.wait_for_function("document.getElementById('ppconnres').innerText.indexOf('אירועים חסרים') >= 0", timeout=8000)
+    res = page.locator('#ppconnres').inner_text()
+    check('H21 PayPal connection check (tech tab): app id, webhook in app, URL match, missing events listed; no secret shown',
+          'APP-TEST1' in res and 'CHECKOUT.ORDER.APPROVED' in res and 'csecret' not in res and 'WH-1' in res, res[:500])
     page.evaluate("document.getElementById('dclose') && document.getElementById('dclose').click()"); page.click('#t-ops'); page.wait_for_timeout(200)
     SD = os.environ.get('SHOT_DIR', 'test')
     # ── production stage, delays, continuation link (one paid order) ──

@@ -124,6 +124,9 @@ td.act{font-weight:600}
   <div class="grid">
     <section class="card"><h2>תקינות ושגיאות</h2><table id="health"></table><div id="healthx"></div>
       <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button id="recover">לנסות שוב עכשיו</button><span class="muted" id="rmsg" role="status">ניסיון חוזר רץ גם אוטומטית פעם ביום</span></div></section>
+    <section class="card"><h2>חיבור PayPal (קריאה בלבד)</h2><p class="muted">בודק עם המפתחות שבשרת: לאיזו אפליקציה הם שייכים, אם ה-webhook המוגדר נמצא בה, לאיזו כתובת הוא שולח ולאילו אירועים הוא רשום. שום דבר לא נוצר, משתנה או נשלח מחדש.</p>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input id="ppcOrder" placeholder="מספר הזמנה (רשות) FR-XXXX-XXXX" dir="ltr" style="max-width:220px"><button id="ppconn">בדיקת חיבור</button></div>
+      <div id="ppconnres" class="kv" role="status" style="margin-top:8px"></div></section>
     <section class="card"><h2>חשבון וכניסה</h2><p class="muted" id="acctinfo">—</p>
       <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button id="logoutAll">יציאה מכל המכשירים</button><span class="muted" id="lamsg" role="status"></span></div></section>
     <section class="card wide"><h2>הזמנות (נתונים גולמיים)</h2><div class="scroll"><table id="recent"></table></div></section>
@@ -178,6 +181,23 @@ $('recover').onclick=function(){ var b=this; b.disabled=true; $('rmsg').textCont
   api('/api/admin/recover',{}).then(function(r){ $('rmsg').textContent='הושלם: '+r.repaired_payments+' תשלומים תוקנו · '+r.conversations_replayed+' שיחות שוחזרו · '+
     r.meta.filter(function(x){return x.ok;}).length+' Purchase נשלחו · '+r.notify.filter(function(x){return x.ok;}).length+' מיילים נשלחו'; load(); },
     function(e){ $('rmsg').textContent='שגיאה: '+e.message; }).then(function(){ b.disabled=false; }); }; $('reload').onclick=function(){ refresh('מרענן…'); }; $('days').onchange=function(){ refresh('טוען…'); };
+$('ppconn').onclick=function(){ var b=this, o=$('ppcOrder').value.trim(); b.disabled=true; $('ppconnres').innerHTML='<span class="muted">בודק…</span>';
+  var yn=function(v){ return v===true?'<span class="ok">כן</span>':v===false?'<span class="err">לא</span>':'<span class="muted">—</span>'; };
+  api('/api/admin/paypal-connection'+(o?'?order_id='+encodeURIComponent(o):'')).then(function(r){
+    var c=r.configured, h='<b>סביבה</b><span>'+esc(r.environment)+' · PayPal '+esc(r.paypal_env)+' · '+esc(dt(r.checked_at))+'</span>'+
+      '<b>מפתחות בשרת</b><span dir="ltr">'+esc(r.keys.client_id||'חסר')+' · secret '+(r.keys.secret_set?'מוגדר':'חסר')+' · webhook '+esc(r.keys.webhook_id||'חסר')+'</span>'+
+      '<b>התחברות</b><span>'+(r.auth.ok?'<span class="ok">תקינה</span> · אפליקציה <span dir="ltr">'+esc(r.app_id||'?')+'</span>':'<span class="err">'+esc(r.auth.error)+'</span>')+'</span>';
+    if(c){ h+='<b>ה-webhook באפליקציה הזו</b><span>'+yn(c.in_this_app)+'</span>'+
+      '<b>כתובת היעד</b><span dir="ltr">'+esc(c.url||'—')+'</span><b>תואמת ל-</b><span dir="ltr">'+esc(r.expected_url)+' '+yn(c.url_matches)+'</span>'+
+      '<b>אירועים חסרים</b><span>'+(c.missing_events==null?'—':c.missing_events.length?'<span class="err" dir="ltr">'+esc(c.missing_events.join(', '))+'</span>':'<span class="ok">אין'+(c.all_events?' (כל האירועים)':'')+'</span>')+'</span>'+
+      (c.other_webhooks_with_our_url.length?'<b>webhooks נוספים לכתובת שלנו</b><span dir="ltr">'+esc(c.other_webhooks_with_our_url.join(', '))+'</span>':'')+
+      '<b>כל ה-webhooks באפליקציה</b><span dir="ltr">'+(r.webhooks.length?r.webhooks.map(function(w){ return esc(w.id)+' → '+esc(w.url)+' ('+w.event_types.length+')'; }).join('<br>'):'אין')+'</span>'; }
+    if(r.events){ var e=r.events; h+='<b>אירועים להזמנה</b><span>'+(e.error?'<span class="err">'+esc(e.error)+'</span>':e.for_this_order.length+' מתוך '+e.listed_in_window+' בחלון')+'</span>'+
+      e.for_this_order.map(function(x){ return '<b dir="ltr">'+esc(x.event_type)+'</b><span dir="ltr">'+esc(x.id)+' · '+
+        (x.received?'התקבל · משלוחים של מזהה זה: '+x.received.deliveries+(x.received.processed?' · עובד':' · לא עובד'):'<span class="err">לא התקבל אצלנו</span>')+
+        (x.rejected_signature?' · <span class="err">נדחה באימות חתימה</span>':'')+'</span>'; }).join(''); }
+    $('ppconnres').innerHTML=h;
+  },function(e){ $('ppconnres').innerHTML='<span class="err">שגיאה: '+esc(e.message)+'</span>'; }).then(function(){ b.disabled=false; }); };
 function msg(t,cls){ var m=$('appmsg'); m.className='status '+(cls||''); m.textContent=t||''; }
 function refresh(label){ var b=$('reload'); b.disabled=true; msg(label);
   return load().then(function(){ msg('עודכן '+new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),'st-ok'); },

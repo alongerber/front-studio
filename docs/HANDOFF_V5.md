@@ -35,16 +35,26 @@
 - כרום בודק עכשיו את קישור ההמשך, מייל האישור והאפיון. אין עדיין תוצאות.
 - אבחון PayPal (קריאה בלבד):
   - ה-Preview מגיש Client ID שמתחיל ב-`BAAA5BMYnYO1…` (ציבורי, מ-`/api/config`).
-  - ב-Vercel, `PAYPAL_WEBHOOK_ID`=`2GM46818V44253024` (תיאור: "front-v5-preview") נוסף ב-9/10 22:01 UTC. `PAYPAL_CLIENT_ID` ו-`PAYPAL_CLIENT_SECRET` נוספו רק ב-22:10–22:11, אחרי מחיקת כפילויות.
-  - **לא אומת** שה-Client ID וה-webhook שייכים לאותה אפליקציית Sandbox.
-  - לוגי Vercel לא מראים קריאות webhook מוצלחות (הקוד לא כותב ללוג בהצלחה), ולכן הם לא מעידים אם PayPal שלח אירוע.
+  - ב-Vercel, `PAYPAL_WEBHOOK_ID`=`2GM46818V44253024` (תיאור: "front-v5-preview").
+  - **לא אומת** שה-Client ID וה-webhook שייכים לאותה אפליקציית Sandbox. זמני הזנת המשתנים ב-Vercel **אינם ראיה** לכך שהם מאפליקציות שונות.
+  - כרום דיווח שחיפש אירוע של SNQA בשלוש אפליקציות ה-Sandbox, ושה-webhook רשום לששת האירועים. לא נמצא אירוע.
+  - לוגי Vercel לא מראים קריאות webhook מוצלחות (הקוד לא כותב ללוג בהצלחה), ולכן הם לא מעידים אם PayPal שלח אירוע. גם מונה המשלוחים בדשבורד לבדו לא מוכיח סיבה (לא 0 ולא חיובי).
+  - **נבדק (12/10, הגדרות פרויקט ב-Vercel):** אין הגנת פריסה (password/SSO/trusted IPs כבויים), כך שהגנת Vercel לא חוסמת את PayPal מה-Preview.
+- **נוסף (12/10): "חיבור PayPal (קריאה בלבד)" בלשונית אבחון טכני** → `GET /api/admin/paypal-connection`. בודק עם המפתחות שבשרת (לא חושף אותם):
+  - אם ההתחברות עובדת, ומה ה-app id שהמפתחות שייכים אליו.
+  - אם `PAYPAL_WEBHOOK_ID` נמצא ב-webhooks של אותה אפליקציה.
+  - לאיזו כתובת הוא שולח, לעומת `SITE_URL/api/paypal/webhook`.
+  - אילו מששת האירועים חסרים.
+  - עם מספר הזמנה: האירועים של האפליקציה סביב ההזמנה. לכל **מזהה אירוע**: אם התקבל אצלנו, כמה משלוחים של אותו מזהה, ואם נדחה באימות חתימה.
+  - GET בלבד מול PayPal. מבוקר ב-admin_audit (`paypal_connection_check`).
+  - נבדק מול mock (PC1–PC4, H21). **התוצאה האמיתית תתקבל רק מלחיצה בדשבורד החי.**
 
 ### מה נשאר להשקה
 1. בדיקות SNQA (חלק ה). מייל: לאשר הגעה מתוך Gmail. הצלחה ב-Make לא מספיקה.
 2. Production (חלקים א–ב): מסד נפרד, PayPal Live ו-webhook שלו, `ELEVENLABS_AGENT_ID`=8501, webhook ייצור ב-ElevenLabs ושיוכו לסוכנת 8501, `MAKE_NOTIFY_URL`, Meta, `SITE_URL`, `CRON_SECRET`.
 3. Meta Test Events ב-Preview (חלק ג).
 4. ~~מחיקת הפריסה `dpl_Ag6EFeJiev57u9hspAzqxJyQQpES`~~ — בוצע ואומת בכרום (11/10).
-4א. מסלול webhook של PayPal: לאמת שה-webhook שייך לאפליקציה של ה-Client ID, ואז בדיקה אחת שתסגור את המסלול (ראו סיכום האבחון).
+4א. מסלול webhook של PayPal: להריץ "בדיקת חיבור" עם FR-Y7J2-SNQA (CHROME_LAUNCH_TASKS ה0). לא משנים הגדרות ולא רוכשים Sandbox נוספת לפני שהממצאים נקראו.
 5. אישור אלון למיזוג v5 → main. רק אחרי 1–4.
 
 ## בדיקות אחרי כניסה לדשבורד — 10/10 (תוצאות בפועל)
@@ -53,7 +63,7 @@
 |---|---|---|
 | **SNQA — אומת ישירות מול PayPal Sandbox (אלון, 10/10)** | הזמנת PayPal `9EP78293M29745057`, Capture `076940725B8327510`, סטטוס COMPLETED, 1,290 ILS. סכום, מטבע, custom_id ומוטב תואמים. | HKS8 עדיין לא נבדקה בכפתור. |
 | purchase_verified = 0 במסך SNQA | **באג תצוגה, לא חסר אירוע.** האירוע נרשם באותה פקודת SQL שמסמנת "שולם". מסך ההזמנה קרא רק את 300 האירועים **הראשונים** של הסשן, ושיחה של 10 דקות דחקה את האירוע אל מחוץ לחלון. תוקן: ספירה נפרדת לפי הזמנה, והרשימה מציגה את 300 האחרונים (בדיקה C5, נכשלת על הקוד הישן). | לפתוח מחדש את SNQA אחרי הפריסה ולוודא 1. |
-| webhook חוזר | webhook שהגיע לפני מיגרציה 006 נשמר בלי order_id, ולכן לא הופיע במסך ההזמנה. משלוח חוזר רק העלה את המונה. תוקן: משלוח חוזר משייך את השורה להזמנה, נספר ולא מעובד שוב (בדיקה C6, נכשלת על הקוד הישן). | Resend אחד ב-PayPal Sandbox ל-PAYMENT.CAPTURE.COMPLETED של SNQA, ואז לבדוק במסך: 2 משלוחים, 1 חוזר, purchase_verified = 1, תשלום אחד. |
+| webhook חוזר | webhook שהגיע לפני מיגרציה 006 נשמר בלי order_id, ולכן לא הופיע במסך ההזמנה. משלוח חוזר רק העלה את המונה. תוקן: משלוח חוזר משייך את השורה להזמנה, נספר ולא מעובד שוב (בדיקה C6, נכשלת על הקוד הישן). | Resend אחד ב-PayPal Sandbox לאירוע מסוים של SNQA. ההשוואה היא **לפי מזהה האירוע הזה**: המשלוחים שלו עולים ב-1, purchase_verified = 1, תשלום אחד. להזמנה יכולים להגיע כמה סוגי אירועים, ולכן לא דורשים מונה כולל מסוים. |
 | אימות מול PayPal | נוסף כפתור "בדיקה מול PayPal (קריאה בלבד)" בפרטי הזמנה → `GET /api/admin/paypal-check`. קורא את ההזמנה ואת כל capture מ-PayPal (GET בלבד) ומשווה לרשומות. מבוקר ב-admin_audit. נבדק מקומית מול mock בלבד. | אלון לוחץ על SNQA ועל HKS8 אחרי הפריסה. התוצאה אמיתית רק משם. |
 | **webhook של ElevenLabs — מחובר (10/10)** | webhook post-call `7cc2c509d15046f5a6094d65155c20e1` משויך לסוכנת v5 בלבד (`agent_5801m4a74w3dfawt9hdjhbe1nrjc`, גרסה agtvrsn_7401m4k0fyn7eq291fekp9spcb8a, events=transcript, json). לא הוגדר כברירת מחדל ל-workspace; סוכנות האתר החי לא נגעו. `ELEVENLABS_WEBHOOK_SECRET` הוחלף ע"י אלון לסוד החדש (Sensitive, Preview/v5), ו-v5 נפרס מחדש (dpl_FHjQWgxSz7Qk9ZzNgrHr1e3gs2Db, Ready). | שיחה הבאה תאמת קליטה ושיוך להזמנה. לא הורצה שיחה (עלות). |
 | webhook של ElevenLabs | בסוכנת אין webhook מסוג post-call (`workspace_overrides.webhooks` בלי מזהה webhook). ב-Preview חסר `ELEVENLABS_WEBHOOK_SECRET`. לכן 0 webhooks. אין כלי MCP שיוצר webhook ברמת workspace. | אלון יוצר ב-ElevenLabs → Settings → Webhooks webhook אל `<Preview>/api/elevenlabs/webhook`, משייך אותו לסוכנת, ושומר את הסוד ב-Vercel (Preview·v5) בעצמו. אחר כך פריסה מחדש. שיחות עבר לא יגיעו רטרואקטיבית. |

@@ -37,6 +37,7 @@ export const mock = {
   reset() {
     this.calls = []; this.pp = new Map(); this.n = 0;
     this.metaFail = false; this.makeFail = false; this.payee = 'MERCH1'; this.amount = '1290.00'; this.captureStatus = 'COMPLETED';
+    this.webhooks = []; this.whEvents = []; this.authFail = false;
   },
   approve(id) { this.pp.get(id).status = 'APPROVED'; },
   count(re) { return this.calls.filter(c => re.test(c.url)).length; },
@@ -50,7 +51,9 @@ globalThis.fetch = async (input, init = {}) => {
   mock.calls.push({ url, method, body, headers: init.headers || {} });
   const u = new URL(url);
   if (u.hostname === 'api-m.sandbox.paypal.com') {
-    if (u.pathname === '/v1/oauth2/token') return res(200, { access_token: 'tok', expires_in: 3600 });
+    if (u.pathname === '/v1/oauth2/token') return mock.authFail ? res(401, { error: 'invalid_client' }) : res(200, { access_token: 'tok', expires_in: 3600, app_id: 'APP-TEST1' });
+    if (u.pathname === '/v1/notifications/webhooks' && method === 'GET') return res(200, { webhooks: mock.webhooks });
+    if (u.pathname === '/v1/notifications/webhooks-events' && method === 'GET') return res(200, { events: mock.whEvents, count: mock.whEvents.length });
     if (u.pathname === '/v1/notifications/verify-webhook-signature') {
       const sig = init.body && JSON.parse(init.body).transmission_sig;
       return res(200, { verification_status: sig === 'good' ? 'SUCCESS' : 'FAILURE' });
