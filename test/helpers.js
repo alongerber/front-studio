@@ -37,7 +37,7 @@ export const mock = {
   reset() {
     this.calls = []; this.pp = new Map(); this.n = 0;
     this.metaFail = false; this.makeFail = false; this.payee = 'MERCH1'; this.amount = '1290.00'; this.captureStatus = 'COMPLETED';
-    this.webhooks = []; this.whEvents = []; this.authFail = false;
+    this.webhooks = []; this.whEvents = []; this.authFail = false; this.eventsReject = null;
   },
   approve(id) { this.pp.get(id).status = 'APPROVED'; },
   count(re) { return this.calls.filter(c => re.test(c.url)).length; },
@@ -53,7 +53,16 @@ globalThis.fetch = async (input, init = {}) => {
   if (u.hostname === 'api-m.sandbox.paypal.com') {
     if (u.pathname === '/v1/oauth2/token') return mock.authFail ? res(401, { error: 'invalid_client' }) : res(200, { access_token: 'tok', expires_in: 3600, app_id: 'APP-TEST1' });
     if (u.pathname === '/v1/notifications/webhooks' && method === 'GET') return res(200, { webhooks: mock.webhooks });
-    if (u.pathname === '/v1/notifications/webhooks-events' && method === 'GET') return res(200, { events: mock.whEvents, count: mock.whEvents.length });
+    if (u.pathname === '/v1/notifications/webhooks-events' && method === 'GET') {
+      const sp = u.searchParams;
+      const bad = mock.eventsReject && mock.eventsReject(sp);       // e.g. reject a time-window search the way PayPal answers 400
+      if (bad) return res(400, bad);
+      let evs = mock.whEvents;
+      if (sp.get('transaction_id')) evs = evs.filter(e => { const r = e.resource || {}, rel = (r.supplementary_data && r.supplementary_data.related_ids) || {}; return r.id === sp.get('transaction_id') || rel.order_id === sp.get('transaction_id'); });
+      const size = Number(sp.get('page_size') || 10), start = Number(sp.get('start') || 0), page = evs.slice(start, start + size);
+      const links = start + size < evs.length ? [{ rel: 'next', method: 'GET', href: u.origin + u.pathname + '?' + new URLSearchParams({ ...Object.fromEntries(sp), start: String(start + size) }) }] : [];
+      return res(200, { events: page, count: page.length, links });
+    }
     if (u.pathname === '/v1/notifications/verify-webhook-signature') {
       const sig = init.body && JSON.parse(init.body).transmission_sig;
       return res(200, { verification_status: sig === 'good' ? 'SUCCESS' : 'FAILURE' });

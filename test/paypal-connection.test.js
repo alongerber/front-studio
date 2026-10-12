@@ -69,7 +69,7 @@ test('PC4. per order: each PayPal event id is compared with its own row (deliver
   await sql(`INSERT INTO webhook_events (provider, event_id, event_type, verified, processed_at, deliveries) VALUES ('paypal','WH-EV-B','PAYMENT.CAPTURE.COMPLETED',true,now(),2)`);
   await sql(`INSERT INTO webhook_events (provider, event_id, event_type, verified, error) VALUES ('paypal','unverified:WH-EV-A','CHECKOUT.ORDER.APPROVED',false,'bad_signature')`);
   const ev = (await get('?order_id=' + o.order_id)).data.events;
-  assert.equal(ev.listed_in_window, 3);
+  assert.equal(ev.listed, 3); assert.equal(ev.search_ok, true);
   assert.deepEqual(ev.for_this_order.map(e => e.id), ['WH-EV-A', 'WH-EV-B'], 'another order\'s event is not counted');
   const [a, b] = ev.for_this_order;
   assert.equal(a.received, null); assert.ok(a.rejected_signature, 'a delivery that failed signature is shown for that id');
@@ -91,4 +91,46 @@ test('PC5. the real order number FR-Y7J2-SNQA is accepted (and only exact upper-
   assert.equal(r.data.events.order_id, 'FR-Y7J2-SNQA');
   assert.deepEqual(r.data.events.for_this_order.map(e => e.id), ['WH-SNQA']);
   assert.equal((await get('?order_id=fr-y7j2-snqa')).status, 400, 'the dashboard upper-cases before sending');
+});
+
+test('PC6. PayPal refuses the search: its error (name, message, debug_id, details) is shown; a failed search is never "0 events"', async () => {
+  const o = await paidOrder();
+  mock.webhooks = [{ id: 'WH-1', url: URL_OK, event_types: all6 }];
+  const err = { name: 'INVALID_REQUEST', message: 'Request is not well-formed, syntactically incorrect, or violates schema.', debug_id: 'dbg123abc',
+    details: [{ field: 'start_time', value: 'x', location: 'query', issue: 'INVALID_PARAMETER_VALUE', description: 'bad' }] };
+  mock.eventsReject = () => err;                                       // every search refused
+  let ev = (await get('?order_id=' + o.order_id)).data.events;
+  assert.equal(ev.search_ok, false);
+  assert.ok(ev.attempts.length >= 2, 'window, then each PayPal id as transaction_id');
+  assert.deepEqual(ev.attempts[0].error, { http: 400, name: 'INVALID_REQUEST', message: err.message, debug_id: 'dbg123abc',
+    details: [{ field: 'start_time', value: 'x', location: 'query', issue: 'INVALID_PARAMETER_VALUE', description: 'bad' }] });
+  assert.ok(!JSON.stringify(ev).match(/csecret|Bearer|tok"/), 'no secrets');
+  const audit = (await sql(`SELECT details FROM admin_audit WHERE action = 'paypal_connection_check' ORDER BY id DESC LIMIT 1`))[0].details;
+  assert.equal(audit.events.search_ok, false); assert.equal(audit.events.attempts[0].debug_id, 'dbg123abc');
+
+  // window refused, transaction_id accepted → search ok, the event is found
+  mock.eventsReject = (sp) => sp.get('start_time') ? err : null;
+  mock.whEvents = [{ id: 'WH-EV-A', event_type: 'CHECKOUT.ORDER.APPROVED', resource: { id: o.pp } }];
+  ev = (await get('?order_id=' + o.order_id)).data.events;
+  assert.equal(ev.search_ok, true); assert.equal(ev.attempts[0].ok, false); assert.ok(ev.attempts.some(a => a.ok && a.query.transaction_id === o.pp));
+  assert.deepEqual(ev.for_this_order.map(e => e.id), ['WH-EV-A']);
+
+  // search succeeds and finds nothing → search_ok true, zero events (distinct from failure)
+  mock.eventsReject = null; mock.whEvents = [];
+  ev = (await get('?order_id=' + o.order_id)).data.events;
+  assert.equal(ev.search_ok, true); assert.equal(ev.for_this_order.length, 0); assert.equal(ev.attempts.length, 1);
+});
+
+test('PC7. the window search uses only documented parameters and follows "next" pages (default page size)', async () => {
+  const o = await paidOrder();
+  mock.webhooks = [{ id: 'WH-1', url: URL_OK, event_types: all6 }];
+  mock.whEvents = Array.from({ length: 23 }, (_, i) => ({ id: 'E' + i, event_type: 'PAYMENT.CAPTURE.COMPLETED', resource: { id: 'other' + i } }));
+  mock.whEvents.push({ id: 'E-MINE', event_type: 'PAYMENT.CAPTURE.COMPLETED', resource: { id: 'x', supplementary_data: { related_ids: { order_id: o.pp } } } });
+  const ev = (await get('?order_id=' + o.order_id)).data.events;
+  assert.equal(ev.listed, 24); assert.equal(ev.attempts[0].pages, 3);
+  assert.deepEqual(ev.for_this_order.map(e => e.id), ['E-MINE']);
+  const first = mock.calls.find(c => /webhooks-events\?/.test(c.url) && !/start=/.test(c.url));
+  const keys = [...new URL(first.url).searchParams.keys()].sort();
+  assert.deepEqual(keys, ['end_time', 'start_time']);
+  assert.match(new URL(first.url).searchParams.get('start_time'), /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
 });

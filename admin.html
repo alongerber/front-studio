@@ -192,7 +192,13 @@ $('ppconn').onclick=function(){ var b=this, o=$('ppcOrder').value.trim().toUpper
       '<b>אירועים חסרים</b><span>'+(c.missing_events==null?'—':c.missing_events.length?'<span class="err" dir="ltr">'+esc(c.missing_events.join(', '))+'</span>':'<span class="ok">אין'+(c.all_events?' (כל האירועים)':'')+'</span>')+'</span>'+
       (c.other_webhooks_with_our_url.length?'<b>webhooks נוספים לכתובת שלנו</b><span dir="ltr">'+esc(c.other_webhooks_with_our_url.join(', '))+'</span>':'')+
       '<b>כל ה-webhooks באפליקציה</b><span dir="ltr">'+(r.webhooks.length?r.webhooks.map(function(w){ return esc(w.id)+' → '+esc(w.url)+' ('+w.event_types.length+')'; }).join('<br>'):'אין')+'</span>'; }
-    if(r.events){ var e=r.events; h+='<b>אירועים להזמנה</b><span>'+(e.error?'<span class="err">'+esc(e.error)+'</span>':e.for_this_order.length+' מתוך '+e.listed_in_window+' בחלון')+'</span>'+
+    if(r.events){ var e=r.events;
+      var perr=function(x){ return x?('HTTP '+esc(x.http)+(x.name?' · '+esc(x.name):'')+(x.message?' · '+esc(x.message):'')+(x.debug_id?' · debug_id '+esc(x.debug_id):'')+
+        (x.details&&x.details.length?' · '+x.details.map(function(d){ return esc([d.field,d.location,d.issue,d.description].filter(Boolean).join(' / ')); }).join('; '):'')):''; };
+      h+='<b>חיפוש אירועים</b><span>'+(e.search_ok?'<span class="ok">החיפוש הצליח</span> · '+(e.for_this_order.length?e.for_this_order.length+' אירועים להזמנה':'<b>לא נמצאו אירועים להזמנה</b>')+' (נסרקו '+e.listed+')':
+        '<span class="err">החיפוש נכשל — לא ידוע אם יש אירועים</span>')+'</span>'+
+      e.attempts.map(function(a){ return '<b>ניסיון</b><span dir="ltr">'+esc(a.label)+' '+esc(Object.keys(a.query).map(function(k){ return k+'='+a.query[k]; }).join('&'))+' → '+
+        (a.ok?'OK · '+a.pages+' pages · '+a.events+' events':'<span class="err">'+perr(a.error)+'</span>')+'</span>'; }).join('')+
       e.for_this_order.map(function(x){ return '<b dir="ltr">'+esc(x.event_type)+'</b><span dir="ltr">'+esc(x.id)+' · '+
         (x.received?'התקבל · משלוחים של מזהה זה: '+x.received.deliveries+(x.received.processed?' · עובד':' · לא עובד'):'<span class="err">לא התקבל אצלנו</span>')+
         (x.rejected_signature?' · <span class="err">נדחה באימות חתימה</span>':'')+'</span>'; }).join(''); }

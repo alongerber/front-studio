@@ -467,6 +467,18 @@ with sync_playwright() as p:
     res = page.locator('#ppconnres').inner_text()
     check('H21 PayPal connection check (tech tab): app id, webhook in app, URL match, missing events listed; no secret shown',
           'APP-TEST1' in res and 'CHECKOUT.ORDER.APPROVED' in res and 'csecret' not in res and 'WH-1' in res, res[:500])
+    paid1 = sql(page, "select order_id from orders where paid_at is not null and paypal_order_id is not null order by created_at desc limit 1", [])
+    if paid1:
+        ctl(page, '/__test/events', {'events': [], 'reject': {'name': 'INVALID_REQUEST', 'message': 'bad request', 'debug_id': 'dbgE2E1'}})
+        page.fill('#ppcOrder', paid1[0]['order_id'].lower()); page.click('#ppconn'); page.wait_for_function("document.getElementById('ppconnres').innerText.indexOf('חיפוש אירועים') >= 0", timeout=8000)
+        r1 = page.locator('#ppconnres').inner_text()
+        ctl(page, '/__test/events', {'events': []})
+        page.click('#ppconn'); page.wait_for_function("document.getElementById('ppconnres').innerText.indexOf('החיפוש הצליח') >= 0", timeout=8000)
+        r2 = page.locator('#ppconnres').inner_text()
+        check('H22 failed event search is shown as failed with PayPal debug_id; a successful empty search says "not found"',
+              'החיפוש נכשל' in r1 and 'dbgE2E1' in r1 and 'INVALID_REQUEST' in r1 and 'לא נמצאו אירועים' in r2 and 'נכשל' not in r2, (r1[-300:], r2[-200:]))
+    else:
+        check('H22 event search states (needs a paid order)', False, 'no paid order')
     page.evaluate("document.getElementById('dclose') && document.getElementById('dclose').click()"); page.click('#t-ops'); page.wait_for_timeout(200)
     SD = os.environ.get('SHOT_DIR', 'test')
     # ── production stage, delays, continuation link (one paid order) ──

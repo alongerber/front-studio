@@ -25,6 +25,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '
 async function control(path, body) {
   if (path === '/__test/approve') { mock.approve(body.id); return { ok: true }; }
   if (path === '/__test/webhooks') { mock.webhooks = body.webhooks; return { ok: true }; }
+  if (path === '/__test/events') { mock.whEvents = body.events || []; mock.eventsReject = body.reject ? (sp) => (body.mode === 'window' && !sp.get('start_time') ? null : body.reject) : null; return { ok: true }; }
   if (path === '/__test/sql') return { rows: await sql(body.q, body.p || []) };
   if (path === '/__test/calls') return { calls: mock.calls.map(c => ({ url: c.url, method: c.method })) };
   if (path === '/__test/lastmail') { const m = mock.calls.filter(c => /hook\.make\.test/.test(c.url)).pop(); return { body: m ? m.body : null }; }

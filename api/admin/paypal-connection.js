@@ -6,7 +6,7 @@ import { q } from '../../lib/db.js';
 import { cfg } from '../../lib/config.js';
 import { json, handle, isOrderId, httpError } from '../../lib/util.js';
 import { requireAdmin } from '../../lib/admin.js';
-import { paypalApp, listPaypalWebhooks, listPaypalWebhookEvents } from '../../lib/paypal.js';
+import { paypalApp, listPaypalWebhooks, listPaypalWebhookEvents, paypalError } from '../../lib/paypal.js';
 
 export const config = { maxDuration: 30 };
 
@@ -58,8 +58,26 @@ export const GET = handle(async (request) => {
       const ids = new Set([o.paypal_order_id, ...caps].filter(Boolean));
       const from = new Date(new Date(o.created_at).getTime() - 3600e3);
       const to = new Date(Math.min(Date.now(), new Date(o.paid_at || o.created_at).getTime() + 3 * 86400e3));
-      const ev = await listPaypalWebhookEvents(iso(from), iso(to));
-      const list = (ev.data && ev.data.events) || [];
+      // Search attempts, each reported with PayPal's own error (name, message, debug_id, details).
+      // 1) the time window with PayPal's default page size, following its "next" links;
+      // 2) if that fails, each PayPal id as transaction_id (a documented filter), with no time window.
+      const attempts = [], list = [], seen = new Set();
+      const add = (evs) => { for (const e of evs || []) if (!seen.has(e.id)) { seen.add(e.id); list.push(e); } };
+      const run = async (label, query) => {
+        let res = await listPaypalWebhookEvents(query), pages = 0, n = 0;
+        while (res.ok) {
+          pages++; n += ((res.data && res.data.events) || []).length; add(res.data && res.data.events);
+          const next = ((res.data && res.data.links) || []).find(l => l.rel === 'next');
+          if (!next || pages >= 20) break;
+          res = await listPaypalWebhookEvents(null, next.href);
+        }
+        const error = res.ok ? null : paypalError(res);
+        if (error) console.warn('[paypal-connection] events search refused', label, JSON.stringify(query), JSON.stringify(error));   // no keys, token or headers
+        attempts.push({ label, query, ok: res.ok, pages, events: n, error });
+        return res.ok;
+      };
+      let searched = await run('window', { start_time: iso(from), end_time: iso(to) });
+      if (!searched) for (const id of ids) searched = (await run('transaction_id', { transaction_id: id })) || searched;
       const relates = (e) => {
         const r = e.resource || {};
         const rel = (r.supplementary_data && r.supplementary_data.related_ids) || {};
@@ -75,13 +93,15 @@ export const GET = handle(async (request) => {
           received: row ? { deliveries: row.deliveries, processed: !!row.processed_at, error: row.error, first: row.received_at, last: row.last_received_at } : null,
           rejected_signature: bad ? { at: bad.received_at } : null });
       }
+      // search_ok=false: PayPal refused every search, so "no events" is unknown, not zero.
       result.events = { order_id: orderId, paypal_ids: [...ids], window: { from: iso(from), to: iso(to) },
-        paypal_http: ev.status, error: ev.ok ? null : 'PayPal ' + ev.status, listed_in_window: list.length, for_this_order: out };
+        search_ok: !!searched, attempts, listed: list.length, for_this_order: out };
     }
   }
 
   await q(`INSERT INTO admin_audit (admin_user, action, order_id, details) VALUES ($1,'paypal_connection_check',$2,$3::jsonb)`,
     [admin, orderId || null, JSON.stringify({ auth: result.auth.ok, app_id: result.app_id, configured: result.configured,
-      events: result.events && result.events.for_this_order.map(e => ({ id: e.id, type: e.event_type, received: !!e.received })) })]);
+      events: result.events && { search_ok: result.events.search_ok, attempts: result.events.attempts.map(a => ({ label: a.label, ok: a.ok, http: a.error && a.error.http, debug_id: a.error && a.error.debug_id })),
+        found: result.events.for_this_order.map(e => ({ id: e.id, type: e.event_type, received: !!e.received })) } })]);
   return json(result);
 });
