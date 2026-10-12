@@ -57,3 +57,23 @@ test('AG5. production without an agent: the conversation webhook is not accepted
     if (exists) assert.equal((await sql(`SELECT count(*)::int n FROM conversations WHERE conversation_id = 'conv_noagent'`))[0].n, 0);
     assert.ok(logged.some(l => /CONFIGURATION ERROR: ELEVENLABS_AGENT_ID/.test(l)));
   }));
+
+// Browser pixel per environment: the pixel has no test mode, so preview never loads the real dataset.
+test('PX1. preview without a separate test pixel: no browser pixel at all, even with META_PIXEL_ID set', () =>
+  withEnv({ FRONT_ENV: 'preview', META_PIXEL_ID: '871649018702910', META_BROWSER_TEST_PIXEL_ID: undefined }, async () => {
+    const r = await call(config.GET, 'GET', '/api/config');
+    assert.equal(r.data.pixel_id, null);
+    assert.equal(JSON.stringify(r.data).includes('871649018702910'), false);
+  }));
+
+test('PX2. preview with a separate test pixel: that pixel only, never the real one', () =>
+  withEnv({ FRONT_ENV: 'preview', META_PIXEL_ID: '871649018702910', META_BROWSER_TEST_PIXEL_ID: '100000000000001' }, async () => {
+    const r = await call(config.GET, 'GET', '/api/config');
+    assert.equal(r.data.pixel_id, '100000000000001');
+  }));
+
+test('PX3. production: the real pixel, and a test pixel variable is ignored', () =>
+  withEnv({ FRONT_ENV: 'production', META_PIXEL_ID: '871649018702910', META_BROWSER_TEST_PIXEL_ID: '100000000000001', ELEVENLABS_AGENT_ID: 'agent_prod_1' }, async () => {
+    const r = await call(config.GET, 'GET', '/api/config');
+    assert.equal(r.data.pixel_id, '871649018702910');
+  }));

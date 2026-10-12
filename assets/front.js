@@ -8,7 +8,7 @@
   var F = window.FRONT = window.FRONT || {};
   var meta = document.querySelector('meta[name="front-build"]');
   var CFG = F.CFG = {
-    pixel: '871649018702910', clarity: 'xdrn5fa9p1', agent: '',   // set only by the server (/api/config)
+    pixel: '', clarity: 'xdrn5fa9p1', agent: '',   // pixel and agent are set only by the server (/api/config)
     version: meta ? meta.content : 'v5', wa: '972559501280', price: 1290, product: 'ad_1290'
   };
 
@@ -534,6 +534,8 @@
 
   /* ── boot ── */
   applyConsent();
+  // The server decides which pixel this environment may load (none in preview unless a separate test pixel is set).
+  F.config().then(function (c) { CFG.pixel = (c && c.pixel_id) || ''; applyConsent(); }, function () {});
   if (consent.analytics === 'unset' || consent.ads === 'unset') {
     if (document.body) showBanner(false); else document.addEventListener('DOMContentLoaded', function () { showBanner(false); });
   }

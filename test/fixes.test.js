@@ -207,7 +207,34 @@ test('F8. outside production a Purchase is never sent to Meta without a test eve
     process.env.META_TEST_EVENT_CODE = 'TEST123'; await dueNow(); await runCron();
     const sent = mock.calls.filter(c => /graph\.facebook/.test(c.url)).pop();
     assert.equal(JSON.parse(sent.body).test_event_code, 'TEST123', 'sent as a test event once the code exists');
+    // The dashboard says how it was actually sent (from the stored payload), even after the setting is removed.
+    delete process.env.META_TEST_EVENT_CODE;
+    const { orderDetail } = await import('../lib/report.js');
+    assert.equal((await orderDetail(o.order_id)).checks.meta_sent_as, 'test_event_code');
   } finally { process.env.META_TEST_EVENT_CODE = saved; }
+});
+
+test('F8c. a manual retry after the Meta settings were added sends at once; a row backing off after a Meta error keeps its backoff', async () => {
+  const saved = process.env.META_CAPI_TOKEN; delete process.env.META_CAPI_TOKEN;
+  try {
+    const o = await newOrder(); await pay(o);
+    const row = async () => (await sql(`SELECT status, last_error, attempts, next_attempt_at > now() AS later FROM meta_outbox WHERE order_id = $1`, [o.order_id]))[0];
+    assert.equal((await row()).last_error, 'not_configured');
+    assert.equal((await row()).later, true, 'waits an hour before the next automatic try');
+    process.env.META_CAPI_TOKEN = saved;
+    const before = mock.count(/graph\.facebook/);
+    const r = await call(adminRecover.POST, 'POST', '/api/admin/recover', { headers: basic(), body: {} });
+    assert.equal(r.status, 200);
+    assert.equal(mock.count(/graph\.facebook/) - before, 1, 'sent once, right away');
+    assert.equal((await row()).status, 'sent');
+    // A real Meta failure is not hurried by the button.
+    const o2 = await newOrder(); mock.metaFail = true; await pay(o2); mock.metaFail = false;
+    const r2 = (await sql(`SELECT attempts, last_error, next_attempt_at > now() AS later FROM meta_outbox WHERE order_id = $1`, [o2.order_id]))[0];
+    assert.ok(r2.attempts >= 1 && /^http_/.test(r2.last_error) && r2.later, JSON.stringify(r2));
+    const before2 = mock.count(/graph\.facebook/);
+    await call(adminRecover.POST, 'POST', '/api/admin/recover', { headers: basic(), body: {} });
+    assert.equal(mock.count(/graph\.facebook/), before2, 'backoff kept');
+  } finally { process.env.META_CAPI_TOKEN = saved; mock.metaFail = false; }
 });
 
 test('F8b. production still on PayPal Sandbox: a Purchase is never sent to Meta as a real event', async () => {

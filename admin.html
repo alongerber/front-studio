@@ -386,7 +386,8 @@ function openOrder(id){
     var NOTE={paid:'הודעה לאלון: תשלום מאומת',receipt:test?'ללקוח: אישור תשלום + קישור (בבדיקה נשלח רק לכתובת הבדיקה)':'ללקוח: אישור תשלום + קישור',
       finish:test?'אפיון הושלם: הודעה לאלון בלבד (בסביבת בדיקה אין הודעת לקוח)':(c.email?'אפיון הושלם: הודעה לאלון + הודעה נפרדת ללקוח':'אפיון הושלם: הודעה לאלון (ללקוח אין אימייל)')};
     var SL={}; (d.stages||[]).forEach(function(x){ SL[x.key]=x.label; });
-    var today=new Date().toISOString().slice(0,10), liveLinks=(d.links||[]).filter(function(l){ return !l.revoked_at&&new Date(l.expires_at)>new Date(); });
+    var today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),   // Israel date, as the server checks it
+        liveLinks=(d.links||[]).filter(function(l){ return !l.revoked_at&&new Date(l.expires_at)>new Date(); });
     var html='<div class="bar"><h1 dir="ltr">'+esc(o.order_id)+'</h1><button id="dclose">סגירה</button></div>'+
       (test?'<p class="envbar">הזמנת בדיקה (סביבת '+esc(o.environment)+'). לא לקוח אמיתי, והסכום אינו הכנסה.</p>':'')+
       '<h2>הפעולה הבאה</h2><p style="font-weight:600;margin-bottom:12px">'+(na.late?'<span class="st-bad">באיחור · </span>':'')+esc(na.t)+'</p>'+

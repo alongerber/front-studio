@@ -82,6 +82,8 @@ with sync_playwright() as p:
     page.goto(BASE + '/?utm_source=facebook&utm_campaign=c1&fb_ad_id=123&fbclid=' + FBCLID); page.wait_for_timeout(800)
     page.click('#cbAll'); page.wait_for_timeout(300)
     check('B1 pixel PageView after ads consent', page.evaluate("(window.fbq&&fbq.queue||[]).some(a=>a[0]==='track'&&a[1]==='PageView')"))
+    check('B1b outside production the pixel is the separate test pixel from the server, never the real one',
+          page.evaluate("(fbq.queue||[]).some(a=>a[0]==='init'&&a[1]==='100000000000001') && !(fbq.queue||[]).some(a=>a[0]==='init'&&a[1]==='871649018702910')"))
     page.click('#offer [data-checkout]')
     page.wait_for_selector('#fakepp', timeout=5000)
     check('B2 checkout sheet with PayPal buttons opens', page.locator('#pay').is_visible())

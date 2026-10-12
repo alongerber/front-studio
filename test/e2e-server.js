@@ -8,6 +8,7 @@ import { freshDb, sql, mock } from './helpers.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 process.env.FRONT_ENV = 'test';
+process.env.META_BROWSER_TEST_PIXEL_ID = '100000000000001';   // a separate test pixel: the real one never loads outside production
 process.env.ADMIN_EMAIL = 'owner@front.test';
 await freshDb();
 

@@ -17,6 +17,7 @@ export const GET = handle(async () => {
   currency: cfg.product.currency,
   amount: cfg.product.amount,
   consent_mode: cfg.consentMode,
+  pixel_id: cfg.meta.browserPixelId || null,          // null = no browser pixel here (preview without a separate test pixel)
   agent_id: agentId,                                  // null = no conversation in this environment
   agent_error: agentId ? null : 'agent_not_configured',
   agent_client_tools: CLIENT_TOOLS,                   // the page checks it has all of these before a conversation starts

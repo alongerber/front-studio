@@ -35,6 +35,11 @@
   "detail": ""
  },
  {
+  "name": "B1b outside production the pixel is the separate test pixel from the server, never the real one",
+  "ok": true,
+  "detail": ""
+ },
+ {
   "name": "B2 checkout sheet with PayPal buttons opens",
   "ok": true,
   "detail": ""
@@ -52,12 +57,12 @@
  {
   "name": "B5 browser never sent Purchase",
   "ok": true,
-  "detail": "[['init', '871649018702910'], ['track', 'PageView']]"
+  "detail": "[['init', '100000000000001'], ['track', 'PageView']]"
  },
  {
   "name": "B6 order paid in DB",
   "ok": true,
-  "detail": "[{'status': 'paid', 'paid_via': 'paypal', 'attribution': {'last': {'ts': '1791830327891', 'ad_id': '123', 'fbclid': 'IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "[{'status': 'paid', 'paid_via': 'paypal', 'attribution': {'last': {'ts': '1791845358212', 'ad_id': '123', 'fbclid': 'IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "B7 fbclid kept whole (194 chars) on the order",
@@ -67,7 +72,7 @@
  {
   "name": "B8 fbc built from the full fbclid",
   "ok": true,
-  "detail": "{'ip': '203.0.113.3', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791830327891.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "{'ip': '203.0.113.3', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791845358212.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "B9 exactly one purchase_verified",
@@ -127,7 +132,7 @@
  {
   "name": "D1 widget gets a link key, no token",
   "ok": true,
-  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'W9rmFZ-uCYx8u3-8BZwsebhPQ1O8LNgn', 'anonymous_id': '7ffd6150-6be9-4bc4-ac33-00334af25388', 'session_id': 'd8d5d91d-2b0e-49ac-8b54-df5078b9454a', "
+  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'oNp4X2WS1pn93kIMThAvoMI-kZ75zcoW', 'anonymous_id': '8eec9c60-c804-4028-8807-16d74418a81c', 'session_id': 'd70ae32c-bfcc-4474-8869-2b144c99a63a', "
  },
  {
   "name": "D2 save_brief_note returns the real result only after the server saved",
@@ -137,12 +142,12 @@
  {
   "name": "D3 note stored on the server before payment",
   "ok": true,
-  "detail": "{'brief': {'business_type': 'מספרה בחולון'}, 'agent_links': ['W9rmFZ-uCYx8u3-8BZwsebhPQ1O8LNgn'], 'paid_at': None}"
+  "detail": "{'brief': {'business_type': 'מספרה בחולון'}, 'agent_links': ['oNp4X2WS1pn93kIMThAvoMI-kZ75zcoW'], 'paid_at': None}"
  },
  {
   "name": "D4 order carries this tab's link key",
   "ok": true,
-  "detail": "['W9rmFZ-uCYx8u3-8BZwsebhPQ1O8LNgn']"
+  "detail": "['oNp4X2WS1pn93kIMThAvoMI-kZ75zcoW']"
  },
  {
   "name": "D5 not paid",
@@ -162,7 +167,7 @@
  {
   "name": "D7 checkout reused the pre-payment order (brief kept)",
   "ok": true,
-  "detail": "('FR-JNHW-SBH6', 'FR-JNHW-SBH6')"
+  "detail": "('FR-W859-3FDD', 'FR-W859-3FDD')"
  },
  {
   "name": "D8 known brief shown from the server",
@@ -182,7 +187,7 @@
  {
   "name": "D11 brief completed and stored",
   "ok": true,
-  "detail": "{'brief': {'promote': 'תספורת גברים', 'business_type': 'מספרה בחולון'}, 'brief_done_at': '2026-10-12T18:39:01.598Z', 'contact': {'name': 'דנה', 'email': 'dana@example.com', 'phone': '050-1234567'}}"
+  "detail": "{'brief': {'promote': 'תספורת גברים', 'business_type': 'מספרה בחולון'}, 'brief_done_at': '2026-10-12T22:49:31.794Z', 'contact': {'name': 'דנה', 'email': 'dana@example.com', 'phone': '050-1234567'}}"
  },
  {
   "name": "D12 no JS errors (agent + brief)",
@@ -202,7 +207,7 @@
  {
   "name": "DS3 new_ad: a new order with this tab's link key, the previous one untouched",
   "ok": true,
-  "detail": "('DONE: a new ad was started; the previous ad and its details stay as they were. Treat known_context as not relevant to this ad. Save the new details with save_brief_note.', {'FR-GYNZ-4QYZ': {'order_id': 'FR-GYNZ-4QYZ', 'brief': {'business_type': 'ניקוי ספות'}, 'agent_links': []}, 'FR-VMZJ-SDBY': {'"
+  "detail": "('DONE: a new ad was started; the previous ad and its details stay as they were. Treat known_context as not relevant to this ad. Save the new details with save_brief_note.', {'FR-3NAQ-HSWC': {'order_id': 'FR-3NAQ-HSWC', 'brief': {'business_type': 'ניקוי ספות'}, 'agent_links': []}, 'FR-55PM-KNXD': {'"
  },
  {
   "name": "DS4 one new order only (no order per chat opening)",
@@ -267,7 +272,7 @@
  {
   "name": "Q3 home chat with a paid, open order continues the brief",
   "ok": true,
-  "detail": "{'phase': 'brief', 'known_context': 'פרטי ההזמנה ששולמה: business_type: מועדון סנוקר', 'payment_status': 'verified', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'SkZfNNxJ5cv6NOciydpiGbUs5LR96Ipx', 'anonymous_id': '2195d4a8-c33d-4856-bfe7-c67b4fef1892', 'session_id': 'bf4b201"
+  "detail": "{'phase': 'brief', 'known_context': 'פרטי ההזמנה ששולמה: business_type: מועדון סנוקר', 'payment_status': 'verified', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'pkEDUn9VjjzllVgSwDzCLRiBtjReAneE', 'anonymous_id': '802243e5-f4c9-47ed-9817-824714333f3e', 'session_id': '79377aa"
  },
  {
   "name": "Q4 open_payment refuses to charge an already paid order",
@@ -282,12 +287,12 @@
  {
   "name": "Q6 after the brief is done, a home chat is a new sale, not tied to the old order",
   "ok": true,
-  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'SkZfNNxJ5cv6NOciydpiGbUs5LR96Ipx', 'anonymous_id': '2195d4a8-c33d-4856-bfe7-c67b4fef1892', 'session_id': 'bf4b2014-4f1e-48f2-bb85-43f5002f083b', "
+  "detail": "{'phase': 'sales', 'known_context': 'עדיין לא ידוע כלום.', 'payment_status': 'none', 'opening_line': 'מה העסק שלכם, ומה הייתם רוצים לקדם?', 'front_link': 'pkEDUn9VjjzllVgSwDzCLRiBtjReAneE', 'anonymous_id': '802243e5-f4c9-47ed-9817-824714333f3e', 'session_id': '79377aa2-284a-4654-b629-b1cb50d9ce4c', "
  },
  {
   "name": "Q7 notes from the new sale go to a new order, the paid one is untouched",
   "ok": true,
-  "detail": "('FR-UA3Y-QP32', 'FR-WFJY-PG7R', {'business_type': 'מועדון סנוקר'}, 'SAVED: business_type')"
+  "detail": "('FR-UZCK-7M8V', 'FR-KEJ6-HT6J', {'business_type': 'מועדון סנוקר'}, 'SAVED: business_type')"
  },
  {
   "name": "Q8 no JS errors",
@@ -322,7 +327,7 @@
  {
   "name": "I1 order created with ads consent and matching data",
   "ok": true,
-  "detail": "{'consent': {'ads': 'granted', 'analytics': 'granted'}, 'meta_user': {'ip': '203.0.113.17', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791830368418.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "detail": "{'consent': {'ads': 'granted', 'analytics': 'granted'}, 'meta_user': {'ip': '203.0.113.17', 'ua': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36', 'fbc': 'fb.1.1791845398262.IwARxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
  },
  {
   "name": "I2 withdrawing ads consent updates the order and drops matching data",
@@ -367,7 +372,7 @@
  {
   "name": "J4 completed with the minimum content; an emptied field did not delete the saved one",
   "ok": true,
-  "detail": "{'brief': {'promote': 'טיפול שנתי', 'audience': 'נהגים באזור', 'business_type': 'מוסך'}, 'brief_done_at': '2026-10-12T18:39:38.254Z'}"
+  "detail": "{'brief': {'promote': 'טיפול שנתי', 'audience': 'נהגים באזור', 'business_type': 'מוסך'}, 'brief_done_at': '2026-10-12T22:50:08.099Z'}"
  },
  {
   "name": "J4b three fast clicks: one request, one production hand-off",
@@ -392,7 +397,7 @@
  {
   "name": "H12 work table: customer, payment, brief, production stage, delivery target, next action; test orders tagged",
   "ok": true,
-  "detail": "לקוח\tתשלום\tאפיון\tשלב הפקה\tיעד מסירה\tהפעולה הבאה\nבלי שםבדיקה\nFR-2WUJ-A4CY\n\tשולם · PayPal\tלא התחיל\tממתין לאפיון (מוסק)\tיום ד׳, 21.10 משוער\tלחכות שהלקוח ישלים את האפיון\nדנה · מספרה בחולון · 050-1234567בדיקה\nFR-JNHW-SBH6\n\tשולם · PayPal\tהושלם\tכתיבת תסריט (מוסק)\tיום ד׳, 21.10 משוער\tלכתוב תסריט ולשלוח ללקו"
+  "detail": "לקוח\tתשלום\tאפיון\tשלב הפקה\tיעד מסירה\tהפעולה הבאה\nבלי שםבדיקה\nFR-N5C4-K2PU\n\tשולם · PayPal\tלא התחיל\tממתין לאפיון (מוסק)\tיום ה׳, 22.10 משוער\tלחכות שהלקוח ישלים את האפיון\nדנה · מספרה בחולון · 050-1234567בדיקה\nFR-W859-3FDD\n\tשולם · PayPal\tהושלם\tכתיבת תסריט (מוסק)\tיום ה׳, 22.10 משוער\tלכתוב תסריט ולשלוח ללקו"
  },
  {
   "name": "H12b technical data is not on the default screen",
@@ -407,7 +412,7 @@
  {
   "name": "H14 search opens the order: next action first, test order stated, technical diagnosis collapsed",
   "ok": true,
-  "detail": "FR-YUAP-9Q7Z\nסגירה\n\nהזמנת בדיקה (סביבת test). לא לקוח אמיתי, והסכום אינו הכנסה.\n\nהפעולה הבאה\n\nלכתוב תסריט ולשלוח ללקוח לאישור\n\nלקוח\nרון\nטלפון\n0521234567\nאימייל\n—\nתשלום\nשולם · PayPal · 12.10.2026, 18:39\nאפיון\nהושלם · 12.10.2026, 18:39\nנפתחה\n12.10.2026, 18:39\nשלב הפקה\n\nכתיבת תסריט (מוסק ממצב האפיון; ע"
+  "detail": "FR-J4MC-3YTA\nסגירה\n\nהזמנת בדיקה (סביבת test). לא לקוח אמיתי, והסכום אינו הכנסה.\n\nהפעולה הבאה\n\nלכתוב תסריט ולשלוח ללקוח לאישור\n\nלקוח\nרון\nטלפון\n0521234567\nאימייל\n—\nתשלום\nשולם · PayPal · 12.10.2026, 22:50\nאפיון\nהושלם · 12.10.2026, 22:50\nנפתחה\n12.10.2026, 22:50\nשלב הפקה\n\nכתיבת תסריט (מוסק ממצב האפיון; ע"
  },
  {
   "name": "H2 funnel (measurement tab) shows absolute numbers next to rates",
@@ -427,22 +432,22 @@
  {
   "name": "H10 PayPal check from the order: capture id, amount and currency shown, verified",
   "ok": true,
-  "detail": "תוצאה\nמאומת מול PayPal · sandbox · 12.10.2026, 18:39\nהזמנת PayPal\nPP5 · COMPLETED\nCapture\nCAP-PP5\nסטטוס ב-PayPal\nCOMPLETED · 10.10.2026, 2:57\nסכום\n1290.00 ILS · סכום תואם · מטבע תואם\nשיוך\ncustom_id תואם · מוטב תואם · ברשומות: כן"
+  "detail": "תוצאה\nמאומת מול PayPal · sandbox · 12.10.2026, 22:50\nהזמנת PayPal\nPP5 · COMPLETED\nCapture\nCAP-PP5\nסטטוס ב-PayPal\nCOMPLETED · 10.10.2026, 2:57\nסכום\n1290.00 ILS · סכום תואם · מטבע תואם\nשיוך\ncustom_id תואם · מוטב תואם · ברשומות: כן"
  },
  {
   "name": "H21 PayPal connection check (tech tab): app id, webhook in app, URL match, missing events listed; no secret shown",
   "ok": true,
-  "detail": "סביבה\ntest · PayPal sandbox · 12.10.2026, 18:39\nמפתחות בשרת\ncid… (3 תווים) · secret מוגדר · webhook WH-1\nהתחברות\nתקינה · אפליקציה APP-TEST1\nה-webhook באפליקציה הזו\nכן\nכתובת היעד\nhttps://front.test/api/paypal/webhook\nתואמת ל-\nhttps://front.test/api/paypal/webhook כן\nאירועים חסרים\nCHECKOUT.ORDER.APPRO"
+  "detail": "סביבה\ntest · PayPal sandbox · 12.10.2026, 22:50\nמפתחות בשרת\ncid… (3 תווים) · secret מוגדר · webhook WH-1\nהתחברות\nתקינה · אפליקציה APP-TEST1\nה-webhook באפליקציה הזו\nכן\nכתובת היעד\nhttps://front.test/api/paypal/webhook\nתואמת ל-\nhttps://front.test/api/paypal/webhook כן\nאירועים חסרים\nCHECKOUT.ORDER.APPRO"
  },
  {
   "name": "H22 failed event search is shown as failed with PayPal debug_id; a successful empty search says \"not found\"",
   "ok": true,
-  "detail": "('nd_time=2026-10-12T18:39:42Z → HTTP 400 · INVALID_REQUEST · bad request · debug_id dbgE2E1\\nניסיון\\ntransaction_id transaction_id=PP5 → HTTP 400 · INVALID_REQUEST · bad request · debug_id dbgE2E1\\nניסיון\\ntransaction_id transaction_id=CAP-PP5 → HTTP 400 · INVALID_REQUEST · bad request · debug_id d"
+  "detail": "('nd_time=2026-10-12T22:50:12Z → HTTP 400 · INVALID_REQUEST · bad request · debug_id dbgE2E1\\nניסיון\\ntransaction_id transaction_id=PP5 → HTTP 400 · INVALID_REQUEST · bad request · debug_id dbgE2E1\\nניסיון\\ntransaction_id transaction_id=CAP-PP5 → HTTP 400 · INVALID_REQUEST · bad request · debug_id d"
  },
  {
   "name": "H23 an unlinked received event is shown as such (PayPal vs our server), and linking attaches it to the order",
   "ok": true,
-  "detail": "('6, 2:56 · resource PP5\\nהשרת שלנו: חתימה אומתה · התקבל 12.10.2026, 18:39 · משלוחים של מזהה זה: 1 · עובד 12.10.2026, 18:39 · לא משויך להזמנה (order_id: ריק) — לא נספר בכרטיס ההזמנה\\nשיוך\\nשיוך 1 אירועים להזמנה מעדכן רק את השיוך. לא מעבד מחדש, לא נוגע בתשלום ולא שולח הודעה. כל אירוע נבדק קודם מול Pa"
+  "detail": "('6, 2:56 · resource PP5\\nהשרת שלנו: חתימה אומתה · התקבל 12.10.2026, 22:50 · משלוחים של מזהה זה: 1 · עובד 12.10.2026, 22:50 · לא משויך להזמנה (order_id: ריק) — לא נספר בכרטיס ההזמנה\\nשיוך\\nשיוך 1 אירועים להזמנה מעדכן רק את השיוך. לא מעבד מחדש, לא נוגע בתשלום ולא שולח הודעה. כל אירוע נבדק קודם מול Pa"
  },
  {
   "name": "H24 test environment: the finish email is labelled as to Alon only (no customer message)",
@@ -452,7 +457,7 @@
  {
   "name": "H15 stage saved on the server: survives a reload, logged once per change (double click ignored), tasks follow the stage",
   "ok": true,
-  "detail": "(2, 'לכתוב תסריט ולשלוח ללקוח לאישורבדיקה\\n\\nדנה · מספרה בחולון · 050-1234567 · FR-JNHW-SBH6 · יעד משוער יום ד׳, 21.10\\n\\nפתיחה\\n\\nלכתוב תסריט ולשלוח ללקוח לאישורבדיקה\\n\\nבלי שם · מועדון סנוקר · FR-UA3Y-QP32 · יעד')"
+  "detail": "(2, 'לכתוב תסריט ולשלוח ללקוח לאישורבדיקה\\n\\nדנה · מספרה בחולון · 050-1234567 · FR-W859-3FDD · יעד משוער יום ה׳, 22.10\\n\\nפתיחה\\n\\nלכתוב תסריט ולשלוח ללקוח לאישורבדיקה\\n\\nבלי שם · מועדון סנוקר · FR-UZCK-7M8V · יעד')"
  },
  {
   "name": "H16 a customer delay is stored once (double click), shown after reload as open",
@@ -462,7 +467,7 @@
  {
   "name": "H17 continuation link: opens this order in another browser; \"copied\" only when the copy worked; the token is not in the audit",
   "ok": true,
-  "detail": "('FR-YUAP-9Q7Z', 'הועתק', 'ההעתקה האוטומטית לא הצליחה. הקישור מסומן: אפשר להעתיק ידנית (Ctrl+C).')"
+  "detail": "('FR-J4MC-3YTA', 'הועתק', 'ההעתקה האוטומטית לא הצליחה. הקישור מסומן: אפשר להעתיק ידנית (Ctrl+C).')"
  },
  {
   "name": "H18 search: a server error is shown, not silence",
@@ -487,7 +492,7 @@
  {
   "name": "H6b \"remember me\": HttpOnly cookie kept ~30 days, nothing in page storage",
   "ok": true,
-  "detail": "([{'name': 'front_admin', 'value': 'qm6KhKCFm18Z9tFw4w0Nj3-6Zc8qSBHGI5Bdu8hV4VA', 'domain': 'localhost', 'path': '/api/admin', 'expires': 1794422392.365162, 'httpOnly': True, 'secure': True, 'sameSite': 'Strict'}], '{}{}')"
+  "detail": "([{'name': 'front_admin', 'value': 'q_Kjx2ooHZNq3gLD9YNw3ElMYqdJ-AKP9RlnCLqNPIs', 'domain': 'localhost', 'path': '/api/admin', 'expires': 1794437421.906135, 'httpOnly': True, 'secure': True, 'sameSite': 'Strict'}], '{}{}')"
  },
  {
   "name": "H6c a remembered device opens the dashboard directly",
