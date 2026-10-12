@@ -12,10 +12,12 @@ export const POST = handle(async (request) => {
   const o = await ownedOrder(b.order_id, b.token);
   await rateLimit('finish:' + o.order_id, 10);
   if (o.brief_done_at) return json({ ok: true, order_id: o.order_id, paid: isPaid(o), saved: true, already: true });
-  if (!isPaid(o)) throw httpError(409, 'payment_required');
-  if (!o.contact || !o.contact.name || !o.contact.phone) throw httpError(409, 'contact_required');
+  // Each refusal is logged with its reason (order id and field names only, no content), so a failed click can be traced.
+  const refuse = (code, extra) => { console.warn('[brief/finish] refused', o.order_id, code, extra ? JSON.stringify(extra) : ''); const e = httpError(409, code); if (extra) e.extra = extra; return e; };
+  if (!isPaid(o)) throw refuse('payment_required');
+  if (!o.contact || !o.contact.name || !o.contact.phone) throw refuse('contact_required');
   const missing = briefMissing(o.brief);
-  if (missing.length) { const e = httpError(409, 'brief_incomplete'); e.extra = { missing }; throw e; }
+  if (missing.length) throw refuse('brief_incomplete', { missing });
 
   const done = await one(`
     WITH done AS (

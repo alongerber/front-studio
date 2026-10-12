@@ -105,7 +105,7 @@
 
   /* ── 03 send: "received" is shown only after the server confirms it saved ── */
   function showFinished() {
-    $('fin').hidden = false; $('c3').hidden = true;
+    $('fin').hidden = false; $('c3').hidden = true; $('sfSend').disabled = true; $('sfMsg').hidden = true;
     var c = order && order.contact || {};
     $('finTxt').textContent = 'הזמנה ' + F.order.order_id + '. הכול אצלנו. הצעד הבא: תסריט לאישור, ' + (c.email ? 'במייל או בוואטסאפ.' : 'בוואטסאפ.');
   }
@@ -113,43 +113,89 @@
   function sendState() {
     var b = $('send'), msg = $('sMsg'); if (!order) return;
     if (!order.paid && !order.brief_done) {
-      b.disabled = true; msg.hidden = false; msg.className = 'msg';
+      b.disabled = true; $('sfSend').disabled = true; msg.hidden = false; msg.className = 'msg';
       msg.textContent = order.refunded ? 'התשלום להזמנה הזו הוחזר, ולכן אי אפשר להעביר אותה להפקה.' : 'אפשר לשמור פרטים כבר עכשיו. שליחה להפקה נפתחת אחרי שהתשלום מאושר.';
-    } else if (b.disabled && b.textContent !== 'שולחים…') { b.disabled = false; msg.hidden = true; }
+    } else if (b.disabled && !sending) { b.disabled = false; $('sfSend').disabled = false; msg.hidden = true; }
   }
-  function askMissing(missing) {
-    var f = $('mf'); f.hidden = false;
-    $('mfBizL').hidden = missing.indexOf('business_type') < 0;
-    $('mfProL').hidden = missing.indexOf('promote') < 0;
+  /* ── 02b self-fill: the same fields, the same note API and the same server rules as Meital's notes ── */
+  var sf = $('sf'), SF = ['business_type', 'business_name', 'promote', 'audience', 'call_to_action', 'avoid', 'tone', 'contact_details', 'customer_questions', 'other'];
+  var DRAFT = 'front_brief_draft_' + F.order.order_id;
+  function draft(v) { try { if (v === undefined) return JSON.parse(sessionStorage.getItem(DRAFT) || 'null'); if (v) sessionStorage.setItem(DRAFT, JSON.stringify(v)); else sessionStorage.removeItem(DRAFT); } catch (e) { return null; } }
+  function formValues() { var o = {}; SF.forEach(function (k) { o[k] = sf[k].value.trim(); }); return o; }
+  var filled = false;                 // fields are filled once from the server (and an unsent draft); never overwritten while typing
+  function fillForm() {
+    if (filled || !order) return; filled = true;
+    var b = order.brief || {}, d = draft() || {};
+    SF.forEach(function (k) { sf[k].value = d[k] || b[k] || ''; });
   }
-  function saveMissing() {
-    var f = $('mf'); if (f.hidden) return Promise.resolve();
-    var jobs = [];
-    ['business_type', 'promote'].forEach(function (k) { var v = f[k].value.trim(); if (v && !f[k].closest('label').hidden) jobs.push(F.saveNote(k, v)); });
-    return Promise.all(jobs);
+  sf.addEventListener('input', function (e) { draft(formValues()); var l = e.target.closest('label'); if (l) fieldError(l.dataset.f, ''); });
+  function setMode(self) {
+    $('mMeital').setAttribute('aria-pressed', String(!self)); $('mSelf').setAttribute('aria-pressed', String(self));
+    $('meitalPane').hidden = self; sf.hidden = !self; if (self) fillForm();
   }
-  $('send').addEventListener('click', function () {
-    var b = this, msg = $('sMsg');
-    if (!(order && order.has_contact)) { msg.hidden = false; msg.className = 'msg err'; msg.textContent = 'צריך קודם שם וטלפון בשלב 01.'; $('c1').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-    b.disabled = true; b.textContent = 'שולחים…'; msg.hidden = true;
-    saveMissing()
+  $('mMeital').onclick = function () { setMode(false); };
+  $('mSelf').onclick = function () { setMode(true); };
+  function fieldError(k, text) {
+    var l = sf.querySelector('[data-f="' + k + '"]'); if (!l) return;
+    var e = l.querySelector('.ferr'); e.hidden = !text; e.textContent = text || '';
+    l.querySelector('input').setAttribute('aria-invalid', text ? 'true' : 'false');
+  }
+  var MISSING_TEXT = { business_type: 'חסר: איזה עסק (או שם העסק).', promote: 'חסר: מה הפרסומת צריכה לקדם.' };
+  function showMissing(missing) {
+    setMode(true);
+    missing.forEach(function (k) { fieldError(k, MISSING_TEXT[k] || 'חסר.'); });
+    var first = missing[0] && sf[missing[0]]; if (first) { first.focus(); first.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }
+  // What the server will see after saving: stored brief + the non-empty form values (an empty field never deletes).
+  function missingAfter(vals) {
+    var b = order && order.brief || {}, has = function (k) { return String(vals[k] || b[k] || '').trim().length >= 2; };
+    var m = []; if (!has('business_type') && !has('business_name')) m.push('business_type'); if (!has('promote')) m.push('promote'); return m;
+  }
+  // Save only what changed and is not empty, one field at a time; any refusal stops and is reported (nothing is lost).
+  function saveForm() {
+    if (sf.hidden && !filled) return Promise.resolve();
+    var vals = formValues(), b = order && order.brief || {};
+    var todo = SF.filter(function (k) { return vals[k] && vals[k] !== String(b[k] || ''); });
+    return todo.reduce(function (p, k) {
+      return p.then(function () { return F.api('/api/brief/note', { order_id: F.order.order_id, token: F.order.token, field: k, value: vals[k], phase: 'brief' }); });
+    }, Promise.resolve());
+  }
+
+  /* ── 03 send (Meital or self-fill): "received" is shown only after the server confirms the brief is completed ── */
+  var sending = false;
+  function sendBrief() {
+    var b = $('send'), sb = $('sfSend'), msg = sf.hidden ? $('sMsg') : $('sfMsg');
+    $('sMsg').hidden = true; $('sfMsg').hidden = true;
+    if (sending) return;
+    var fail = function (t, html) { msg.hidden = false; msg.className = 'msg err'; if (html) msg.innerHTML = html; else msg.textContent = t; };
+    if (!(order && order.has_contact)) { fail('צריך קודם שם וטלפון בשלב 01.'); $('c1').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+    if (!sf.hidden) { var m = missingAfter(formValues()); if (m.length) { showMissing(m); fail('חסרים פרטים, מסומן ליד השדות.'); return; } }
+    sending = true; b.disabled = true; sb.disabled = true; b.textContent = 'שולחים…'; sb.textContent = 'שולחים…';
+    var done = function () { sending = false; b.disabled = false; sb.disabled = false; b.textContent = 'שליחת האפיון'; sb.textContent = 'שמירה ושליחת האפיון'; sendState(); };
+    saveForm()
       .then(function () { return F.api('/api/brief/finish', { order_id: F.order.order_id, token: F.order.token }); })
-      .then(function (r) { if (!(r && r.ok && r.saved)) throw new Error('not_saved'); return refresh(); })
-      .then(function () { showFinished(); })
+      .then(function (r) { if (!(r && r.ok && r.saved)) throw new Error('not_saved'); draft(null); return refresh(); })
+      .then(function () { done(); showFinished(); })
       .catch(function (err) {
-        b.disabled = false; b.textContent = 'שליחת האפיון'; msg.hidden = false; msg.className = 'msg err';
-        if (err && err.message === 'brief_incomplete') {
-          return F.orderStatus().then(function (o) { if (o) order = o; askMissing(order.brief_missing || ['business_type', 'promote']);
-            msg.textContent = 'כדי להתחיל לעבוד חסר לנו עוד פרט או שניים. אפשר להשלים כאן, או לספר למיטל.'; });
+        done();
+        var code = err && err.message;
+        if (code === 'brief_incomplete') {
+          return F.orderStatus().then(function (o) { if (o) order = o; filled = false; fillForm(); showMissing(order.brief_missing || ['business_type', 'promote']);
+            msg = $('sfMsg'); fail('כדי להתחיל לעבוד חסרים עוד פרטים, מסומנים ליד השדות. אפשר להשלים כאן או לספר למיטל.'); });
         }
-        if (err && err.message === 'payment_required') { msg.textContent = 'התשלום עוד לא מאושר אצלנו, ולכן אי אפשר עדיין להעביר להפקה. כל מה שכתבתם נשמר.'; return; }
+        if (code === 'payment_required') return fail('התשלום עוד לא מאושר אצלנו, ולכן אי אפשר עדיין להעביר להפקה. כל מה שכתבתם נשמר.');
+        if (code === 'contact_required') { $('c1').scrollIntoView({ behavior: 'smooth', block: 'center' }); return fail('צריך קודם שם וטלפון בשלב 01.'); }
+        if (code === 'rate_limited') return fail('היו הרבה ניסיונות ברצף. מה שמילאתם נשאר כאן; נסו שוב בעוד דקה.');
+        if (code === 'page_outdated') return fail('העמוד הזה לא מעודכן. רעננו אותו; מה שמילאתם נשמר בדפדפן ויחזור לשדות.');
         F.report('finish', err);
         b.textContent = 'לנסות שוב';
         var c = order && order.contact || {};
-        msg.innerHTML = 'לא הצלחנו לשמור כרגע. נסו שוב בעוד רגע, או <a class="lnk" target="_blank" rel="noopener" href="https://wa.me/' + F.CFG.wa + '?text=' +
-          encodeURIComponent('הזמנה ' + F.order.order_id + '\n' + (c.name || '') + ' ' + (c.phone || '') + '\n' + known()) + '">שלחו לנו את זה בוואטסאפ</a>.';
+        fail(null, 'לא הצלחנו לשמור כרגע (' + esc(code || 'שגיאה') + '). מה שמילאתם נשאר כאן. נסו שוב בעוד רגע, או <a class="lnk" target="_blank" rel="noopener" href="https://wa.me/' + F.CFG.wa + '?text=' +
+          encodeURIComponent('הזמנה ' + F.order.order_id + '\n' + (c.name || '') + ' ' + (c.phone || '') + '\n' + known()) + '">שלחו לנו את זה בוואטסאפ</a>.');
       });
-  });
+  }
+  $('send').addEventListener('click', sendBrief);
+  sf.addEventListener('submit', function (e) { e.preventDefault(); sendBrief(); });
 
   /* WhatsApp links carry the order number */
   document.querySelectorAll('[data-wa]').forEach(function (a) {

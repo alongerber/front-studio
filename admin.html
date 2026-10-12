@@ -181,7 +181,7 @@ $('recover').onclick=function(){ var b=this; b.disabled=true; $('rmsg').textCont
   api('/api/admin/recover',{}).then(function(r){ $('rmsg').textContent='הושלם: '+r.repaired_payments+' תשלומים תוקנו · '+r.conversations_replayed+' שיחות שוחזרו · '+
     r.meta.filter(function(x){return x.ok;}).length+' Purchase נשלחו · '+r.notify.filter(function(x){return x.ok;}).length+' מיילים נשלחו'; load(); },
     function(e){ $('rmsg').textContent='שגיאה: '+e.message; }).then(function(){ b.disabled=false; }); }; $('reload').onclick=function(){ refresh('מרענן…'); }; $('days').onchange=function(){ refresh('טוען…'); };
-$('ppconn').onclick=function(){ var b=this, o=$('ppcOrder').value.trim(); b.disabled=true; $('ppconnres').innerHTML='<span class="muted">בודק…</span>';
+$('ppconn').onclick=function(){ var b=this, o=$('ppcOrder').value.trim().toUpperCase(); b.disabled=true; $('ppconnres').innerHTML='<span class="muted">בודק…</span>';
   var yn=function(v){ return v===true?'<span class="ok">כן</span>':v===false?'<span class="err">לא</span>':'<span class="muted">—</span>'; };
   api('/api/admin/paypal-connection'+(o?'?order_id='+encodeURIComponent(o):'')).then(function(r){
     var c=r.configured, h='<b>סביבה</b><span>'+esc(r.environment)+' · PayPal '+esc(r.paypal_env)+' · '+esc(dt(r.checked_at))+'</span>'+

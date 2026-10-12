@@ -76,3 +76,19 @@ test('PC4. per order: each PayPal event id is compared with its own row (deliver
   assert.equal(b.received.deliveries, 2); assert.equal(b.received.processed, true);
   assert.equal((await get('?order_id=bad')).status, 400);
 });
+
+test('PC5. the real order number FR-Y7J2-SNQA is accepted (and only exact upper-case form reaches the server check)', async () => {
+  const { isOrderId } = await import('../lib/util.js');
+  assert.equal(isOrderId('FR-Y7J2-SNQA'), true);
+  const o = await paidOrder();
+  // A paid order under the SNQA number (a full copy of a real paid row, so every column is valid).
+  await sql(`INSERT INTO orders SELECT (jsonb_populate_record(null::orders, to_jsonb(o) ||
+               '{"order_id":"FR-Y7J2-SNQA","token_hash":"snqa","paypal_order_id":"9EP78293M29745057","agent_links":[]}'::jsonb)).* FROM orders o WHERE order_id = $1`, [o.order_id]);
+  mock.webhooks = [{ id: 'WH-1', url: URL_OK, event_types: all6 }];
+  mock.whEvents = [{ id: 'WH-SNQA', event_type: 'CHECKOUT.ORDER.APPROVED', create_time: '2026-10-10T02:56:00Z', resource: { id: '9EP78293M29745057' } }];
+  const r = await get('?order_id=FR-Y7J2-SNQA');
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data.events.order_id, 'FR-Y7J2-SNQA');
+  assert.deepEqual(r.data.events.for_this_order.map(e => e.id), ['WH-SNQA']);
+  assert.equal((await get('?order_id=fr-y7j2-snqa')).status, 400, 'the dashboard upper-cases before sending');
+});

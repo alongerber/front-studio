@@ -48,6 +48,11 @@ h1{font-weight:900;letter-spacing:-.02em;font-size:clamp(30px,6vw,44px);line-hei
 .order .lnk{background:none;border:0;border-bottom:1.5px solid var(--gold);font:inherit;cursor:pointer;padding:0}
 .saved{margin-top:12px;color:var(--ink2);font-size:15.5px}.saved b{color:var(--ink);font-weight:400}
 .msg{margin-top:12px;font-size:15px}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
+.mode{margin-top:16px;display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.mode button{min-height:46px;padding:0 18px;font-size:16px;color:var(--ink2);background:none;border:0;cursor:pointer}
+.mode button[aria-pressed=true]{background:var(--gold);color:#1a0e08;font-weight:700}
+.f .ferr{color:var(--err);font-size:14px}.f input[aria-invalid=true]{border-color:var(--err)}
+.f .hint{font-size:14px;color:var(--ink3)}
 .known{margin-top:16px;border-top:1px solid var(--line2);padding-top:14px}
 .known h3{font-size:13.5px;letter-spacing:.06em;color:var(--gold);font-weight:700}
 .known ul{list-style:none;margin-top:6px;display:grid;gap:4px}
@@ -97,9 +102,27 @@ footer a{border-bottom:1px solid var(--line)}
 
   <!-- 2 · brief with Meital -->
   <section class="card off" id="c2" aria-labelledby="c2h">
-    <h2 id="c2h"><i>02</i>האפיון עם מיטל</h2>
+    <h2 id="c2h"><i>02</i>האפיון</h2>
+    <div class="mode" role="group" aria-label="איך ממלאים את האפיון"><button type="button" id="mMeital" aria-pressed="true">אפיון עם מיטל</button><button type="button" id="mSelf" aria-pressed="false">מילוי עצמאי</button></div>
+    <div id="meitalPane">
     <p>כמה שאלות קצרות: מה מקדמים, למי, מה אסור להגיד, ומה הצופה צריך לעשות בסוף. כותבים כמו בוואטסאפ, ואם נוח יותר אפשר לעבור לדיבור. לוגו ותמונות מצרפים בתוך השיחה.</p>
     <div class="btns"><button class="btn" type="button" id="openChat">להתחיל את האפיון</button></div>
+    </div>
+    <form class="f" id="sf" hidden novalidate data-clarity-mask="true">
+      <p class="full hint">אותם פרטים שמיטל שואלת. מה שכבר נשמר מופיע כאן. שדה שמשאירים ריק לא מוחק פרט שכבר נשמר. שדות עם * חובה.</p>
+      <label class="full" data-f="business_type">איזה עסק יש לכם? *<input name="business_type" maxlength="240"><small class="ferr" hidden></small></label>
+      <label class="full" data-f="business_name">שם העסק<input name="business_name" maxlength="240"><small class="ferr" hidden></small></label>
+      <label class="full" data-f="promote">מה הפרסומת צריכה לקדם? *<input name="promote" maxlength="240"><small class="ferr" hidden></small></label>
+      <label class="full" data-f="audience">למי זה מיועד<input name="audience" maxlength="240"><small class="ferr" hidden></small></label>
+      <label class="full" data-f="call_to_action">מה הצופה צריך לעשות בסוף<input name="call_to_action" maxlength="240"><small class="ferr" hidden></small></label>
+      <label class="full" data-f="avoid">מה לא להגיד<input name="avoid" maxlength="240"><small class="ferr" hidden></small></label>
+      <label class="full" data-f="tone">טון (למשל: הומור, רציני, חם)<input name="tone" maxlength="240"><small class="ferr" hidden></small></label>
+      <label class="full" data-f="contact_details">פרטים שיופיעו בסרטון (טלפון, כתובת, אתר)<input name="contact_details" maxlength="240"><small class="ferr" hidden></small></label>
+      <label class="full" data-f="customer_questions">מה לקוחות שואלים<input name="customer_questions" maxlength="240"><small class="ferr" hidden></small></label>
+      <label class="full" data-f="other">עוד משהו שחשוב לדעת<input name="other" maxlength="240"><small class="ferr" hidden></small></label>
+      <div class="full btns"><button class="btn" type="submit" id="sfSend">שמירה ושליחת האפיון</button></div>
+      <p class="full msg" id="sfMsg" hidden role="status"></p>
+    </form>
     <div class="known" id="known" hidden data-clarity-mask="true"><h3>מה כבר ידוע לנו</h3><ul id="knownList"></ul></div>
     <p class="resume" id="resume" hidden>כל מה שמיטל רושמת נשמר אצלנו מיד. צריך לעצור? אפשר לחזור מכל מכשיר דרך <button type="button" id="copyLink">הקישור האישי להזמנה</button>. הקישור הוא הגישה להזמנה, אז לא לשתף אותו.</p>
   </section>
@@ -107,11 +130,7 @@ footer a{border-bottom:1px solid var(--line)}
   <!-- 3 · send -->
   <section class="card off" id="c3" aria-labelledby="c3h">
     <h2 id="c3h"><i>03</i>שולחים לנו את האפיון</h2>
-    <p>כשסיימתם עם מיטל, שלחו. מכאן זה אצלנו.</p>
-    <form class="f" id="mf" hidden novalidate data-clarity-mask="true">
-      <label class="full" id="mfBizL">איזה עסק יש לכם?<input name="business_type" maxlength="200"></label>
-      <label class="full" id="mfProL">מה הפרסומת צריכה לקדם?<input name="promote" maxlength="200"></label>
-    </form>
+    <p>כשסיימתם עם מיטל או מילאתם בעצמכם, שלחו. מכאן זה אצלנו.</p>
     <div class="btns"><button class="btn" type="button" id="send">שליחת האפיון</button></div>
     <p class="msg" id="sMsg" hidden></p>
   </section>

@@ -381,12 +381,30 @@ with sync_playwright() as p:
     page.evaluate("([id]) => FRONT.api('/api/paypal/capture',{order_id:FRONT.order.order_id,token:FRONT.order.token,paypal_order_id:id})", [pp['id']])
     page.reload(); page.wait_for_timeout(1500)
     check('J2 paid: send enabled', not page.locator('#send').is_disabled())
-    page.click('#send'); page.wait_for_selector('#mf:not([hidden])', timeout=5000)
-    check('J3 empty brief: the page asks for the missing details', page.locator('#mfBizL').is_visible() and page.locator('#mfProL').is_visible())
-    page.fill('#mf input[name=business_type]', 'מוסך'); page.fill('#mf input[name=promote]', 'טיפול שנתי')
-    page.click('#send'); page.wait_for_selector('#fin:not([hidden])', timeout=6000)
+    page.evaluate("FRONT.api('/api/brief/note',{order_id:FRONT.order.order_id,token:FRONT.order.token,field:'audience',value:'נהגים באזור',phase:'brief'})")
+    page.reload(); page.wait_for_timeout(1500)
+    check('J2b the brief offers both ways: with Meital or self-fill', page.locator('#mMeital').is_visible() and page.locator('#mSelf').is_visible() and page.locator('#openChat').is_visible())
+    page.click('#send'); page.wait_for_selector('#sf:not([hidden])', timeout=5000); page.wait_for_timeout(300)
+    errs_txt = page.locator('#sf [data-f=business_type] .ferr').inner_text() + '|' + page.locator('#sf [data-f=promote] .ferr').inner_text()
+    check('J3 empty brief: self-fill opens with the missing fields marked next to them, and a reason', 'חסר' in errs_txt and 'חסר' in page.locator('#sf [data-f=promote] .ferr').inner_text() and page.locator('#sfMsg').is_visible(), errs_txt)
+    check('J3b saved details are loaded into the form', page.input_value('#sf input[name=audience]') == 'נהגים באזור')
+    page.fill('#sf input[name=business_type]', 'מוסך'); page.fill('#sf input[name=promote]', 'טיפול שנתי'); page.fill('#sf input[name=audience]', '')
+    fails = {'n': 0}
+    def fail_once(route):
+        if fails['n'] == 0: fails['n'] += 1; route.fulfill(status=500, content_type='application/json', body='{"ok":false,"error":"server_error"}')
+        else: route.continue_()
+    page.route('**/api/brief/finish', fail_once)
+    page.click('#sfSend'); page.wait_for_timeout(1200)
+    check('J3c a failure shows a reason and a way on, and keeps what was typed', 'לא הצלחנו' in page.locator('#sfMsg').inner_text() and 'וואטסאפ' in page.locator('#sfMsg').inner_text()
+          and page.input_value('#sf input[name=promote]') == 'טיפול שנתי' and page.locator('#fin').is_hidden(), page.locator('#sfMsg').inner_text())
+    finish_calls = []
+    page.on('request', lambda r: finish_calls.append(1) if r.url.endswith('/api/brief/finish') else None)
+    page.evaluate("document.getElementById('sfSend').click(); document.getElementById('sfSend').click(); document.getElementById('send').click()")
+    page.wait_for_selector('#fin:not([hidden])', timeout=6000)
     row = sql(page, "select brief, brief_done_at from orders where order_id=$1", [tok['order_id']])[0]
-    check('J4 completed with the minimum content', row['brief_done_at'] and row['brief'].get('promote') == 'טיפול שנתי', row)
+    check('J4 completed with the minimum content; an emptied field did not delete the saved one', row['brief_done_at'] and row['brief'].get('promote') == 'טיפול שנתי' and row['brief'].get('audience') == 'נהגים באזור', row)
+    n_out = sql(page, "select count(*)::int n from notify_outbox where order_id=$1 and action='finish'", [tok['order_id']])[0]['n']
+    check('J4b three fast clicks: one request, one production hand-off', len(finish_calls) == 1 and n_out == 1, (len(finish_calls), n_out))
     check('J5 no JS errors (order page)', not errors, errors)
     ctx.close()
 
