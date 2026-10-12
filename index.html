@@ -19,7 +19,7 @@
 <meta name="theme-color" content="#141210">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="image" href="./assets/hero-sign.webp" fetchpriority="high">
+<link rel="preload" as="image" href="./assets/hero-v2.webp" fetchpriority="high">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap">
 <style>
 :root{
@@ -107,12 +107,17 @@ section{padding-block:clamp(72px,10vw,128px);position:relative}
 .offer__sub{margin-top:14px;font-size:18px;color:var(--ink2)}
 .about__c{margin-top:22px;font-size:18px;color:var(--ink2)}
 .work{background:var(--bg2)}
-.work__g{display:grid;gap:22px;margin-top:44px}
-@media(min-width:760px){.work__g{grid-template-columns:repeat(3,1fr)}}
+.work__g{display:grid;gap:22px;margin-top:44px;align-items:start}
+@media(min-width:640px){.work__g{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.work__g{grid-template-columns:repeat(4,1fr)}}
 .wk{display:flex;flex-direction:column;gap:14px}
-.wk__v{position:relative;border-radius:16px;overflow:hidden;background:#0d0c0a;aspect-ratio:9/16}
-@media(max-width:759px){.wk__v{aspect-ratio:4/5}.wk__v video{object-position:50% 25%}}
-.wk__v video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+@media(max-width:639px){.wk{max-width:420px;width:100%;margin-inline:auto}}
+.wk__v{position:relative;border-radius:16px;overflow:hidden;background:#0d0c0a;aspect-ratio:var(--ar,9/16)}
+.wk__v video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.wk__ctl{position:absolute;bottom:12px;inset-inline-start:12px;display:flex;gap:8px;z-index:2}
+.wk__ctl button{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;font-size:14.5px;font-weight:700;
+  background:rgba(20,18,16,.78);color:var(--ink);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.wk__ctl svg{width:12px;height:12px;fill:currentColor}
 .wk__play{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:flex-start;padding:16px;
   background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,0) 45%)}
 .wk__play span{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:16px;background:rgba(20,18,16,.72);
@@ -241,7 +246,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
 <section class="h3" aria-labelledby="h1" data-section="hero">
   <div class="w h3__in">
     <figure class="h3__m">
-      <video id="loop" muted loop playsinline preload="none" width="720" height="1280" poster="./assets/hero-sign.webp" data-src="./assets/hero-sign.mp4"
+      <video id="loop" muted loop playsinline preload="none" width="720" height="1280" poster="./assets/hero-v2.webp" data-src="./assets/hero-v2.mp4"
         aria-label="הדוגמן מפרסומת הטונה, בחליפה, מחזיק פחית טונה ושלט קרטון: עשיתי פרסומת לטונה. מעדיף לעסק שלכם."></video>
       <button class="h3__pause" id="loopBtn" type="button" aria-label="לעצור את הסרטון" aria-pressed="false" hidden>
         <svg viewBox="0 0 12 12" aria-hidden="true"><g class="pz"><rect x="2" y="1" width="3" height="10"/><rect x="7" y="1" width="3" height="10"/></g><path class="pl" d="M3 1.2v9.6L10.5 6z"/></svg>
@@ -271,34 +276,57 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
     <p class="lead rv">נבחר דמות, סיפור וסגנון שמתאימים למה שאתם מוכרים.</p>
     <div class="work__g">
       <article class="wk rv">
-        <div class="wk__v">
-          <video id="adv" playsinline preload="none" poster="./assets/ad-poster.webp" data-src="./assets/ad.mp4"></video>
+        <div class="wk__v" style="--ar:4/5">
+          <video id="adv" playsinline muted preload="none" poster="./assets/ex-front.webp" data-src="./assets/ex-front.mp4" data-video="ad" data-audio></video>
           <span class="wk__tag">קונספט</span>
-          <button class="wk__play" id="advPlay" type="button" aria-label="לצפות בפרסומת הבושם">
+          <button class="wk__play" id="advPlay" type="button" data-play aria-label="לצפות בפרסומת הבושם">
             <span><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M10 6 0 12V0z"/></svg>לצפות</span>
           </button>
+          <div class="wk__ctl" hidden>
+            <button type="button" data-pause aria-pressed="false" aria-label="לעצור את הסרטון"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10"/><rect x="7" y="1" width="3" height="10"/></svg><span>עצירה</span></button>
+            <button type="button" data-sound aria-pressed="false">הפעלת סאונד</button>
+          </div>
         </div>
         <div><h3>בושם יוקרתי</h3><p>שהתגלה כשמן טונה. זו שהביאה אתכם לכאן.</p></div>
       </article>
       <article class="wk rv">
-        <div class="wk__v">
-          <video playsinline preload="none" poster="./assets/poster1.webp" data-src="./assets/work1.mp4" data-video="work_party"></video>
+        <div class="wk__v" style="--ar:9/16">
+          <video playsinline muted preload="none" poster="./assets/ex-architect.webp" data-src="./assets/ex-architect.mp4" data-video="ex_architect"></video>
           <span class="wk__tag">קונספט</span>
-          <button class="wk__play" type="button" data-play aria-label="לצפות בדוגמה: מסיבה בבריכה מתנפחת">
+          <button class="wk__play" type="button" data-play aria-label="לצפות בדוגמה: אדריכלית">
             <span><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M10 6 0 12V0z"/></svg>לצפות</span>
           </button>
+          <div class="wk__ctl" hidden>
+            <button type="button" data-pause aria-pressed="false" aria-label="לעצור את הסרטון"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10"/><rect x="7" y="1" width="3" height="10"/></svg><span>עצירה</span></button>
+          </div>
         </div>
-        <div><h3>קומדיה עם דמויות</h3><p>תחפושות, סבתא בבריכה מתנפחת, ותזמון של מערכון.</p></div>
+        <div><h3>אדריכלית</h3><p>תוכנית על הנייר שהופכת לבית.</p></div>
       </article>
       <article class="wk rv">
-        <div class="wk__v">
-          <video playsinline preload="none" poster="./assets/poster2.webp" data-src="./assets/work2.mp4" data-video="work_garage"></video>
+        <div class="wk__v" style="--ar:9/16">
+          <video playsinline muted preload="none" poster="./assets/ex-moving.webp" data-src="./assets/ex-moving.mp4" data-video="ex_moving"></video>
           <span class="wk__tag">קונספט</span>
-          <button class="wk__play" type="button" data-play aria-label="לצפות בדוגמה: מוסך">
+          <button class="wk__play" type="button" data-play aria-label="לצפות בדוגמה: חברת הובלה">
             <span><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M10 6 0 12V0z"/></svg>לצפות</span>
           </button>
+          <div class="wk__ctl" hidden>
+            <button type="button" data-pause aria-pressed="false" aria-label="לעצור את הסרטון"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10"/><rect x="7" y="1" width="3" height="10"/></svg><span>עצירה</span></button>
+          </div>
         </div>
-        <div><h3>מוסך שכונתי</h3><p>בעל מקצוע אמיתי למראה, והפקה שלא מתביישת בזה.</p></div>
+        <div><h3>חברת הובלה</h3><p>הסלון עובר דירה, והלקוח לא קם מהכורסה.</p></div>
+      </article>
+      <article class="wk rv">
+        <div class="wk__v" style="--ar:9/16">
+          <video playsinline muted preload="none" poster="./assets/ex-bakery.webp" data-src="./assets/ex-bakery.mp4" data-video="ex_bakery"></video>
+          <span class="wk__tag">קונספט</span>
+          <button class="wk__play" type="button" data-play aria-label="לצפות בדוגמה: מאפייה">
+            <span><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M10 6 0 12V0z"/></svg>לצפות</span>
+          </button>
+          <div class="wk__ctl" hidden>
+            <button type="button" data-pause aria-pressed="false" aria-label="לעצור את הסרטון"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10"/><rect x="7" y="1" width="3" height="10"/></svg><span>עצירה</span></button>
+          </div>
+        </div>
+        <div><h3>מאפייה</h3><p>פורץ כספות שבא רק בשביל הקרואסון.</p></div>
       </article>
     </div>
     <p class="work__note rv">כל הדוגמאות כאן הן עבודות קונספט של פרונט, לא עבודות ללקוחות. <b>הפרסומת שלכם תיראה אחרת</b> — כי העסק שלכם אחר.</p>

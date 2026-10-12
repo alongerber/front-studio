@@ -652,7 +652,7 @@ with sync_playwright() as p:
     dctx = new_ctx(browser); dp = dctx.new_page(); dp.set_viewport_size({'width': 1440, 'height': 900}); dp.goto(BASE + '/'); dp.wait_for_timeout(500)
     if dp.locator('#cbNone').count(): dp.click('#cbNone'); dp.wait_for_timeout(300)
     hd = dp.evaluate(HERO_FIT)
-    check('L8c desktop hero: whole frame (contain, 9:16 box), within the first screen, sign video', hd['fit'] == 'contain' and abs(hd['ratio'] - 0.5625) < 0.01 and hd['h'] <= 900 and 'hero-sign' in (hd['poster'] or ''), hd)
+    check('L8c desktop hero: whole frame (contain, 9:16 box), within the first screen, sign video', hd['fit'] == 'contain' and abs(hd['ratio'] - 0.5625) < 0.01 and hd['h'] <= 900 and 'hero-v2' in (hd['poster'] or ''), hd)
     dp.screenshot(path=os.environ.get('SHOT_DIR', '/tmp') + '/hero-1440.png')
     dctx.close()
     ctx = new_ctx(browser); page = ctx.new_page()
@@ -753,6 +753,34 @@ with sync_playwright() as p:
     check('R2 reduced motion: content is visible without scrolling effects', page.evaluate('[...document.querySelectorAll(".rv")].every(e => getComputedStyle(e).opacity === "1")'))
     rctx.close()
 
+    # ── V. example videos: four cards, whole frame, muted start, one at a time, lazy ──
+    SHOT = os.environ.get('SHOT_DIR')
+    for label, vp in (('desktop', {'width': 1440, 'height': 900}), ('mobile', {'width': 390, 'height': 844})):
+        vctx = new_ctx(browser); vctx.set_extra_http_headers({'x-forwarded-for': '203.0.113.240'})
+        pg = vctx.new_page(); pg.set_viewport_size(vp); pg.goto(BASE + '/'); pg.wait_for_timeout(400)
+        if pg.locator('#cbNone').is_visible(): pg.click('#cbNone')
+        info = pg.evaluate("""() => [...document.querySelectorAll('.work__g video')].map(v => { const b = v.parentNode.getBoundingClientRect();
+          return {src: v.getAttribute('src'), data: v.dataset.src, fit: getComputedStyle(v).objectFit, muted: v.muted, preload: v.preload, poster: v.getAttribute('poster'),
+                  ratio: b.width / b.height, audio: v.hasAttribute('data-audio'), sound: !!v.parentNode.querySelector('[data-sound]')}; })""")
+        names = [i['data'].split('/')[-1] for i in info]
+        check('V1 %s: examples are FRONT, architect, moving, bakery; party and garage gone' % label,
+              names == ['ex-front.mp4', 'ex-architect.mp4', 'ex-moving.mp4', 'ex-bakery.mp4'] and pg.locator('video[data-src*="work1"], video[data-src*="work2"]').count() == 0, names)
+        check('V2 %s: whole frame (contain, box ratio = video ratio), poster on each, nothing loaded before a click' % label,
+              all(i['fit'] == 'contain' and i['poster'] and i['src'] is None and i['preload'] == 'none' and i['muted'] for i in info)
+              and abs(info[0]['ratio'] - 0.8) < 0.01 and all(abs(i['ratio'] - 0.5625) < 0.01 for i in info[1:]), info)
+        check('V3 %s: sound control only where the video has audio (FRONT)' % label, [i['sound'] for i in info] == [True, False, False, False], info)
+        if SHOT:
+            pg.locator('#work, [data-section="work"]').first.scroll_into_view_if_needed(); pg.wait_for_timeout(500)
+            pg.locator('.work__g').screenshot(path=os.path.join(SHOT, 'examples-%s.png' % label))
+            pg.evaluate("scrollTo(0,0)"); pg.wait_for_timeout(300); pg.screenshot(path=os.path.join(SHOT, 'hero-%s.png' % label))
+        pg.locator('.work__g [data-play]').nth(1).click(); pg.wait_for_timeout(300)
+        pg.locator('.work__g [data-play]').nth(0).click(); pg.wait_for_timeout(300)
+        st = pg.evaluate("""() => [...document.querySelectorAll('.work__g video')].map(v => ({src: !!v.getAttribute('src'), muted: v.muted, ctl: !v.parentNode.querySelector('.wk__ctl').hidden}))""")
+        check('V4 %s: a click loads only that video, muted, with pause control; the others stay unloaded' % label,
+              st[0]['src'] and st[0]['muted'] and st[0]['ctl'] and st[1]['src'] and not st[2]['src'] and not st[3]['src'], st)
+        pg.click('.work__g [data-sound]'); snd = pg.evaluate("document.querySelector('.work__g video').muted")
+        check('V5 %s: sound turns on only when asked' % label, snd is False and pg.locator('.work__g [data-sound]').inner_text() == 'השתקה')
+        vctx.close()
     browser.close()
 
 fails = [r for r in results if not r[1]]

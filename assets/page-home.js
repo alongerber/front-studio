@@ -25,18 +25,25 @@ new MutationObserver(paintDock).observe(document.body,{childList:true,attributes
 addEventListener('resize',paintDock);
 addEventListener('scroll',function(){ top.classList.toggle('on',scrollY>innerHeight*.6); },{passive:true});
 
-/* the work videos: load only when asked, one plays at a time */
+/* the work videos: load only when asked, one plays at a time, start muted; sound only on request */
 var vids=[];
 function wire(v,btn){
   vids.push(v);
+  var box=btn.parentNode, ctl=box.querySelector('.wk__ctl'), pz=ctl&&ctl.querySelector('[data-pause]'), snd=ctl&&ctl.querySelector('[data-sound]');
+  function paintPause(){ if(!pz) return; var p=v.paused; pz.setAttribute('aria-pressed',p?'true':'false'); pz.setAttribute('aria-label',p?'להפעיל את הסרטון':'לעצור את הסרטון'); pz.querySelector('span').textContent=p?'המשך':'עצירה'; }
+  function paintSound(){ if(!snd) return; snd.setAttribute('aria-pressed',v.muted?'false':'true'); snd.textContent=v.muted?'הפעלת סאונד':'השתקה'; }
   btn.addEventListener('click',function(){
     vids.forEach(function(o){ if(o!==v&&!o.paused) o.pause(); });
     if(!v.src){v.src=v.dataset.src;}
-    v.controls=true; btn.hidden=true; v.play().catch(function(){});
+    v.muted=true; btn.hidden=true; if(ctl) ctl.hidden=false;
+    v.play().catch(function(){}); paintSound();
   });
+  if(pz) pz.addEventListener('click',function(){ if(v.paused){ vids.forEach(function(o){ if(o!==v&&!o.paused) o.pause(); }); v.play().catch(function(){}); } else v.pause(); });
+  if(snd) snd.addEventListener('click',function(){ v.muted=!v.muted; paintSound(); });
+  v.addEventListener('play',paintPause); v.addEventListener('pause',paintPause);
+  v.addEventListener('ended',function(){ btn.hidden=false; if(ctl) ctl.hidden=true; });
   new IntersectionObserver(function(es){es.forEach(function(e){ if(!e.isIntersecting&&!v.paused) v.pause(); });},{threshold:.2}).observe(v);
 }
-var v=document.getElementById('adv'); wire(v,document.getElementById('advPlay'));
 document.querySelectorAll('[data-play]').forEach(function(b){ var x=b.parentNode.querySelector('video'); wire(x,b); });
 
 /* FAQ */
@@ -185,7 +192,6 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
     document.body.appendChild(d); document.getElementById('top').style.top='42px'; }).catch(function(){});
 
   F.observeSections();
-  F.observeVideo(document.getElementById('adv'),'ad');
   document.querySelectorAll('video[data-video]').forEach(function(x){ F.observeVideo(x,x.getAttribute('data-video')); });
 })();
 
