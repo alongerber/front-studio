@@ -199,10 +199,18 @@ $('ppconn').onclick=function(){ var b=this, o=$('ppcOrder').value.trim().toUpper
         '<span class="err">החיפוש נכשל — לא ידוע אם יש אירועים</span>')+'</span>'+
       e.attempts.map(function(a){ return '<b>ניסיון</b><span dir="ltr">'+esc(a.label)+' '+esc(Object.keys(a.query).map(function(k){ return k+'='+a.query[k]; }).join('&'))+' → '+
         (a.ok?'OK · '+a.pages+' pages · '+a.events+' events':'<span class="err">'+perr(a.error)+'</span>')+'</span>'; }).join('')+
-      e.for_this_order.map(function(x){ return '<b dir="ltr">'+esc(x.event_type)+'</b><span dir="ltr">'+esc(x.id)+' · '+
-        (x.received?'התקבל · משלוחים של מזהה זה: '+x.received.deliveries+(x.received.processed?' · עובד':' · לא עובד'):'<span class="err">לא התקבל אצלנו</span>')+
-        (x.rejected_signature?' · <span class="err">נדחה באימות חתימה</span>':'')+'</span>'; }).join(''); }
+      e.for_this_order.map(function(x){ var g=x.received;
+        return '<b dir="ltr">'+esc(x.event_type)+'</b><span dir="ltr">'+esc(x.id)+'<br><span class="muted">PayPal: נוצר '+esc(dt(x.paypal&&x.paypal.create_time))+' · resource '+esc(x.resource_id||'—')+'</span><br>'+
+          (g?'<span class="muted">השרת שלנו: חתימה '+(g.verified?'אומתה':'<span class="err">לא אומתה</span>')+' · התקבל '+esc(dt(g.first))+' · משלוחים של מזהה זה: '+esc(g.deliveries)+' · '+
+            (g.processed?'עובד '+esc(dt(g.processed_at)):'<span class="err">לא עובד</span>')+(g.error?' · <span class="err">'+esc(g.error)+'</span>':'')+' · '+
+            (g.linked?'משויך להזמנה':'<span class="err">לא משויך להזמנה (order_id: '+esc(g.order_id||'ריק')+') — לא נספר בכרטיס ההזמנה</span>')+'</span>'
+           :'<span class="err">לא התקבל אצלנו</span>')+(x.rejected_signature?' · <span class="err">נדחה באימות חתימה</span>':'')+'</span>'; }).join('')+
+      ((e.unlinked||[]).filter(function(u){ return !u.stored_order_id; }).length?'<b>שיוך</b><span><button id="ppLink">שיוך '+e.unlinked.filter(function(u){ return !u.stored_order_id; }).length+' אירועים להזמנה</button> <span class="muted">מעדכן רק את השיוך. לא מעבד מחדש, לא נוגע בתשלום ולא שולח הודעה. כל אירוע נבדק קודם מול PayPal.</span><span id="ppLinkRes" role="status"></span></span>':''); }
     $('ppconnres').innerHTML=h;
+    if($('ppLink')) $('ppLink').onclick=function(){ var lb=this; lb.disabled=true; $('ppLinkRes').textContent=' משייך…';
+      api('/api/admin/manage',{action:'link_webhooks',order_id:r.events.order_id,event_ids:r.events.unlinked.filter(function(u){ return !u.stored_order_id; }).map(function(u){ return u.id; })}).then(function(x){
+        $('ppLinkRes').textContent=' '+x.results.map(function(y){ return y.id+': '+y.result; }).join(' · ');
+      },function(err){ lb.disabled=false; $('ppLinkRes').textContent=' שגיאה: '+err.message; }); };
   },function(e){ $('ppconnres').innerHTML='<span class="err">שגיאה: '+esc(e.message)+'</span>'; }).then(function(){ b.disabled=false; }); };
 function msg(t,cls){ var m=$('appmsg'); m.className='status '+(cls||''); m.textContent=t||''; }
 function refresh(label){ var b=$('reload'); b.disabled=true; msg(label);
@@ -375,7 +383,8 @@ function openOrder(id){
     var row={status:o.status,paid_at:o.paid_at,paid_via:o.paid_via,brief_done_at:o.brief_done_at,brief_started_at:o.brief_started_at,brief_fields:Object.keys(b).length,phone:c.phone,created_at:o.created_at,work:w};
     var p=payState(row), bs=briefState(row), na=nextAction(row), active=!!o.paid_at&&o.status!=='refunded';
     var k=d.checks||{}, yes=function(v){return v===true?'<span class="ok">כן</span>':v===false?'<span class="err">לא</span>':'<span class="muted">לא נבדק</span>';};
-    var NOTE={paid:'הודעה לאלון: תשלום מאומת',receipt:'ללקוח: אישור תשלום + קישור',finish:'אפיון הושלם (לאלון וללקוח)'};
+    var NOTE={paid:'הודעה לאלון: תשלום מאומת',receipt:test?'ללקוח: אישור תשלום + קישור (בבדיקה נשלח רק לכתובת הבדיקה)':'ללקוח: אישור תשלום + קישור',
+      finish:test?'אפיון הושלם: הודעה לאלון בלבד (בסביבת בדיקה אין הודעת לקוח)':(c.email?'אפיון הושלם: הודעה לאלון + הודעה נפרדת ללקוח':'אפיון הושלם: הודעה לאלון (ללקוח אין אימייל)')};
     var SL={}; (d.stages||[]).forEach(function(x){ SL[x.key]=x.label; });
     var today=new Date().toISOString().slice(0,10), liveLinks=(d.links||[]).filter(function(l){ return !l.revoked_at&&new Date(l.expires_at)>new Date(); });
     var html='<div class="bar"><h1 dir="ltr">'+esc(o.order_id)+'</h1><button id="dclose">סגירה</button></div>'+
@@ -436,7 +445,7 @@ function openOrder(id){
       '<b>חשבון מוכר</b><span dir="ltr">'+esc(k.payee||'—')+'</span><span></span><span>תואם לחשבון המוגדר: '+yes(k.payee_matches)+'</span>'+
       '<b>purchase_verified</b><span>'+(Number(k.purchase_verified_events)===1?'<span class="ok">1</span>':'<span class="err">'+esc(k.purchase_verified_events)+' (צפוי 1 להזמנה ששולמה)</span>')+'</span>'
       :'<b>תשלום</b><span class="muted">טרם שולם — אין סכום, מטבע או purchase_verified לאמת</span>')+
-      '<b>webhook של פייפאל</b><span>'+esc(k.webhook_deliveries)+' משלוחים · מתוכם '+esc(k.webhook_resends)+' חוזרים (נקלטו ולא עובדו שוב)</span>'+
+      '<b>webhook של פייפאל</b><span>'+esc(k.webhook_deliveries)+' משלוחים · מתוכם '+esc(k.webhook_resends)+' חוזרים (נקלטו ולא עובדו שוב) <span class="muted">· רק אירועים שמשויכים להזמנה הזו. אירוע שנקלט בלי שיוך מופיע ב"חיבור PayPal" עם המספר הזה.</span></span>'+
       '<b>Meta Purchase</b><span>'+(d.meta?(d.meta.status==='sent'?'<span class="ok">נשלח</span>'+(k.meta_sent_as?' · כ-'+esc(k.meta_sent_as):''):'<span class="warn">'+esc(META_ST[d.meta.status]||d.meta.status)+' ('+esc(d.meta.attempts)+' ניסיונות) '+esc(d.meta.last_error||'')+'</span>'):'<span class="muted">לא בתור (לא שולם)</span>')+'</span>'+
       '<b>מקור</b><span>'+esc(o.attribution&&o.attribution.last&&o.attribution.last.utm_source||'—')+'</span>'+
       '<b>הסכמה</b><span>מדידה: '+esc(o.consent&&o.consent.analytics)+' · פרסום: '+esc(o.consent&&o.consent.ads)+'</span></div>'+

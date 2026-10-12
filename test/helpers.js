@@ -53,6 +53,8 @@ globalThis.fetch = async (input, init = {}) => {
   if (u.hostname === 'api-m.sandbox.paypal.com') {
     if (u.pathname === '/v1/oauth2/token') return mock.authFail ? res(401, { error: 'invalid_client' }) : res(200, { access_token: 'tok', expires_in: 3600, app_id: 'APP-TEST1' });
     if (u.pathname === '/v1/notifications/webhooks' && method === 'GET') return res(200, { webhooks: mock.webhooks });
+    const one = /^\/v1\/notifications\/webhooks-events\/([^/]+)$/.exec(u.pathname);
+    if (one && method === 'GET') { const e = mock.whEvents.find(x => x.id === decodeURIComponent(one[1])); return e ? res(200, e) : res(404, { name: 'RESOURCE_NOT_FOUND', message: 'not found', debug_id: 'dbg404' }); }
     if (u.pathname === '/v1/notifications/webhooks-events' && method === 'GET') {
       const sp = u.searchParams;
       const bad = mock.eventsReject && mock.eventsReject(sp);       // e.g. reject a time-window search the way PayPal answers 400

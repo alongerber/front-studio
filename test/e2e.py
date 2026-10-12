@@ -479,6 +479,24 @@ with sync_playwright() as p:
               'החיפוש נכשל' in r1 and 'dbgE2E1' in r1 and 'INVALID_REQUEST' in r1 and 'לא נמצאו אירועים' in r2 and 'נכשל' not in r2, (r1[-300:], r2[-200:]))
     else:
         check('H22 event search states (needs a paid order)', False, 'no paid order')
+    if paid1:
+        oid1 = paid1[0]['order_id']
+        pp1 = sql(page, "select paypal_order_id from orders where order_id=$1", [oid1])[0]['paypal_order_id']
+        sql(page, "insert into webhook_events (provider, event_id, event_type, verified, processed_at, deliveries, order_id) values ('paypal','WH-E2E-LEGACY1','CHECKOUT.ORDER.APPROVED',true,now(),1,null) on conflict do nothing", [])
+        ctl(page, '/__test/events', {'events': [{'id': 'WH-E2E-LEGACY1', 'event_type': 'CHECKOUT.ORDER.APPROVED', 'create_time': '2026-10-10T02:56:00Z', 'resource': {'id': pp1}}]})
+        page.fill('#ppcOrder', oid1); page.click('#ppconn'); page.wait_for_selector('#ppLink', timeout=8000)
+        r3 = page.locator('#ppconnres').inner_text()
+        page.click('#ppLink'); page.wait_for_function("document.getElementById('ppLinkRes').innerText.indexOf('linked') >= 0", timeout=8000)
+        linked = sql(page, "select order_id from webhook_events where event_id='WH-E2E-LEGACY1'", [])[0]['order_id']
+        check('H23 an unlinked received event is shown as such (PayPal vs our server), and linking attaches it to the order',
+              'לא משויך להזמנה' in r3 and 'השרת שלנו' in r3 and 'PayPal:' in r3 and linked == oid1, (r3[-300:], linked))
+    done1 = sql(page, "select order_id from orders where brief_done_at is not null order by created_at desc limit 1", [])
+    if done1:
+        page.evaluate("id => document.querySelector('#recent tr[data-o=\"'+id+'\"]').click()", done1[0]['order_id']); page.wait_for_selector('#tech', state='attached', timeout=5000)
+        page.evaluate("document.getElementById('tech').open = true; document.querySelectorAll('#tech details').forEach(function(d){ d.open = true; })")
+        t = page.locator('#tech').inner_text()
+        check('H24 test environment: the finish email is labelled as to Alon only (no customer message)', 'הודעה לאלון בלבד' in t and 'לאלון וללקוח' not in t, t[:300])
+        page.evaluate("document.getElementById('dclose') && document.getElementById('dclose').click()"); page.click('#t-tech')
     page.evaluate("document.getElementById('dclose') && document.getElementById('dclose').click()"); page.click('#t-ops'); page.wait_for_timeout(200)
     SD = os.environ.get('SHOT_DIR', 'test')
     # ── production stage, delays, continuation link (one paid order) ──

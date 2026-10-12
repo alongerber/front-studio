@@ -134,3 +134,63 @@ test('PC7. the window search uses only documented parameters and follows "next" 
   assert.deepEqual(keys, ['end_time', 'start_time']);
   assert.match(new URL(first.url).searchParams.get('start_time'), /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
 });
+
+test('PC8. a row stored without order_id (before migration 006): the card counts 0, the check shows it as received but unlinked; linking fixes the card without reprocessing', async () => {
+  const adminOrder = await import('../api/admin/order.js');
+  const manage = await import('../api/admin/manage.js');
+  const o = await paidOrder();
+  const cap = (await sql(`SELECT capture_id FROM payments WHERE order_id = $1`, [o.order_id]))[0].capture_id;
+  mock.webhooks = [{ id: 'WH-1', url: URL_OK, event_types: all6 }];
+  mock.whEvents = [
+    { id: 'WH-OLD-APPROVED', event_type: 'CHECKOUT.ORDER.APPROVED', create_time: '2026-10-10T02:56:00Z', resource: { id: o.pp } },
+    { id: 'WH-OLD-COMPLETED', event_type: 'PAYMENT.CAPTURE.COMPLETED', create_time: '2026-10-10T02:57:00Z', resource: { id: cap, custom_id: o.order_id, supplementary_data: { related_ids: { order_id: o.pp } } } },
+    { id: 'WH-OTHER-ORDER', event_type: 'PAYMENT.CAPTURE.COMPLETED', resource: { id: 'CAP-NOT-MINE' } },
+  ];
+  for (const id of ['WH-OLD-APPROVED', 'WH-OLD-COMPLETED', 'WH-OTHER-ORDER'])
+    await sql(`INSERT INTO webhook_events (provider, event_id, event_type, verified, processed_at, deliveries, order_id) VALUES ('paypal',$1,'x',true,now(),1,NULL)`, [id]);
+  const card = async () => (await call(adminOrder.GET, 'GET', '/api/admin/order?order_id=' + o.order_id, { headers: basic() })).data.checks.webhook_deliveries;
+  assert.equal(await card(), 0, 'the card counts by order_id only');
+  const ev = (await get('?order_id=' + o.order_id)).data.events;
+  assert.deepEqual(ev.for_this_order.map(e => [e.id, e.received.processed, e.received.linked, e.received.order_id]),
+    [['WH-OLD-APPROVED', true, false, null], ['WH-OLD-COMPLETED', true, false, null]]);
+  assert.deepEqual(ev.unlinked.map(u => u.id), ['WH-OLD-APPROVED', 'WH-OLD-COMPLETED']);
+  assert.equal(ev.for_this_order[0].paypal.id, 'WH-OLD-APPROVED');
+
+  const before = { pays: await sql(`SELECT * FROM payments WHERE order_id = $1`, [o.order_id]), evs: (await sql(`SELECT count(*)::int n FROM events WHERE order_id = $1`, [o.order_id]))[0].n,
+    outbox: (await sql(`SELECT count(*)::int n FROM notify_outbox`))[0].n, make: mock.count(/hook\.make\.test/), posts: mock.calls.filter(c => c.method === 'POST' && /paypal\.com\/v2\//.test(c.url)).length };
+  const r = await call(manage.POST, 'POST', '/api/admin/manage', { headers: basic(), body: { action: 'link_webhooks', order_id: o.order_id, event_ids: ['WH-OLD-APPROVED', 'WH-OLD-COMPLETED', 'WH-OTHER-ORDER', 'WH-NEVER-SEEN'] } });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.data.results.map(x => [x.id, x.result]), [['WH-OLD-APPROVED', 'linked'], ['WH-OLD-COMPLETED', 'linked'], ['WH-OTHER-ORDER', 'not_this_order'], ['WH-NEVER-SEEN', 'not_received']]);
+  assert.equal(await card(), 2);
+  assert.equal((await sql(`SELECT order_id FROM webhook_events WHERE event_id = 'WH-OTHER-ORDER'`))[0].order_id, null);
+  assert.deepEqual(await sql(`SELECT * FROM payments WHERE order_id = $1`, [o.order_id]), before.pays, 'payment untouched');
+  assert.equal((await sql(`SELECT count(*)::int n FROM events WHERE order_id = $1`, [o.order_id]))[0].n, before.evs, 'no new events (no purchase_verified)');
+  assert.equal((await sql(`SELECT count(*)::int n FROM notify_outbox`))[0].n, before.outbox, 'no message queued');
+  assert.equal(mock.count(/hook\.make\.test/), before.make, 'nothing sent');
+  assert.equal(mock.calls.filter(c => c.method === 'POST' && /paypal\.com\/v2\//.test(c.url)).length, before.posts, 'no capture');
+  const again = await call(manage.POST, 'POST', '/api/admin/manage', { headers: basic(), body: { action: 'link_webhooks', order_id: o.order_id, event_ids: ['WH-OLD-APPROVED'] } });
+  assert.equal(again.data.results[0].result, 'already_linked');
+  assert.ok((await sql(`SELECT 1 FROM admin_audit WHERE action = 'webhook_link'`)).length >= 1);
+  assert.equal((await call(manage.POST, 'POST', '/api/admin/manage', { body: { action: 'link_webhooks', order_id: o.order_id, event_ids: ['WH-OLD-APPROVED'] } })).status, 401);
+});
+
+test('PC9. a resend of the COMPLETED event: that event id goes 1→2, no second payment, no second purchase_verified, no payment email', async () => {
+  const ppWebhook = await import('../api/paypal/webhook.js');
+  const { ppHeaders } = await import('./helpers.js');
+  const o = await paidOrder();
+  const cap = (await sql(`SELECT capture_id FROM payments WHERE order_id = $1`, [o.order_id]))[0].capture_id;
+  const evt = { id: 'WH-17S883833T449544V-5X776969DC421502L', event_type: 'PAYMENT.CAPTURE.COMPLETED',
+    resource: { id: cap, status: 'COMPLETED', custom_id: o.order_id, amount: { currency_code: 'ILS', value: '1290.00' }, supplementary_data: { related_ids: { order_id: o.pp } } } };
+  const send = () => call(ppWebhook.POST, 'POST', '/api/paypal/webhook', { raw: JSON.stringify(evt), headers: ppHeaders('good') });
+  await send();
+  const snap = async () => ({ d: (await sql(`SELECT deliveries FROM webhook_events WHERE event_id = $1`, [evt.id]))[0].deliveries,
+    pays: (await sql(`SELECT count(*)::int n FROM payments WHERE order_id = $1`, [o.order_id]))[0].n,
+    pv: (await sql(`SELECT count(*)::int n FROM events WHERE order_id = $1 AND event_name = 'purchase_verified'`, [o.order_id]))[0].n,
+    paidMails: (await sql(`SELECT count(*)::int n FROM notify_outbox WHERE order_id = $1 AND action = 'paid'`, [o.order_id]))[0].n });
+  const a = await snap();
+  const r = await send();
+  assert.equal(r.data.duplicate, true);
+  const b = await snap();
+  assert.deepEqual([a.d, b.d], [1, 2]);
+  assert.deepEqual([b.pays, b.pv, b.paidMails], [a.pays, a.pv, a.paidMails]);
+});

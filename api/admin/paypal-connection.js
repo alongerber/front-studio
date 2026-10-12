@@ -87,15 +87,20 @@ export const GET = handle(async (request) => {
       const out = [];
       for (const e of matched) {
         // Per event id: the verified row (deliveries counts resends of this same id) and any rejected delivery of it.
-        const [row] = await q(`SELECT verified, deliveries, processed_at, error, received_at, last_received_at FROM webhook_events WHERE provider = 'paypal' AND event_id = $1`, [e.id]);
+        const [row] = await q(`SELECT verified, deliveries, processed_at, error, received_at, last_received_at, order_id FROM webhook_events WHERE provider = 'paypal' AND event_id = $1`, [e.id]);
         const [bad] = await q(`SELECT received_at, error FROM webhook_events WHERE provider = 'paypal' AND event_id = $1`, ['unverified:' + e.id]);
+        // paypal: what PayPal says about the event. received: our own row (written only after the signature check passed;
+        // processed_at only after the handler finished). linked: whether the order card counts it (it counts by order_id).
         out.push({ id: e.id, event_type: e.event_type, create_time: e.create_time, resource_id: (e.resource || {}).id || null,
-          received: row ? { deliveries: row.deliveries, processed: !!row.processed_at, error: row.error, first: row.received_at, last: row.last_received_at } : null,
+          paypal: { id: e.id, event_type: e.event_type, create_time: e.create_time || null, resource_type: e.resource_type || null, resource_id: (e.resource || {}).id || null, summary: e.summary || null },
+          received: row ? { verified: row.verified, deliveries: row.deliveries, processed: !!row.processed_at, processed_at: row.processed_at, error: row.error,
+            first: row.received_at, last: row.last_received_at, order_id: row.order_id, linked: row.order_id === orderId } : null,
           rejected_signature: bad ? { at: bad.received_at } : null });
       }
       // search_ok=false: PayPal refused every search, so "no events" is unknown, not zero.
       result.events = { order_id: orderId, paypal_ids: [...ids], window: { from: iso(from), to: iso(to) },
-        search_ok: !!searched, attempts, listed: list.length, for_this_order: out };
+        search_ok: !!searched, attempts, listed: list.length, for_this_order: out,
+        unlinked: out.filter(x => x.received && !x.received.linked).map(x => ({ id: x.id, stored_order_id: x.received.order_id })) };
     }
   }
 
