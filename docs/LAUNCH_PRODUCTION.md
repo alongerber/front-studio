@@ -8,27 +8,55 @@
 - **ElevenLabs:** לסוכנת הייצור `agent_8501m4mbsfasegqbr208yx71ctm7` עדיין **לא משויך webhook post-call**.
 - **PayPal Live:** לא בדקתי. אין לי גישה לחשבון Live. האפליקציה, ה-webhook ומזהה המוכר נבדקים ב-developer.paypal.com.
 
-### רשימה מדויקת — מה להגדיר ב-Vercel → Production לפני המיזוג
-| משתנה | חובה | ערך / מקור |
-|---|---|---|
-| `DATABASE_URL` | כן | מסד Neon **חדש ונפרד** לייצור (לא `front-v5-preview`) |
-| `PAYPAL_ENV` | כן | `live` |
-| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | כן | אפליקציית Live |
-| `PAYPAL_WEBHOOK_ID` | כן | webhook Live אל `<SITE_URL>/api/paypal/webhook` עם 6 האירועים |
-| `PAYPAL_MERCHANT_ID` | כן | חשבון המוכר Live |
-| `ELEVENLABS_AGENT_ID` | כן | `agent_8501m4mbsfasegqbr208yx71ctm7` |
-| `ELEVENLABS_WEBHOOK_SECRET` | כן | מה-webhook post-call החדש, אחרי שיוכו ל-8501 |
-| `MAKE_NOTIFY_URL` | כן | אותו תרחיש 7867409 (מבחין בין סביבות לפי `environment`) |
-| `ADMIN_EMAIL` | כן | `alongerber@gmail.com` |
-| `SITE_URL` | כן | הכתובת הסופית, עם https |
-| `META_PIXEL_ID` | כן | `871649018702910` |
-| `META_CAPI_TOKEN` | כן | טוקן Conversions API |
-| `CRON_SECRET` | כן | מחרוזת אקראית ארוכה |
-| `DELIVERY_TIME_TEXT` | לא | ברירת המחדל בקוד היא הנוסח שאושר: "7 ימי עסקים מרגע ההזמנה" |
-| `CONSENT_MODE` | לא | ברירת מחדל `opt_in` |
-| `NOTIFY_TEST_RECIPIENTS`, `META_TEST_EVENT_CODE`, `ADMIN_USER`, `ADMIN_PASSWORD_HASH`, `FRONT_ENV` | **אסור** בייצור | |
+### מה חסר ב-Production — לפי שירות
+**14 משתני חובה.** תיקון: קודם כתבתי 13. ספרתי שורות בטבלה, ושורה אחת כללה שני משתנים (`PAYPAL_CLIENT_ID` ו-`PAYPAL_CLIENT_SECRET`).
+**כלל לכל השלבים:** ערכים סודיים מוזנים ישירות במסך של Vercel, בסביבה **Production** בלבד. לא בצ׳אט, לא בקוד ולא במסמכים.
+"מבצע: אלון" פירושו פעולה בחשבון של אלון. Claude in Chrome יכול לבצע אותה במקומו, בדפדפן של אלון ובאישורו.
 
-הדשבורד בודק את כל הרשימה הזו ("מוכנות לייצור", `lib/readiness.js`), חוץ מ-`DELIVERY_TIME_TEXT` ו-`CONSENT_MODE`, שיש להם ברירת מחדל.
+#### 1. Vercel ו-Neon — מסד נתונים וכתובת (מבצע: אלון)
+| # | משתנה | מה בדיוק |
+|---|---|---|
+| 1 | `DATABASE_URL` | ליצור מסד Neon **חדש** לייצור, דרך אינטגרציית Neon ב-Vercel (Storage → Create), ולחבר אותו ל-**Production בלבד**. לא לחבר את `front-v5-preview`. הטבלאות נוצרות אוטומטית בבקשה הראשונה |
+| 2 | `SITE_URL` | הכתובת הסופית עם https. כרגע `https://front-studio.vercel.app`, כי אין דומיין מותאם מחובר. ממנה נבנים הקישורים במיילים |
+| 3 | `ADMIN_EMAIL` | `alongerber@gmail.com` |
+| 4 | `CRON_SECRET` | מחרוזת אקראית ארוכה. Vercel שולח אותה ל-cron היומי |
+
+#### 2. PayPal Live (מבצע: אלון, ב-developer.paypal.com במצב Live)
+| # | משתנה | מה בדיוק |
+|---|---|---|
+| 5 | `PAYPAL_ENV` | `live` |
+| 6 | `PAYPAL_CLIENT_ID` | מאפליקציית REST במצב **Live** |
+| 7 | `PAYPAL_CLIENT_SECRET` | מאותה אפליקציה (סוד) |
+| 8 | `PAYPAL_WEBHOOK_ID` | באותה אפליקציה: Add Webhook אל `<SITE_URL>/api/paypal/webhook` עם 6 האירועים: CHECKOUT.ORDER.APPROVED, PAYMENT.CAPTURE.COMPLETED / PENDING / DENIED / REFUNDED / REVERSED. מזינים את המזהה שנוצר |
+| 9 | `PAYPAL_MERCHANT_ID` | מזהה חשבון העסק Live (Account Settings → Business information) |
+אחרי הפריסה: לבדוק בדשבורד, ב"אבחון טכני" ← "חיבור PayPal": שההתחברות תקינה, שה-webhook באפליקציה, שהכתובת תואמת ושלא חסרים אירועים. **בלי תשלום אמיתי** עד שתאשר.
+
+#### 3. ElevenLabs (מבצע: אלון)
+| # | משתנה | מה בדיוק |
+|---|---|---|
+| 10 | `ELEVENLABS_AGENT_ID` | `agent_8501m4mbsfasegqbr208yx71ctm7` (סוכנת הייצור; הוכנה 11/10) |
+| 11 | `ELEVENLABS_WEBHOOK_SECRET` | ב-ElevenLabs → Agents → Settings → Webhooks: webhook חדש מסוג post-call אל `<SITE_URL>/api/elevenlabs/webhook`. **לשייך אותו לסוכנת 8501** (נבדק 12/10: עדיין לא משויך). הסוד מוצג פעם אחת, ומזינים אותו ישר ל-Vercel |
+
+#### 4. Make (מבצע: אלון; התרחיש עצמו כבר מוכן)
+| # | משתנה | מה בדיוק |
+|---|---|---|
+| 12 | `MAKE_NOTIFY_URL` | כתובת ה-webhook של תרחיש 7867409, אותה כתובת כמו ב-Preview. התרחיש מבחין בין ייצור לבדיקה לפי `environment`: בייצור ללקוח נשלחים אישור תשלום ו"קיבלנו את האפיון", ובלי סימון בדיקה |
+
+#### 5. Meta (מבצע: אלון)
+| # | משתנה | מה בדיוק |
+|---|---|---|
+| 13 | `META_PIXEL_ID` | `871649018702910` |
+| 14 | `META_CAPI_TOKEN` | Events Manager → הפיקסל → Settings → Conversions API → Generate access token |
+
+#### אסור להגדיר ב-Production
+`NOTIFY_TEST_RECIPIENTS`, `META_TEST_EVENT_CODE`, `ADMIN_USER`, `ADMIN_PASSWORD_HASH`, `FRONT_ENV`.
+**לא חובה:** `DELIVERY_TIME_TEXT` (ברירת המחדל היא הנוסח המאושר) ו-`CONSENT_MODE` (ברירת המחדל `opt_in`).
+
+#### מה Claude Code עושה (בלי סודות)
+- אחרי שהמשתנים הוזנו: בודק ב-Vercel **שמות בלבד**, בלי ערכים, ומשווה לרשימה.
+- מכין את בדיקות הקבלה לייצור.
+- המיזוג ל-main **רק באישור מפורש**.
+- הדשבורד ("מוכנות לייצור", `lib/readiness.js`) מסמן כל משתנה חסר או אסור.
 
 ---
 
