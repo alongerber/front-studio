@@ -77,7 +77,8 @@
 
 ---
 
-## חלק ב · ElevenLabs: webhook ייצור
+## חלק ב · ElevenLabs: webhook ייצור — ✅ בוצע (13/10)
+לפי אלון וכרום: נוצר webhook ‎`4c94bcf659254ec5a9c93c30dcec0cf4`, והסוד הוזן ל-Vercel Production. Claude אימת בקריאה שהוא משויך לסוכנת 8501 (Main, וגם הענף המוכן). את כתובת היעד לא היה אפשר לקרוא בכלים הזמינים; היא תאומת בשיחת הייצור הראשונה, שצריכה להיקלט בדשבורד.
 מסך: https://elevenlabs.io/app/agents/settings (Agents → Settings → Webhooks). לא בדקתי את שמות התפריטים המדויקים.
 1. Create webhook → URL: `https://front-studio.vercel.app/api/elevenlabs/webhook`, אימות HMAC.
 2. הסוד מוצג פעם אחת → `ELEVENLABS_WEBHOOK_SECRET` ב-Vercel (Production, Sensitive).

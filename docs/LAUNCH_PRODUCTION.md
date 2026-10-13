@@ -15,27 +15,34 @@
 | 1.2 | מיטל: ארבעת התרחישים הידניים (`docs/agent/SUPPORT_2026-10-13.md`) | אלון | ממתין. נבדק 13/10: אין עדיין שיחות ב-5801 מאז העדכון |
 | 1.3 | החלטות על הפרטים האישיים שנשארו: `terms.html` שורות 32 ו-57, `accessibility.html` שורה 44, ביט דרך וואטסאפ אישי, תסריט אחרי תשלום "בוואטסאפ" | אלון | פתוח |
 
-### 2. סוכנת הייצור 8501 — סנכרון (רק באישור מפורש; לא בוצע)
-**נבדק 13/10, קריאה בלבד:** 8501 בגרסה `agtvrsn_2301m4s1b8gzf66rzr1mz7k1k083` עדיין מריצה את **הפרומפט הישן**:
-- "אלון גרבר" לשאלה על הבעלים;
-- "אפשר לדבר עם אלון בוואטסאפ";
-- `show_whatsapp`;
-- "שניים עד ארבעה משפטים" ודוגמאות הטון הקבועות.
+### 2. סוכנת הייצור 8501 — השינויים מוכנים בענף נפרד, לא פורסמו (13/10)
+**ענף:** `launch-v5-support` (`agtbrch_5501m4v936x8e869zhfw2595m7rx`), גרסה `agtvrsn_4501m4v95mk6fkgtk7kbkyk5gm7q`. **0% מהתנועה**, נבדק ברשימת הענפים. Main (`agtvrsn_2301…`) נשאר 100% ולא השתנה.
 
-**השקה עם הסוכנת הזו תחזיר לשיחה את השם המלא ואת הוואטסאפ.**
+**מה בענף:**
+- **פרומפט:** הטקסט של `docs/agent/meital-v5-prompt.md`, כלומר הפרומפט של 5801 בגרסה agtvrsn_6901.
+- **כלים:** open_payment, **open_support** (`tool_9001…`, כלי לקוח בלי כתובת), save_brief_note, **check_payment של הייצור** (`tool_6001…`, נבדק: שולח ל-`https://front-studio.vercel.app/api/agent/payment-status`) ו-switch_ad. `show_whatsapp` הוסר מהענף.
+- **בלי שינוי:** מודל claude-sonnet-5, reasoning low, max_tokens 700, ההודעה הפותחת `{{opening_line}}`, ואזור הזמן Asia/Jerusalem.
+- **webhook:** הענף שומר את `post_call_webhook_id` = `4c94bcf659254ec5a9c93c30dcec0cf4`, כמו ב-Main.
 
-מה יידרש, כשתאשר:
-1. לגבות את הפרומפט של 8501 לקובץ `docs/agent/meital-prod-backup-agtvrsn_2301.md`.
-2. להעתיק לפרומפט של 8501 את הפרומפט של 5801 (`agtvrsn_6901m4sa0w9ne…`, = `docs/agent/meital-v5-prompt.md`).
-3. כלים ב-8501:
-   - להחליף את `tool_7001kzx3z16rfc5vav6p0km69sa2` (show_whatsapp) ב-`tool_9001m4s9xsn5fv5tgb0fh0qthf76` (open_support, כלי לקוח בלי כתובת, ולכן מתאים לשתי הסוכנות);
-   - **להשאיר** את `check_payment` של הייצור (`tool_6001m4mbs795frybfr8j78xwg4m8`). לא את זה של ה-Preview.
-4. מודל, קול ותנאים: בלי שינוי (claude-sonnet-5 בשתיהן).
+**גיבוי:** הגרסה `agtvrsn_2301m4s1b8gzf66rzr1mz7k1k083` ב-ElevenLabs לא ניתנת לשינוי. הטקסט שלה תואם את `meital-v5-backup-agtvrsn_3301.md` בכל הקטעים שבדקתי. לא השוויתי תו מול תו.
 
-**webhook:** ל-8501 משויך עכשיו webhook post-call `4c94bcf6…`. הוא שונה מזה של ה-Preview (`7cc2c509…`), והמסמך מ-12/10 אמר שאין כזה. **לא בדקתי לאיזו כתובת הוא שולח.** לפני ההשקה צריך לוודא ב-ElevenLabs → Settings → Webhooks שהוא מצביע ל-`https://front-studio.vercel.app/api/elevenlabs/webhook`, ושהסוד שלו הוא זה שיוזן ל-`ELEVENLABS_WEBHOOK_SECRET`.
+**הפרסום, רק באישור מפורש:** מיזוג `launch-v5-support` ל-Main ב-ElevenLabs, או העברת התנועה לענף. אחרי זה בודקים שב-Main מופיעים `tool_9001` ו-`tool_6001`, ש-`tool_7001` לא מופיע, ושה-webhook הוא `4c94…`.
 
-### 3. Vercel Production — 14 המשתנים (בטבלה למטה)
-אלון מזין אותם. אחר כך Claude בודק **שמות בלבד** ומשווה לרשימה. "אסור להגדיר" נשאר בתוקף, במיוחד `NOTIFY_TEST_RECIPIENTS` ו-`META_TEST_EVENT_CODE`.
+**Webhook post-call:** השיוך אומת בקריאה (13/10). ב-Main של 8501 מוגדר `post_call_webhook_id` = `4c94bcf659254ec5a9c93c30dcec0cf4`, וב-5801 של ה-Preview מוגדר מזהה אחר (`7cc2c509…`). כך תוקן המסמך מ-12/10, שאמר שאין webhook. **כתובת היעד לא אומתה:** בכלים שיש לי אין קריאה של הגדרות ה-webhooks ב-ElevenLabs, ואין לי דרך אחרת לקרוא אותן בלי מפתח. לפי מה שדיווחת, הוא מוגדר ל-`https://front-studio.vercel.app/api/elevenlabs/webhook`. אישור סופי יגיע בקבלה (שלב 5): שיחת ייצור ראשונה שנקלטת בדשבורד.
+
+### 3. Vercel Production — אומת בשמות בלבד (13/10, בלי לקרוא ערכים סודיים)
+- **כל 14 משתני החובה קיימים עם יעד Production בלבד:** DATABASE_URL, SITE_URL, ADMIN_EMAIL, CRON_SECRET, PAYPAL_ENV, PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_WEBHOOK_ID, PAYPAL_MERCHANT_ID, ELEVENLABS_AGENT_ID, ELEVENLABS_WEBHOOK_SECRET, MAKE_NOTIFY_URL, META_PIXEL_ID, META_CAPI_TOKEN. הסודות שמורים כ-sensitive.
+- **אין אף משתנה אסור ב-Production:** NOTIFY_TEST_RECIPIENTS, META_TEST_EVENT_CODE, ADMIN_USER, ADMIN_PASSWORD_HASH ו-FRONT_ENV.
+- **ערכים לא-סודיים שנבדקו:**
+  - `PAYPAL_ENV=live`;
+  - `SITE_URL=https://front-studio.vercel.app`;
+  - `ADMIN_EMAIL` של אלון;
+  - `META_PIXEL_ID=871649018702910`;
+  - `ELEVENLABS_AGENT_ID=agent_8501…`;
+  - `PAYPAL_WEBHOOK_ID` ו-`PAYPAL_MERCHANT_ID` שונים מאלה של ה-Sandbox.
+- **מסד נתונים:** משתני ה-DB של Production (Neon, 15 משתנים) נוצרו ב-12/10, ושל Preview נוצרו ב-09/10. אלה רשומות נפרדות, ולכן כנראה מסד נפרד. **לא הוכח:** הערכים מוצפנים, וקריאת ה-store דרך ה-API החזירה 404.
+- **לא נבדק:** שה-Client ID וה-Secret של PayPal שייכים לאפיליקציית Live, ושה-webhook של PayPal רשום לכתובת הייצור. זה ייבדק אחרי הפריסה בכרטיס "חיבור PayPal" (שלב 5.3).
+- המשתנים לא משפיעים על Production עד פריסה חדשה. היום Production עדיין מריץ את `main`, האתר הישן.
 
 ### 4. מיזוג v5 → main (רק באישור מפורש) — זו הפריסה לייצור
 
@@ -58,12 +65,12 @@
 
 # מעבר לייצור — מה קיים ומה חסר (נבדק שוב 12/10/2026)
 
-**בדיקה 12/10 (קריאה בלבד):**
-- **משתני סביבה ב-Vercel:** בפרויקט `front-studio` **אין אף משתנה עם יעד Production**. כל המשתנים מוגדרים ל-Preview, בענף v5.
+**בדיקה 12/10 (קריאה בלבד; התיאור הזה עודכן ב-13/10, ראו "סדר ההשקה" שלב 3):**
+- **משתני סביבה ב-Vercel:** ~~בפרויקט `front-studio` אין אף משתנה עם יעד Production~~. עודכן 13/10: כל 14 המשתנים קיימים ב-Production.
   - `hiddenProductionEnvCount: 0`.
   - גם משתני מסד הנתונים (אינטגרציית Neon, store `store_kFS6BrZ6i2imB1uk`) מחוברים ל-Preview בלבד.
 - **פריסה:** Production (`front-studio.vercel.app`) עדיין מריץ את `main`, האתר הישן.
-- **ElevenLabs:** לסוכנת הייצור `agent_8501m4mbsfasegqbr208yx71ctm7` עדיין **לא משויך webhook post-call**.
+- **ElevenLabs:** ~~לסוכנת הייצור עדיין לא משויך webhook post-call~~. **עודכן 13/10:** משויך `4c94bcf659254ec5a9c93c30dcec0cf4`.
 - **PayPal Live:** לא בדקתי. אין לי גישה לחשבון Live. האפליקציה, ה-webhook ומזהה המוכר נבדקים ב-developer.paypal.com.
 
 ### מה חסר ב-Production — לפי שירות
@@ -93,7 +100,7 @@
 | # | משתנה | מה בדיוק |
 |---|---|---|
 | 10 | `ELEVENLABS_AGENT_ID` | `agent_8501m4mbsfasegqbr208yx71ctm7` (סוכנת הייצור; הוכנה 11/10) |
-| 11 | `ELEVENLABS_WEBHOOK_SECRET` | ב-ElevenLabs → Agents → Settings → Webhooks: webhook חדש מסוג post-call אל `<SITE_URL>/api/elevenlabs/webhook`. **לשייך אותו לסוכנת 8501** (נבדק 12/10: עדיין לא משויך). הסוד מוצג פעם אחת, ומזינים אותו ישר ל-Vercel |
+| 11 | `ELEVENLABS_WEBHOOK_SECRET` | ב-ElevenLabs → Agents → Settings → Webhooks: webhook מסוג post-call אל `<SITE_URL>/api/elevenlabs/webhook`. **עודכן 13/10:** ה-webhook `4c94bcf659254ec5a9c93c30dcec0cf4` משויך לסוכנת 8501. השיוך אומת בקריאה, ואת הכתובת דיווח אלון. הסוד מוצג פעם אחת ומוזן ישר ל-Vercel |
 
 #### 4. Make (מבצע: אלון; התרחיש עצמו כבר מוכן)
 | # | משתנה | מה בדיוק |
