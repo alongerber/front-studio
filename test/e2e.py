@@ -847,6 +847,27 @@ with sync_playwright() as p:
     done = sql(page, "select count(*)::int c from support_requests where status = 'done'", [])[0]['c']
     check('S13 "טופל" closes one request on the server', done == 1, done)
     ctx.close()
+    # ── U. summary email from the page (Meital's send_summary): consent is the agent's job; here the honest states ──
+    ctx = new_ctx(browser); page = ctx.new_page(); errors = []; page.on('pageerror', lambda e: errors.append(str(e)))
+    page.goto(BASE + '/'); page.wait_for_timeout(400); page.click('#cbNone')
+    orders0 = sql(page, "select count(*)::int c from orders", [])[0]['c']
+    D = 'ספרית מחייכת בגשם: עשית החלקה, זוכרת?'
+    r = page.evaluate("d => window.FRONT.sendSummary('someone@gmail.com', d)", D)
+    check('U1 outside production a non-test address is not sent, and the agent is told so (no "sent")', r.startswith('NOT SENT: this is a test environment'), r)
+    r = page.evaluate("d => window.FRONT.sendSummary('not-an-email', d)", D)
+    check('U2 an invalid address: the agent is asked to repeat it, nothing saved', r.startswith('NOT SENT: the address is not valid')
+          and sql(page, "select count(*)::int c from summary_requests where email = 'not-an-email'", [])[0]['c'] == 0, r)
+    ctl(page, '/__test/makefail', {'fail': True})
+    r1 = page.evaluate("d => window.FRONT.sendSummary('owner@front.test', d)", D)
+    ctl(page, '/__test/makefail', {'fail': False})
+    r2 = page.evaluate("d => window.FRONT.sendSummary('owner@front.test', d)", D)
+    r3 = page.evaluate("d => window.FRONT.sendSummary('owner@front.test', d)", D)
+    rows = sql(page, "select status from summary_requests where email = 'owner@front.test'", [])
+    check('U3 a failed send is reported as registered (QUEUED), a retry sends it (SENT), a third call adds nothing: one row',
+          r1.startswith('QUEUED') and r2.startswith('SENT') and r3.startswith('SENT') and len(rows) == 1 and rows[0]['status'] == 'sent', (r1[:20], r2[:20], r3[:20], rows))
+    check('U4 a summary never creates an order or touches payment', sql(page, "select count(*)::int c from orders", [])[0]['c'] == orders0)
+    check('U5 no JS errors (summary)', not errors, errors)
+    ctx.close()
     browser.close()
 
 fails = [r for r in results if not r[1]]

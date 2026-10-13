@@ -289,8 +289,8 @@ function load(){
 
 /* ── work view: built only from stored fields; nothing here is guessed ── */
 var LAST=null, OLDER=[], OLDER_MORE=false;
-var BRIEF_LABEL={business_type:'סוג העסק',business_name:'שם העסק',promote:'מה מקדמים',audience:'למי זה מיועד',customer_questions:'מה לקוחות שואלים',
-  past_experience:'ניסיון קודם',concern:'חשש שעלה',avoid:'מה לא להגיד',call_to_action:'מה הצופה צריך לעשות',tone:'טון',contact_details:'פרטים בפרסומת',other:'עוד'};
+var BRIEF_LABEL={business_type:'סוג העסק',business_name:'שם העסק',promote:'מה מקדמים',goal:'מה רוצים להשיג',audience:'למי זה מיועד',customer_questions:'מה לקוחות שואלים',
+  past_experience:'ניסיון בפרסום',change_reason:'למה מחפשים שינוי',liked_direction:'כיוון שאהבו',concern:'מה מעכב',avoid:'מה לא להגיד',call_to_action:'מה הצופה צריך לעשות',tone:'טון',contact_details:'פרטים בפרסומת',other:'עוד'};
 function isTest(r,d){ return (r.environment||d.environment)!=='production'; }
 function payState(r){
   if(r.status==='refunded') return ['הוחזר','st-bad'];

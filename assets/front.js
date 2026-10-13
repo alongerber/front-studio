@@ -403,17 +403,48 @@
   // Returns the real outcome to the agent (the tool waits for it): "SAVED: …" only after the server stored it.
   F.saveNote = function (field, value) {
     callStarted = true;                                   // a tool call proves the conversation is running
-    if (F.notesBlocked) return Promise.resolve('NOT SAVED: the ad switch did not complete, so nothing is saved for the new business. Do not say it was saved. Tell the customer there is a technical problem and offer WhatsApp.');
+    if (F.notesBlocked) return Promise.resolve('NOT SAVED: the ad switch did not complete, so nothing is saved for the new business. Do not say it was saved. Tell the customer there is a technical problem and offer the help form (open_support).');
     var work = F.ensureOrder(!!F.agentSales).then(function (o) {
       return api('/api/brief/note', { order_id: o.order_id, token: o.token, field: String(field || 'other'), value: String(value || ''), phase: F.agentSales ? 'sales' : 'brief' });
     }).then(function (j) { return j.saved ? 'SAVED: ' + j.saved : 'NOT SAVED: empty value.'; },
       function (e) {
         var why = e && e.message === 'page_outdated' ? 'this page is out of date; the customer must refresh it before continuing'
           : e && e.message === 'paid_order' ? 'the order in this browser is already paid; this conversation cannot change it'
+          : e && e.message === 'unsupported_field' ? 'this field type does not exist; use one of the listed fields'
           : 'the server did not confirm (' + String(e && e.message || 'error').slice(0, 40) + ')';
         return 'NOT SAVED: ' + why + '. Do not say it was saved.';
       });
     var timeout = new Promise(function (r) { setTimeout(function () { r('NOT SAVED: no answer from the server in time. Do not say it was saved.'); }, 9000); });
+    return Promise.race([work, timeout]);
+  };
+
+  // send_summary → server. Only after the customer asked or agreed (the prompt's rule); no order is created here.
+  // The same conversation + address always maps to one request, so a repeated call retries instead of duplicating.
+  var sumTab = null;
+  function sumKey(email) {
+    if (!sumTab) { try { sumTab = sessionStorage.getItem('front_sum_tab'); } catch (e) {}
+      if (!sumTab) { sumTab = Math.random().toString(36).slice(2) + Date.now().toString(36); try { sessionStorage.setItem('front_sum_tab', sumTab); } catch (e) {} } }
+    var s = String(email || '').trim().toLowerCase(), h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+    return ('t' + sumTab + '-' + h.toString(36)).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 80);
+  }
+  F.sendSummary = function (email, direction) {
+    callStarted = true;
+    var o = F.order, ids = F.ids();
+    var work = api('/api/summary', { client_ref: sumKey(email), email: String(email || '').trim(), direction: String(direction || ''),
+      order_id: o ? o.order_id : null, token: o ? o.token : null, session_id: ids.session_id || null }).then(function (j) {
+      if (j.state === 'sent') return 'SENT: the email service accepted the summary for this address (' + j.ref + '). Say it was sent; do not say it arrived or was read.';
+      if (j.state === 'queued') return 'QUEUED: the summary is saved and will be retried automatically; the email service has not confirmed yet. Say it is registered for sending, not that it was sent.';
+      if (j.state === 'not_allowed') return 'NOT SENT: this is a test environment and only the test address may receive emails. Say the summary cannot be sent to this address here. Do not ask for another address.';
+      return 'NOT SENT: sending failed. Say so briefly and plainly; the customer may ask to try once more later. Do not say it was sent.';
+    }, function (e) {
+      var m = e && e.message;
+      if (m === 'invalid_email') return 'NOT SENT: the address is not valid. Ask the customer to say it again, letter by letter if needed, and read it back before sending.';
+      if (m === 'direction_required') return 'NOT SENT: the summary text was missing. Write one or two sentences of the direction and call again.';
+      if (m === 'rate_limited') return 'NOT SENT: too many attempts right now. Say it did not go out; do not retry in this turn.';
+      return 'NOT SENT: the server did not confirm (' + String(m || 'error').slice(0, 40) + '). Say it did not go out; do not say it was sent.';
+    });
+    var timeout = new Promise(function (r) { setTimeout(function () { r('NOT SENT: no answer from the server in time. Say it may not have gone out; do not say it was sent.'); }, 12000); });
     return Promise.race([work, timeout]);
   };
 

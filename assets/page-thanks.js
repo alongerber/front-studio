@@ -13,8 +13,8 @@
     try { history.replaceState(null, '', location.pathname); } catch (e) {}          // keep the token out of the address bar
   }
   var order = null;                 // server view of the order
-  var LABEL = { business_type: 'סוג העסק', business_name: 'שם העסק', promote: 'מה מקדמים', audience: 'למי זה מיועד', past_experience: 'ניסיון קודם',
-    concern: 'חשש שעלה', avoid: 'מה לא להגיד', call_to_action: 'מה הצופה צריך לעשות', tone: 'טון', contact_details: 'פרטים בסרטון', customer_questions: 'מה לקוחות שואלים', other: 'עוד' };
+  var LABEL = { business_type: 'סוג העסק', business_name: 'שם העסק', promote: 'מה מקדמים', goal: 'מה רוצים להשיג', audience: 'למי זה מיועד', past_experience: 'ניסיון בפרסום',
+    change_reason: 'למה מחפשים שינוי', liked_direction: 'כיוון שאהבו', concern: 'מה מעכב', avoid: 'מה לא להגיד', call_to_action: 'מה הצופה צריך לעשות', tone: 'טון', contact_details: 'פרטים בסרטון', customer_questions: 'מה לקוחות שואלים', other: 'עוד' };
 
   if (!F.order) { $('noorder').hidden = false; ['c1', 'c2', 'c3'].forEach(function (id) { $(id).hidden = true; }); $('ordId').textContent = '—'; $('payPill').hidden = true; return; }
   $('ordId').textContent = F.order.order_id;
@@ -95,6 +95,7 @@
       : 'NOT OPENED: the help form could not be shown. Tell the customer the link is at the bottom of the page, under "עזרה בהזמנה".';
   }
   var tools = {
+    send_summary: function (p) { return F.sendSummary(p && p.email, p && p.direction); },
     save_brief_note: function (p) { return F.saveNote(p && p.field || 'other', p && p.value).then(function (r) { refresh(); return r; }); },
     open_support: supportTool, show_whatsapp: supportTool,   // show_whatsapp: older agent versions; it opens the same help form
     open_payment: function () { return 'NOT OPENED: payment is not opened from the order page. To know whether the payment arrived, call check_payment.'; },

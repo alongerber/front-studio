@@ -380,8 +380,8 @@ test('F7. scripts/migrate.js applies all migrations, is idempotent, and fails cl
   setDb(async (t, p) => (await db.query(t, p)).rows);
   const { run } = await import('../scripts/migrate.js');
   const first = await run();
-  assert.deepEqual(first.all, ['001_init', '002_agent_link', '003_durable_queues', '004_receipt', '005_admin_login', '006_webhook_order', '007_operations', '008_support']);
-  assert.deepEqual(first.applied, ['001_init', '002_agent_link', '003_durable_queues', '004_receipt', '005_admin_login', '006_webhook_order', '007_operations', '008_support']);
+  assert.deepEqual(first.all, ['001_init', '002_agent_link', '003_durable_queues', '004_receipt', '005_admin_login', '006_webhook_order', '007_operations', '008_support', '009_summary']);
+  assert.deepEqual(first.applied, ['001_init', '002_agent_link', '003_durable_queues', '004_receipt', '005_admin_login', '006_webhook_order', '007_operations', '008_support', '009_summary']);
   setDb(async (t, p) => (await db.query(t, p)).rows);                     // a new process
   const second = await run();
   assert.deepEqual(second.applied, [], 'nothing re-applied');
