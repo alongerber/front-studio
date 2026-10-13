@@ -369,7 +369,7 @@
     var dv = Object.assign({}, vars, {
       front_link: LINK, anonymous_id: ids.anonymous_id || '', session_id: ids.session_id || '', order_id: F.order && linkOrder ? F.order.order_id : '', site_version: CFG.version,
       // What the agent may offer. Until the server confirms production: PayPal sandbox only, never Bit.
-      payment_methods: !F.checkoutOpen ? 'ההזמנה עוד לא פתוחה לתשלום. אל תפעילי open_payment; הציעי וואטסאפ.'
+      payment_methods: !F.checkoutOpen ? 'ההזמנה עוד לא פתוחה לתשלום. אל תפעילי open_payment; לשאלה או לבעיה הפעילי open_support (טופס עזרה).'
         : F.live ? 'פייפאל (גם בכרטיס אשראי בלי חשבון) או ביט'
         : 'סביבת בדיקה: רק תשלום בדיקה בפייפאל, בלי כסף אמיתי. אין ביט.'
     });
@@ -511,7 +511,7 @@
         io.observe(ui.buttons);
       });
     }).catch(function (e) {
-      if (e && e.closed) return say('ההזמנה עוד לא פתוחה: זמן האספקה חסר בהגדרות. אפשר לדבר עם מיטל או לכתוב לנו בוואטסאפ.', 'err');
+      if (e && e.closed) return say('ההזמנה עוד לא פתוחה: זמן האספקה חסר בהגדרות. אפשר לדבר עם מיטל, ולבעיה יש טופס עזרה בהזמנה.', 'err');
       report('paypal_load', e);
       if (!F.live) return say(e && e.message === 'paypal_not_configured' ? 'סביבת בדיקה — אין להעביר כסף. תשלום הבדיקה (PayPal Sandbox) עדיין לא מחובר.' : 'סביבת בדיקה — אין להעביר כסף. לא הצלחנו לטעון את PayPal Sandbox.', 'err');
       say(e && e.message === 'paypal_not_configured' ? 'תשלום בפייפאל לא זמין כרגע. אפשר לשלם בביט.' : 'לא הצלחנו לטעון את פייפאל בדפדפן הזה. אפשר לפתוח את האתר בדפדפן רגיל, או לשלם בביט.', 'err');

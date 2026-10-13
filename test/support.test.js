@@ -108,4 +108,6 @@ test('SU10. no personal contact in the marketing path or in Meital\'s instructio
   }
   const prompt = await read('docs/agent/meital-v5-prompt.md');
   assert.ok(prompt.includes('open_support') && !/וואטסאפ|show_whatsapp/.test(prompt), 'Meital routes people to the help form, never WhatsApp');
+  // What the page tells Meital and the customer: no WhatsApp channel (Bit in production keeps its own link).
+  assert.equal((await read('assets/front.js')).includes('וואטסאפ'), false, 'front.js messages point to the help form, not WhatsApp');
 });
