@@ -350,9 +350,8 @@
   function agentUnavailable(reason) {
     report('agent_unavailable', new Error(reason));
     track('agent_unavailable', { reason: String(reason).slice(0, 60) });
-    F.bar('השיחה אינה זמינה כרגע. אפשר לכתוב לנו בוואטסאפ ונחזור אליכם.', 'לוואטסאפ', function () {
-      track('whatsapp_click', {}, { cta: 'agent_unavailable' });
-      location.href = 'https://wa.me/' + CFG.wa;
+    F.bar('השיחה עם מיטל לא זמינה כרגע. אפשר להזמין ישירות, ולשאלה או לבעיה יש טופס עזרה.', 'עזרה בהזמנה', function () {
+      F.bar(null); F.openSupport('agent');
     });
     return false;
   }
@@ -531,6 +530,81 @@
       return o;
     }, function (e) { report('bit', e); throw e; });
   };
+
+  /* ── "help with an order": a small form, saved on our server. Works without Meital and without a paid call. ──
+     The order is attached only from a verified order page (F.supportOrder, set after the server confirmed it);
+     a number typed by hand is sent as text and grants nothing. The draft stays until the server confirms saving. */
+  var SUP = 'front_support_draft', supEl = null, supSending = false;
+  F.supportOrder = null;
+  function supDraft() { return rd(S, SUP) || { email: '', message: '', order_ref: '', client_ref: uuid() }; }
+  function supStyle() {
+    if (document.getElementById('supCss')) return;
+    var st = document.createElement('style'); st.id = 'supCss';
+    st.textContent = '.sup{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}' +
+      '.sup__c{background:#201d19;color:#F4EFE6;border-radius:14px;max-width:440px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.5);max-height:92vh;overflow:auto}' +
+      '.sup__c h2{font-size:22px;margin:0 0 6px}.sup__c p{font-size:15px;color:rgba(244,239,230,.74);margin:0 0 12px}' +
+      '.sup__c label{display:block;font-size:14px;margin:10px 0 4px}.sup__c input,.sup__c textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px;border-radius:8px;border:1px solid rgba(244,239,230,.25);background:#141210;color:#F4EFE6}' +
+      '.sup__c textarea{min-height:110px;resize:vertical}.sup__b{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}' +
+      '.sup__b button{font:inherit;font-size:16px;padding:10px 18px;border-radius:999px;border:0;cursor:pointer}.sup__go{background:#E3C68C;color:#141210;font-weight:700}' +
+      '.sup__x{background:transparent;color:#F4EFE6;box-shadow:inset 0 0 0 1.5px rgba(244,239,230,.25)}.sup__m{margin-top:12px;font-size:15px}.sup__m.err{color:#ffb4a8}.sup__m.ok{color:#b9e6b0}';
+    document.head.appendChild(st);
+  }
+  F.openSupport = function (source) {
+    supStyle();
+    if (supEl) supEl.remove();
+    var d = supDraft(), ord = F.supportOrder;
+    supEl = document.createElement('div'); supEl.className = 'sup'; supEl.id = 'support';
+    supEl.innerHTML = '<form class="sup__c" role="dialog" aria-modal="true" aria-labelledby="supH" novalidate>' +
+      '<h2 id="supH">עזרה בהזמנה</h2><p>כתבו מה קרה. התשובה תגיע לאימייל שתכתבו כאן.</p>' +
+      '<label for="supEmail">אימייל</label><input id="supEmail" type="email" autocomplete="email" dir="ltr" required>' +
+      '<label for="supMsg">מה קרה?</label><textarea id="supMsg" required maxlength="3000"></textarea>' +
+      (ord ? '<p id="supOrd" style="margin-top:10px">ההזמנה ' + esc(ord.order_id) + ' מצורפת לפנייה.</p>'
+           : '<label for="supRef">מספר הזמנה, אם יש</label><input id="supRef" dir="ltr" maxlength="40" placeholder="FR-XXXX-XXXX">') +
+      '<div class="sup__b"><button type="submit" class="sup__go" id="supSend">שליחה</button><button type="button" class="sup__x" id="supX">סגירה</button></div>' +
+      '<p class="sup__m" id="supMsgOut" role="status" aria-live="polite"></p></form>';
+    document.body.appendChild(supEl);
+    var $s = function (id) { return supEl.querySelector('#' + id); };
+    $s('supEmail').value = d.email || ''; $s('supMsg').value = d.message || ''; if ($s('supRef')) $s('supRef').value = d.order_ref || '';
+    var save = function () { var x = supDraft(); x.email = $s('supEmail').value; x.message = $s('supMsg').value; if ($s('supRef')) x.order_ref = $s('supRef').value; wr(S, SUP, x); };
+    supEl.addEventListener('input', save);
+    var close = function () { if (supEl) { supEl.remove(); supEl = null; } };
+    $s('supX').onclick = close;
+    supEl.addEventListener('click', function (e) { if (e.target === supEl) close(); });
+    supEl.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    var out = $s('supMsgOut'), btn = $s('supSend');
+    var say = function (t, cls) { out.className = 'sup__m' + (cls ? ' ' + cls : ''); out.textContent = t; };
+    supEl.querySelector('form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (supSending) return;                              // a double click sends once (and the server dedupes by client_ref)
+      save(); var x = supDraft();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(String(x.email).trim())) { say('צריך אימייל תקין, כדי שתהיה כתובת לתשובה.', 'err'); $s('supEmail').focus(); return; }
+      if (String(x.message).trim().length < 5) { say('כתבו כמה מילים על מה שקרה.', 'err'); $s('supMsg').focus(); return; }
+      supSending = true; btn.disabled = true; btn.textContent = 'שולחים…'; say('');
+      var body = { client_ref: x.client_ref, email: x.email, message: x.message, source: source || 'home' };
+      if (ord) { body.order_id = ord.order_id; body.token = ord.token; } else if (x.order_ref) body.order_ref = x.order_ref;
+      api('/api/support', body).then(function (r) {
+        if (!r || !r.saved) throw new Error('not_saved');
+        wr(S, SUP, null);                                  // saved on the server: only now the draft is cleared
+        track('support_requested', { order_attached: !!r.order_attached, source: body.source });
+        $s('supEmail').disabled = true; $s('supMsg').disabled = true; if ($s('supRef')) $s('supRef').disabled = true;
+        btn.hidden = true; say('הפנייה התקבלה. מספר הפנייה: ' + r.ref + '.', 'ok');
+      }, function (err) {
+        var m = err && err.message;
+        btn.disabled = false; btn.textContent = 'לנסות שוב';
+        if (m === 'invalid_email') return say('צריך אימייל תקין, כדי שתהיה כתובת לתשובה.', 'err');
+        if (m === 'message_required') return say('כתבו כמה מילים על מה שקרה.', 'err');
+        if (m === 'rate_limited') return say('היו כמה שליחות ברצף. מה שכתבתם נשאר כאן; נסו שוב בעוד דקה.', 'err');
+        report('support', err);
+        say('הפנייה לא נשלחה. מה שכתבתם נשאר כאן; אפשר לנסות שוב.', 'err');
+      }).then(function () { supSending = false; });
+    });
+    setTimeout(function () { ($s('supEmail').value ? $s('supMsg') : $s('supEmail')).focus(); }, 0);
+    return supEl;
+  };
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-support]'); if (!b) return;
+    e.preventDefault(); F.openSupport(b.getAttribute('data-support') || 'home');
+  });
 
   /* ── boot ── */
   applyConsent();

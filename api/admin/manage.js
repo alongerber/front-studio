@@ -4,6 +4,7 @@ import { json, handle, readJson, httpError } from '../../lib/util.js';
 import { requireAdmin } from '../../lib/admin.js';
 import { rateLimit } from '../../lib/store.js';
 import { linkWebhookEvents } from '../../lib/webhook-link.js';
+import { closeSupport } from '../../lib/support.js';
 import { setStage, addDelay, endDelay, cancelDelay, setDueOverride, issueLink, revokeLinks } from '../../lib/production.js';
 
 export const POST = handle(async (request) => {
@@ -20,6 +21,7 @@ export const POST = handle(async (request) => {
     case 'cancel_delay': return json({ ok: true, ...(await cancelDelay(id, Number(b.delay_id), admin)) });
     case 'set_due':      return json({ ok: true, ...(await setDueOverride(id, b.date === null ? null : String(b.date || ''), b.reason, admin)) });
     case 'link_webhooks': return json({ ok: true, ...(await linkWebhookEvents(id, b.event_ids, admin)) });   // metadata only, never reprocessed
+    case 'support_done': return json({ ok: true, ...(await closeSupport(Number(b.support_id), admin)) });   // a help request was handled
     default: throw httpError(400, 'bad_action');
   }
 });

@@ -22,6 +22,7 @@
   /* ── status ── */
   function render(o) {
     order = o;
+    F.supportOrder = { order_id: F.order.order_id, token: F.order.token };   // the server just confirmed this order for this link
     var pill = $('payPill');
     pill.classList.remove('ok', 'warn');
     if (o.paid) { pill.textContent = o.paid_via === 'bit_manual' ? 'התשלום בביט אושר' : 'התשלום התקבל'; pill.classList.add('ok'); $('h1').textContent = 'התשלום התקבל.'; $('nopay').hidden = true; }
@@ -88,11 +89,16 @@
     if (biz) return head + 'את ' + biz + ' כבר הכרנו, עכשיו נדייק מה הפרסומת צריכה להגיד. ' + (b.promote ? 'מי הלקוח שהכי חשוב לכם להביא?' : 'איזה שירות או מוצר הכי חשוב לכם לקדם?');
     return head + 'בואו נתחיל: איזה עסק יש לכם, ומה הכי הייתם רוצים שיזמינו אצלכם?';
   }
+  function supportTool() {
+    try { F.openSupport('agent'); } catch (e) {}
+    return document.getElementById('support') ? 'OPENED: the help form is on screen with this order attached. Nothing was sent yet: the customer writes and sends it. Do not say a request was opened or passed on.'
+      : 'NOT OPENED: the help form could not be shown. Tell the customer the link is at the bottom of the page, under "עזרה בהזמנה".';
+  }
   var tools = {
     save_brief_note: function (p) { return F.saveNote(p && p.field || 'other', p && p.value).then(function (r) { refresh(); return r; }); },
-    show_whatsapp: function () { var a = document.querySelector('[data-wa]'); if (a) a.scrollIntoView({ behavior: 'smooth', block: 'center' }); return 'ok'; },
+    open_support: supportTool, show_whatsapp: supportTool,   // show_whatsapp: older agent versions; it opens the same help form
     open_payment: function () { return 'NOT OPENED: payment is not opened from the order page. To know whether the payment arrived, call check_payment.'; },
-    switch_ad: function () { return 'NOT DONE: this is the brief of a paid order; it stays as it is. Do not save details of another business here. For another ad, offer WhatsApp with Alon.'; }
+    switch_ad: function () { return 'NOT DONE: this is the brief of a paid order; it stays as it is. Do not save details of another business here. For another ad, the customer can order it from the home page.'; }
   };
   $('openChat').addEventListener('click', function () {
     F.agentSales = false;
@@ -189,17 +195,11 @@
         if (code === 'page_outdated') return fail('העמוד הזה לא מעודכן. רעננו אותו; מה שמילאתם נשמר בדפדפן ויחזור לשדות.');
         F.report('finish', err);
         b.textContent = 'לנסות שוב';
-        var c = order && order.contact || {};
-        fail(null, 'לא הצלחנו לשמור כרגע (' + esc(code || 'שגיאה') + '). מה שמילאתם נשאר כאן. נסו שוב בעוד רגע, או <a class="lnk" target="_blank" rel="noopener" href="https://wa.me/' + F.CFG.wa + '?text=' +
-          encodeURIComponent('הזמנה ' + F.order.order_id + '\n' + (c.name || '') + ' ' + (c.phone || '') + '\n' + known()) + '">שלחו לנו את זה בוואטסאפ</a>.');
+        fail(null, 'לא הצלחנו לשמור כרגע (' + esc(code || 'שגיאה') + '). מה שמילאתם נשאר כאן. נסו שוב בעוד רגע, או <a class="lnk" href="#" data-support="thanks">פנו בטופס העזרה</a>; ההזמנה תצורף אליו.');
       });
   }
   $('send').addEventListener('click', sendBrief);
   sf.addEventListener('submit', function (e) { e.preventDefault(); sendBrief(); });
 
-  /* WhatsApp links carry the order number */
-  document.querySelectorAll('[data-wa]').forEach(function (a) {
-    a.href = 'https://wa.me/' + F.CFG.wa + '?text=' + encodeURIComponent(a.dataset.wa + ' (הזמנה ' + F.order.order_id + ')'); a.target = '_blank'; a.rel = 'noopener';
-  });
   addEventListener('pointerdown', F.loadAgent, { once: true, passive: true });
 })();

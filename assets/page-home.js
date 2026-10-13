@@ -47,48 +47,13 @@ function wire(v,btn){
 document.querySelectorAll('[data-play]').forEach(function(b){ var x=b.parentNode.querySelector('video'); wire(x,b); });
 
 /* FAQ */
-document.querySelectorAll('.q button').forEach(function(b){
+document.querySelectorAll('.q > button').forEach(function(b){
   b.addEventListener('click',function(){
     var open=b.getAttribute('aria-expanded')==='true', p=document.getElementById(b.getAttribute('aria-controls'));
     b.setAttribute('aria-expanded',!open); p.hidden=open;
   });
 });
 })();
-
-/* ══ WhatsApp (survives the Facebook / Instagram in-app browser) ══ */
-var WA='972559501280', WAD='055-950-1280';
-function inApp(){var u=navigator.userAgent||'';return /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Line\/|MicroMessenger|Snapchat|Pinterest|TikTok/i.test(u);}
-function waModal(url){
-  var m=document.createElement('div'); m.className='wam';
-  m.innerHTML='<div class="wam__c" role="dialog" aria-modal="true"><h4>הדפדפן של פייסבוק חוסם את וואטסאפ</h4>'+
-    '<p>שתי דרכים לעקוף את זה:</p><div class="wam__n">'+WAD+'</div><div class="wam__b">'+
-    '<button class="btn" id="wamCopy">להעתיק את המספר</button>'+
-    '<a class="btn btn--o" href="'+url+'" target="_blank" rel="noopener">לנסות שוב</a>'+
-    '<button class="btn btn--o" id="wamX">סגירה</button></div>'+
-    '<p style="font-size:13px;margin-top:14px">אפשר גם ללחוץ על שלוש הנקודות למעלה ולבחור ״פתח בדפדפן״.</p></div>';
-  document.body.appendChild(m);
-  m.querySelector('#wamX').onclick=function(){m.remove();};
-  m.onclick=function(e){if(e.target===m)m.remove();};
-  m.querySelector('#wamCopy').onclick=function(){
-    var b=this,done=function(){b.textContent='הועתק ✓';setTimeout(function(){b.textContent='להעתיק את המספר';},2000);};
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(WAD).then(done,done);}
-    else{var t=document.createElement('textarea');t.value=WAD;document.body.appendChild(t);t.select();try{document.execCommand('copy');}catch(e){}t.remove();done();}
-  };
-}
-document.querySelectorAll('[data-wa]').forEach(function(a){
-  var url='https://wa.me/'+WA+'?text='+encodeURIComponent(a.dataset.wa);
-  a.href=url; a.target='_blank'; a.rel='noopener';
-  a.addEventListener('click',function(e){
-    if(!inApp()) return;
-    e.preventDefault();
-    var t=Date.now(),hidden=false,vis=function(){if(document.hidden)hidden=true;};
-    document.addEventListener('visibilitychange',vis);
-    location.href='whatsapp://send?phone='+WA+'&text='+encodeURIComponent(a.dataset.wa);
-    setTimeout(function(){document.removeEventListener('visibilitychange',vis);
-      if(hidden||document.hidden)return; if(Date.now()-t<2400) waModal(url);},1500);
-  });
-});
-
 
 /* ══ checkout sheet (PayPal via our server, Bit via WhatsApp + manual verification) ══ */
 (function(){
@@ -121,19 +86,20 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
   /* ══ Meital ══ */
   function known(o){ var b=o&&o.brief||{}, k=Object.keys(b).filter(function(x){return b[x];});
     return k.length?(o.paid?'פרטי ההזמנה ששולמה: ':'נשמר בשיחה קודמת בדפדפן הזה (אותה הזמנה, עוד לא שולמה): ')+k.map(function(x){return x+': '+b[x];}).join('; '):'עדיין לא ידוע כלום.'; }
-  function openWhatsapp(){
-    var a=document.querySelector('.fin [data-wa]')||document.querySelector('[data-wa]');
-    if(a){a.scrollIntoView({behavior:'smooth',block:'center'});a.style.transition='box-shadow .4s';
-      a.style.boxShadow='0 0 0 6px rgba(227,198,140,.35)';setTimeout(function(){a.style.boxShadow='';},2600);}
-    return 'whatsapp button highlighted';}
+  // Meital opens the help form when a person is needed. It only shows the form: nothing is sent until the customer sends it.
+  function openSupportTool(){
+    try{ F.openSupport('agent'); }catch(e){}
+    return document.getElementById('support')
+      ? 'OPENED: the help form is on screen. Nothing was sent yet: the customer writes an email and a description and sends it. Do not say a request was opened or passed on.'
+      : 'NOT OPENED: the help form could not be shown. Tell the customer the link "עזרה בהזמנה" is at the bottom of the page.'; }
   // A paid order whose brief is still open is never paid again by accident: the server decides it is paid.
   function payTool(){
     var st=F.order?F.orderStatus().catch(function(){return null;}):Promise.resolve(null);
     return st.then(function(o){
-      if(o&&o.paid&&!o.brief_done) return 'NOT OPENED: the order in this browser is already paid (server-verified). Do not open payment again; continue the brief. For a second ad, offer WhatsApp.';
+      if(o&&o.paid&&!o.brief_done) return 'NOT OPENED: the order in this browser is already paid (server-verified). Do not open payment again; continue the brief. A second ad can be ordered after this brief is sent.';
       // Report what actually happened on screen, never what was intended.
       try{ open('agent'); }catch(e){}
-      if(sheet.hidden||!sheet.getClientRects().length) return 'NOT OPENED: the payment window could not be shown on this screen. Do not say it opened. Say there is a display problem and offer WhatsApp.';
+      if(sheet.hidden||!sheet.getClientRects().length) return 'NOT OPENED: the payment window could not be shown on this screen. Do not say it opened. Say there is a display problem: the order button on the page opens the same payment window, and the help form is at the bottom of the page.';
       return F.live
         ? 'OPENED: payment options are shown on screen (PayPal or Bit). The customer must click to pay. Opening the window is not a payment.'
         : 'OPENED: TEST ENVIRONMENT, only a PayPal sandbox test payment is shown, no real money. Do not mention Bit. The customer must click to pay. Opening the window is not a payment.';
@@ -146,19 +112,19 @@ document.querySelectorAll('[data-wa]').forEach(function(a){
     var st=F.order?F.orderStatus().catch(function(){return null;}):Promise.resolve(null);
     return st.then(function(o){
       // A paid order is never changed; while its brief is open it also stays the order of this browser.
-      if(o&&o.paid&&(!o.brief_done||mode==='change_direction')){ F.notesBlocked='paid_order'; return 'NOT DONE: the order in this browser is already paid; its brief stays as it is. Do not save details of another business. For another ad, offer WhatsApp with Alon.'; }
+      if(o&&o.paid&&(!o.brief_done||mode==='change_direction')){ F.notesBlocked='paid_order'; return 'NOT DONE: the order in this browser is already paid; its brief stays as it is. Do not save details of another business. Another ad can be ordered after this brief is sent.'; }
       return F.switchAd(mode).then(function(){
         F.agentSales=true;
         return mode==='new_ad'
           ? 'DONE: a new ad was started; the previous ad and its details stay as they were. Treat known_context as not relevant to this ad. Save the new details with save_brief_note.'
           : 'DONE: the previous direction was archived (kept, not deleted) and this ad now starts with empty details. Treat known_context as replaced. Save the new details with save_brief_note.';
       });
-    }).catch(function(){ F.notesBlocked='switch_failed'; return 'NOT DONE: could not update the order. Nothing about the new business can be saved now. Do not say it changed; tell the customer there is a technical problem and offer WhatsApp.'; });
+    }).catch(function(){ F.notesBlocked='switch_failed'; return 'NOT DONE: could not update the order. Nothing about the new business can be saved now. Do not say it changed; tell the customer there is a technical problem and offer the help form.'; });
   }
   var tools={
     switch_ad:switchAd,
     open_payment:payTool, show_payment:payTool,
-    show_whatsapp:openWhatsapp,
+    open_support:openSupportTool, show_whatsapp:openSupportTool,   // show_whatsapp: older agent versions; same help form
     save_brief_note:function(p){ return F.saveNote(p&&p.field||'other', p&&p.value); }
   };
   // The agent gets the order's real state or nothing: while an existing order loads, the page says so; if it cannot

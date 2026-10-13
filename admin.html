@@ -98,6 +98,7 @@ td.act{font-weight:600}
     <div class="envbar" id="envbar" hidden></div>
     <div class="tiles" id="tiles"></div>
     <section class="card" style="margin-bottom:14px"><h2>משימות לביצוע</h2><div id="tasks"></div></section>
+    <section class="card" id="supcard" style="margin-bottom:14px"><h2>פניות "עזרה בהזמנה"</h2><p class="muted">פניות מהטופס באתר. הזמנה מסומנת "מאומתת" רק כשהפנייה נשלחה מעמוד ההזמנה עם הקישור שלה; מספר שהוקלד ביד הוא רק טענה ולא נבדק.</p><div class="scroll"><table id="support"></table></div><p class="muted" id="supmsg" role="status"></p></section>
     <section class="card"><div class="bar" style="margin-bottom:8px"><h2 style="margin:0">לקוחות והזמנות</h2>
       <label class="muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="showAll" style="width:auto"> להציג גם הזמנות שהסתיימו או לא שולמו</label></div>
       <div class="scroll"><table id="work"></table></div>
@@ -229,10 +230,22 @@ function kv(el,rows){ el.innerHTML=rows.map(function(r){return '<b>'+esc(r[0])+'
 function ms(v){ if(v==null) return '—'; var s=Math.round(v/1000); return s<60? s+' שנ׳' : Math.floor(s/60)+' דק׳ '+(s%60)+' שנ׳'; }
 function dt(v){ if(!v) return '—'; var d=new Date(v); return d.toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'}); }
 
+var SUPN={pending:'ממתין לשליחה',sent:'נשלח',failed:'נכשל'};
+function renderSupport(list){
+  var open=list.filter(function(r){return r.status==='open';}).length;
+  $('supcard').querySelector('h2').textContent='פניות "עזרה בהזמנה" ('+open+' פתוחות)';
+  $('support').innerHTML=list.length?'<tr><th>פנייה</th><th>נשלחה</th><th>אימייל</th><th>תוכן</th><th>הזמנה</th><th>מייל לאלון</th><th>מצב</th></tr>'+list.map(function(r){
+    var ord=r.order_id?esc(r.order_id)+' <span class="ok">מאומתת</span>':(r.claimed_order_ref?esc(r.claimed_order_ref)+' <span class="muted">(הוקלד, לא נבדק)</span>':'<span class="muted">—</span>');
+    return '<tr><td>'+esc(r.ref)+'</td><td>'+esc(new Date(r.created_at).toLocaleString('he-IL'))+'</td><td dir="ltr">'+esc(r.email)+'</td><td style="white-space:pre-wrap;max-width:28em">'+esc(r.message)+'</td><td>'+ord+'</td><td>'+esc(SUPN[r.notify_status]||r.notify_status)+(r.notify_error?' <span class="muted">'+esc(r.notify_error)+'</span>':'')+'</td><td>'+
+      (r.status==='open'?'<button data-supdone="'+esc(r.id)+'">טופל</button>':'<span class="muted">טופל'+(r.handled_at?' · '+esc(new Date(r.handled_at).toLocaleDateString('he-IL')):'')+'</span>')+'</td></tr>';}).join(''):'<tr><td class="muted">אין פניות.</td></tr>';
+  document.querySelectorAll('[data-supdone]').forEach(function(b){ b.onclick=function(){ b.disabled=true; $('supmsg').textContent='שומר…';
+    api('/api/admin/manage',{action:'support_done',support_id:Number(b.getAttribute('data-supdone'))}).then(function(r){ $('supmsg').textContent=r.closed?'סומן כטופל.':'כבר סומן קודם.'; return load(); },
+      function(e){ b.disabled=false; $('supmsg').textContent='לא נשמר: '+e.message; }); }; });
+}
 function load(){
   return api('/api/admin/summary?days='+$('days').value).then(function(d){
     $('login').hidden=true; $('app').hidden=false; $('env').textContent='· '+(d.environment==='production'?'לקוחות אמיתיים':'סביבת בדיקה ('+d.environment+')');
-    LAST=d; renderOps(d); account();
+    LAST=d; renderOps(d); account(); renderSupport(d.support||[]);
     var f=d.funnel, top=f[0].count||0;
     $('funnel').innerHTML='<tr><th>שלב</th><th>מספר</th><th>מהשלב הקודם</th><th>מהכניסות</th><th>מקור</th></tr>'+f.map(function(s,i){
       var prev=i?f[i-1]:null, same=function(a,b){return a.source===b.source;};

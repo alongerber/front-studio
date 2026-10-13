@@ -234,8 +234,10 @@ with sync_playwright() as p:
     txt = bar.inner_text() if bar.count() else ''
     no_widget = pg.evaluate("!window.__el && !document.querySelector('elevenlabs-convai')")
     no_test_agent = pg.evaluate("document.documentElement.outerHTML.indexOf('agent_5801m4a74w3dfawt9hdjhbe1nrjc') < 0 && !FRONT.CFG.agent")
-    check('X8 no agent in production: no widget, "unavailable" bar with WhatsApp, the test agent is never used',
-          no_widget and no_test_agent and 'השיחה אינה זמינה' in txt and 'וואטסאפ' in txt, (no_widget, no_test_agent, txt))
+    check('X8 no agent in production: no widget, "unavailable" bar with the help form (no WhatsApp), the test agent is never used',
+          no_widget and no_test_agent and 'לא זמינה' in txt and 'עזרה בהזמנה' in txt and 'וואטסאפ' not in txt, (no_widget, no_test_agent, txt))
+    pg.locator('#fbar button').click(); pg.wait_for_timeout(300)
+    check('X8b with Meital unavailable, the help form still opens from the bar', pg.locator('#support form').is_visible())
     ctx.close()
 
     # X3. an existing order that loads slowly: a loading bar, then the agent gets the real state (never "none")
@@ -397,7 +399,7 @@ with sync_playwright() as p:
         else: route.continue_()
     page.route('**/api/brief/finish', fail_once)
     page.click('#sfSend'); page.wait_for_timeout(1200)
-    check('J3c a failure shows a reason and a way on, and keeps what was typed', 'לא הצלחנו' in page.locator('#sfMsg').inner_text() and 'וואטסאפ' in page.locator('#sfMsg').inner_text()
+    check('J3c a failure shows a reason and a way on, and keeps what was typed', 'לא הצלחנו' in page.locator('#sfMsg').inner_text() and 'טופס העזרה' in page.locator('#sfMsg').inner_text() and 'וואטסאפ' not in page.locator('#sfMsg').inner_text()
           and page.input_value('#sf input[name=promote]') == 'טיפול שנתי' and page.locator('#fin').is_hidden(), page.locator('#sfMsg').inner_text())
     finish_calls = []
     page.on('request', lambda r: finish_calls.append(1) if r.url.endswith('/api/brief/finish') else None)
@@ -611,7 +613,7 @@ with sync_playwright() as p:
     need = ['הרגע עצרתם בשביל טונה.', 'מה יגרום ללקוחות לבחור דווקא בכם?', 'הפרסומת לא צריכה לספר הכול על העסק. היא צריכה לתת סיבה להתעניין בו.',
             'נמצא את הסיבה הזאת, נכתוב לה תסריט ונתאים לה דמות. אתם לא צריכים להצטלם.', 'בואו נדבר על הפרסומת שלי', 'מספיק לפרסם טונה. עכשיו אותי',
             'להזמנת פרסומת · 1,290 ₪', 'הפרסומת שלכם לא מגיעה עם הדוגמן מהטונה.', 'נבחר דמות, סיפור וסגנון שמתאימים למה שאתם מוכרים.',
-            '1,290 ₪. מהרעיון ועד ׳אפשר לפרסם׳.', 'אלון גרבר', 'קונספט']
+            '1,290 ₪. מהרעיון ועד ׳אפשר לפרסם׳.', 'את פרונט מנהל אלון', 'קונספט']
     missing = [x for x in need if x not in copy_all]
     check('L1 approved copy is on the page (hero, examples, package, about)', not missing, missing)
     check('L2 examples are marked as concept work, no client claims', 'עבודות קונספט' in copy_all and 'לקוחות שלנו' not in copy_all)
@@ -783,6 +785,68 @@ with sync_playwright() as p:
         pg.click('.work__g [data-sound]'); snd = pg.evaluate("document.querySelector('.work__g video').muted")
         check('V5 %s: sound turns on only when asked' % label, snd is False and pg.locator('.work__g [data-sound]').inner_text() == 'השתקה')
         vctx.close()
+    # ── S. sales path without personal contact; "help with an order" form (server-saved, deduped, no order access) ──
+    SH = os.environ.get('SHOT_DIR')
+    ctx = new_ctx(browser); page = ctx.new_page(); errors = []; page.on('pageerror', lambda e: errors.append(str(e)))
+    reqs = []; page.on('request', lambda r: reqs.append(r.url))
+    page.goto(BASE + '/'); page.wait_for_timeout(400); page.click('#cbNone')
+    html = page.content()
+    check('S1 home: no full name, personal phone, tel: or wa.me links in the page (not only hidden)',
+          'גרבר' not in html and '055-950-1280' not in html and '0559501280' not in html and 'tel:' not in html and 'wa.me' not in html
+          and page.locator('[data-wa]').count() == 0, [x for x in ['גרבר', '055-950-1280', 'tel:', 'wa.me'] if x in html])
+    js = ctl(page, '/__test/sql', {'q': 'select 1 as x'})  # keep the server warm
+    page.locator('[data-checkout=hero]').first.evaluate('el => el.click()'); page.wait_for_selector('#fakepp', timeout=5000)
+    check('S2 direct order stays one click away (PayPal window opens without talking to Meital)', page.locator('#pay').is_visible() and not page.evaluate("!!document.querySelector('elevenlabs-convai')"))
+    page.evaluate("document.getElementById('payX').click()")
+    page.locator('footer [data-support]').click(); page.wait_for_selector('#support form', timeout=3000)
+    check('S3 footer opens "עזרה בהזמנה": email, description, optional order number; no phone field', page.locator('#supEmail').is_visible() and page.locator('#supMsg').is_visible()
+          and page.locator('#supRef').is_visible() and 'טלפון' not in page.locator('#support').inner_text())
+    if SH: page.locator('#support form').screenshot(path=os.path.join(SH, 'support-form.png'))
+    page.fill('#supEmail', 'help@front.test'); page.fill('#supMsg', 'חלון התשלום לא נפתח אצלי'); page.fill('#supRef', 'FR-ZZZZ-ZZZZ')
+    fails = {'n': 0}
+    def fail_once(route):
+        if fails['n'] == 0: fails['n'] += 1; route.fulfill(status=500, content_type='application/json', body='{"ok":false,"error":"server_error"}')
+        else: route.continue_()
+    page.route('**/api/support', fail_once)
+    page.click('#supSend'); page.wait_for_timeout(800)
+    out = page.locator('#supMsgOut').inner_text()
+    n0 = sql(page, "select count(*)::int c from support_requests", [])[0]['c']
+    check('S4 a failure is not shown as success; the text stays for a retry', 'לא נשלחה' in out and 'התקבלה' not in out and page.input_value('#supMsg') == 'חלון התשלום לא נפתח אצלי' and n0 == 0, (out, n0))
+    page.evaluate("var b=document.getElementById('supSend'); b.click(); b.click();"); page.wait_for_timeout(1200)
+    out = page.locator('#supMsgOut').inner_text()
+    rows = sql(page, "select email, order_id, claimed_order_ref, source from support_requests", [])
+    check('S5 retry saves once (double click = one request), confirmation only after saving, with a reference', 'הפנייה התקבלה' in out and 'P-' in out and len(rows) == 1
+          and rows[0]['claimed_order_ref'] == 'FR-ZZZZ-ZZZZ' and rows[0]['order_id'] is None, (out, rows))
+    if SH: page.locator('#support form').screenshot(path=os.path.join(SH, 'support-form-sent.png'))
+    check('S6 no promise of a response time or of Alon calling back', 'אלון' not in page.locator('#support').inner_text() and 'שעות' not in page.locator('#support').inner_text())
+    # a typed order number returns nothing about the order
+    page.evaluate("document.getElementById('supX').click()")
+    page.evaluate("FRONT.ensureOrder(false)"); page.wait_for_timeout(500); tok = page.evaluate("FRONT.order")
+    resp = page.evaluate("fetch('/api/support',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({client_ref:crypto.randomUUID(),email:'x@front.test',message:'מה מצב ההזמנה שלי?',order_ref:'%s'})}).then(r=>r.json())" % tok['order_id'])
+    check('S7 a typed order number grants nothing: the answer has no order details', resp.get('saved') and resp.get('order_attached') is False and tok['order_id'] not in json.dumps(resp), resp)
+    # from a verified order page, the order is attached automatically
+    page.goto(BASE + '/thanks#o=' + tok['order_id'] + '&t=' + tok['token']); page.wait_for_timeout(1200)
+    html = page.content()
+    check('S8 order page: no personal phone or WhatsApp link', '055-950-1280' not in html and 'wa.me' not in html and page.locator('[data-wa]').count() == 0)
+    page.locator('footer [data-support]').click(); page.wait_for_selector('#support form', timeout=3000)
+    check('S9 order page: the verified order is attached, no manual number field', tok['order_id'] in page.locator('#supOrd').inner_text() and page.locator('#supRef').count() == 0)
+    if SH: page.locator('#support form').screenshot(path=os.path.join(SH, 'support-form-order.png'))
+    page.fill('#supEmail', 'help@front.test'); page.fill('#supMsg', 'שלחתי אפיון ולא קרה כלום'); page.click('#supSend'); page.wait_for_timeout(1000)
+    att = sql(page, "select order_id from support_requests where message = $1", ['שלחתי אפיון ולא קרה כלום'])
+    check('S10 sent from the order page: stored with the verified order', att and att[0]['order_id'] == tok['order_id'], att)
+    check('S11 no JS errors (support)', not errors, errors)
+    ctx.close()
+    # dashboard: requests listed, verified vs typed, marked handled
+    ctx = new_ctx(browser); page = ctx.new_page()
+    page.goto(BASE + '/admin'); page.fill('#em', 'owner@front.test'); page.fill('#lpw', 'a good long pass 1'); page.click('#pwLogin')
+    page.wait_for_selector('#app:not([hidden])', timeout=5000); page.wait_for_selector('#support tr td', timeout=5000)
+    st = page.locator('#supcard').inner_text()
+    check('S12 dashboard shows the requests: email, text, verified order vs typed claim', 'help@front.test' in st and 'מאומתת' in st and 'הוקלד, לא נבדק' in st and 'פתוחות' in st, st[:400])
+    if SH: page.locator('#supcard').screenshot(path=os.path.join(SH, 'support-dashboard.png'))
+    page.locator('#support [data-supdone]').first.click(); page.wait_for_function("document.getElementById('supmsg').innerText.indexOf('סומן') >= 0", timeout=5000)
+    done = sql(page, "select count(*)::int c from support_requests where status = 'done'", [])[0]['c']
+    check('S13 "טופל" closes one request on the server', done == 1, done)
+    ctx.close()
     browser.close()
 
 fails = [r for r in results if not r[1]]
