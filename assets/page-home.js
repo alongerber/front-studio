@@ -127,7 +127,7 @@ document.querySelectorAll('.q > button').forEach(function(b){
     open_payment:payTool, show_payment:payTool,
     open_support:openSupportTool, show_whatsapp:openSupportTool,   // show_whatsapp: older agent versions; same help form
     save_brief_note:function(p){ return F.saveNote(p&&p.field||'other', p&&p.value); },
-    send_summary:function(p){ return F.sendSummary(p&&p.email, p&&p.direction); }
+    send_summary:function(p){ return F.sendSummary(p&&p.email); }
   };
   // The agent gets the order's real state or nothing: while an existing order loads, the page says so; if it cannot
   // be loaded, the customer can retry and the order stays in this browser. Never "none" because of a slow answer.

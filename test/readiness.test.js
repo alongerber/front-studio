@@ -8,7 +8,7 @@ function withEnv(vars, fn) {
   try { return fn(); } finally { for (const k of Object.keys(old)) { if (old[k] === undefined) delete process.env[k]; else process.env[k] = old[k]; } }
 }
 const FULL = { FRONT_ENV: 'production', DATABASE_URL: 'x', PAYPAL_ENV: 'live', PAYPAL_CLIENT_ID: 'x', PAYPAL_CLIENT_SECRET: 'x', PAYPAL_WEBHOOK_ID: 'x',
-  PAYPAL_MERCHANT_ID: 'x', ELEVENLABS_AGENT_ID: 'agent_prod', ELEVENLABS_WEBHOOK_SECRET: 'x', MAKE_NOTIFY_URL: 'x', ADMIN_EMAIL: 'a@b.c',
+  PAYPAL_MERCHANT_ID: 'x', ELEVENLABS_AGENT_ID: 'agent_prod', ELEVENLABS_WEBHOOK_SECRET: 'x', MAKE_NOTIFY_URL: 'x', MAKE_NOTIFY_KEY: 'x', ADMIN_EMAIL: 'a@b.c',
   META_PIXEL_ID: 'x', META_CAPI_TOKEN: 'x', SITE_URL: 'https://front.example', CRON_SECRET: 'x', NOTIFY_TEST_RECIPIENTS: undefined, META_TEST_EVENT_CODE: undefined };
 
 test('R1. a complete production configuration is ready', () => withEnv(FULL, () => assert.equal(readiness().ok, true)));

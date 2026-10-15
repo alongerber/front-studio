@@ -14,11 +14,9 @@ import { BRIEF_FIELDS } from '../lib/store.js';
 process.env.NOTIFY_TEST_RECIPIENTS = 'owner@test.co';
 beforeEach(freshDb);
 const newOrder = async () => (await call(order.POST, 'POST', '/api/order', { body: { consent: { analytics: 'granted', ads: 'denied' }, anonymous_id: uuid4(), session_id: uuid4() } })).data;
-const ref = () => 'tab' + uuid4().replace(/-/g, '');
 const send = (body, ip = '10.0.0.9') => call(summary.POST, 'POST', '/api/summary', { body, headers: { 'x-forwarded-for': ip } });
-const saveNote = (o, field, value) => call(note.POST, 'POST', '/api/brief/note', { body: { order_id: o.order_id, token: o.token, field, value, phase: 'sales' } });
+const saveNote = (o, field, value) => call(note.POST, 'POST', '/api/brief/note', { body: { order_id: o.order_id, token: o.token, field, value, phase: 'sales' }, headers: { 'x-front-proto': '9' } });
 const mails = () => mock.calls.filter(c => /hook\.make\.test/.test(c.url) && c.body.includes('a=summary'));
-const DIR = 'ספרית מחייכת בגשם: ״עשית החלקה, זוכרת?״';
 
 test('SM1. brief memory: new fields are stored, a correction replaces the old value, an unknown field is refused (not folded into other)', async () => {
   for (const f of ['goal', 'change_reason', 'liked_direction', 'past_experience', 'concern']) assert.ok(BRIEF_FIELDS.includes(f), f);
@@ -34,42 +32,52 @@ test('SM1. brief memory: new fields are stored, a correction replaces the old va
   assert.notEqual(row.status, 'paid');
 });
 
-test('SM2. an allowed address: one email through Make, state "sent", facts come from the saved brief, the order is attached, nothing paid', async () => {
-  const o = await newOrder();
-  await saveNote(o, 'business_type', 'מספרה'); await saveNote(o, 'liked_direction', 'הגשם בחלון');
-  const r = await send({ client_ref: ref(), email: 'owner@test.co', direction: DIR, order_id: o.order_id, token: o.token });
-  assert.equal(r.status, 200); assert.equal(r.data.state, 'sent'); assert.equal(r.data.order_attached, true); assert.match(r.data.ref, /^S-\d{5}$/);
+// A conversation the page proved: its own order (id + token) with this tab's link key attached.
+const LINK = () => ('L' + uuid4().replace(/-/g, '') + 'xyz').slice(0, 32);
+async function conversation(notes = { business_type: 'מספרה', liked_direction: 'הגשם בחלון' }) {
+  const link = LINK();
+  const o = (await call(order.POST, 'POST', '/api/order', { body: { consent: { analytics: 'granted', ads: 'denied' }, anonymous_id: uuid4(), session_id: uuid4(), agent_link: link } })).data;
+  for (const [f, v] of Object.entries(notes)) assert.equal((await saveNote(o, f, v)).status, 200);
+  return { ...o, link };
+}
+const ask = (c, email, extra = {}, ip) => send({ email, order_id: c.order_id, token: c.token, link: c.link, ...extra }, ip);
+
+test('SM2. an allowed address: one email through Make, state "sent", built only from the saved order (request text ignored), nothing paid', async () => {
+  const c = await conversation();
+  const r = await ask(c, 'owner@test.co', { direction: 'טקסט חופשי מהבקשה ZX-INJECT', facts: 'ZX-INJECT' });
+  assert.equal(r.status, 200); assert.equal(r.data.state, 'sent'); assert.match(r.data.ref, /^S-\d{5}$/);
   assert.equal(mails().length, 1);
-  const body = decodeURIComponent(mails()[0].body.replace(/\+/g, ' '));
-  assert.ok(body.includes('מספרה') && body.includes('הגשם בחלון') && body.includes('environment=test'));
-  const [ord] = await sql(`SELECT status, paid_at FROM orders WHERE order_id = $1`, [o.order_id]);
+  const p = new URLSearchParams(mails()[0].body);
+  assert.equal(p.get('direction'), 'הגשם בחלון'); assert.match(p.get('facts'), /מספרה/); assert.equal(p.get('environment'), 'test');
+  assert.equal(mails()[0].body.includes('ZX-INJECT'), false);
+  const [ord] = await sql(`SELECT status, paid_at FROM orders WHERE order_id = $1`, [c.order_id]);
   assert.notEqual(ord.status, 'paid'); assert.equal(ord.paid_at, null);
   assert.equal((await sql(`SELECT count(*)::int n FROM orders`))[0].n, 1);                       // no order was created
 });
 
 test('SM3. outside production a non-test address is never sent: stored as not_allowed, no Make call', async () => {
-  const r = await send({ client_ref: ref(), email: 'customer@gmail.com', direction: DIR });
+  const r = await ask(await conversation(), 'customer@gmail.com');
   assert.equal(r.data.state, 'not_allowed'); assert.equal(mails().length, 0);
   assert.equal((await sql(`SELECT status FROM summary_requests`))[0].status, 'not_allowed');
 });
 
-test('SM4. double call / retry: same request, one row, one email; a failed send is "queued", retried on demand, then "sent" once', async () => {
-  const k = ref();
+test('SM4. double call / retry: same order + address is one row and one email; a failed send is "queued", retried, then "sent" once', async () => {
+  const c = await conversation();
   mock.makeFail = true;
-  const a = await send({ client_ref: k, email: 'owner@test.co', direction: DIR });
+  const a = await ask(c, 'owner@test.co');
   assert.equal(a.data.state, 'queued'); assert.equal(mails().length, 1);
   mock.makeFail = false;
-  const b = await send({ client_ref: k, email: 'owner@test.co', direction: DIR });   // the agent tries again
+  const b = await ask(c, 'Owner@Test.co');                                            // the agent tries again (any case)
   assert.equal(b.data.ref, a.data.ref); assert.equal(b.data.duplicate, true); assert.equal(b.data.state, 'sent');
-  const c = await send({ client_ref: k, email: 'owner@test.co', direction: DIR });   // and again: already sent, no new email
-  assert.equal(c.data.state, 'sent');
+  const d = await ask(c, 'owner@test.co');                                            // and again: already sent, no new email
+  assert.equal(d.data.state, 'sent');
   assert.equal(mails().length, 2);                                                   // one failed attempt + one success
   assert.equal((await sql(`SELECT count(*)::int n FROM summary_requests`))[0].n, 1);
 });
 
 test('SM5. Make answering "Accepted" (no route) is not a delivery; recovery keeps retrying until confirmed; gives up as failed', async () => {
   mock.makeFail = 'accepted';
-  const r = await send({ client_ref: ref(), email: 'owner@test.co', direction: DIR });
+  const r = await ask(await conversation(), 'owner@test.co');
   assert.equal(r.data.state, 'queued');
   await sql(`UPDATE summary_requests SET attempts = 5, next_attempt_at = now() - interval '1 minute'`);
   await call(recover.POST, 'POST', '/api/admin/recover', { headers: { authorization: 'Bearer cron-secret' } }).catch(() => {});
@@ -78,15 +86,17 @@ test('SM5. Make answering "Accepted" (no route) is not a delivery; recovery keep
   assert.equal(row.status, 'failed'); assert.ok(row.attempts >= 6);
 });
 
-test('SM6. validation and limits: bad address or empty direction refused and nothing stored; a forged token attaches nothing; rate limited', async () => {
-  assert.equal((await send({ client_ref: ref(), email: 'nope', direction: DIR })).data.error, 'invalid_email');
-  assert.equal((await send({ client_ref: ref(), email: 'owner@test.co', direction: 'קצר' })).data.error, 'direction_required');
-  assert.equal((await send({ client_ref: 'x', email: 'owner@test.co', direction: DIR })).status, 400);
-  assert.equal((await sql(`SELECT count(*)::int n FROM summary_requests`))[0].n, 0);
-  const o = await newOrder();
-  const f = await send({ client_ref: ref(), email: 'owner@test.co', direction: DIR, order_id: o.order_id, token: 'x'.repeat(40) });
-  assert.equal(f.data.order_attached, false); assert.equal(JSON.stringify(f.data).includes(o.order_id), false);
-  let last; for (let i = 0; i < 6; i++) last = await send({ client_ref: ref(), email: 'owner@test.co', direction: DIR }, '10.9.9.9');
+test('SM6. no authorised conversation, no email: missing/forged token, a key not attached to the order, nothing saved yet; rate limited', async () => {
+  const c = await conversation();
+  assert.equal((await ask(c, 'nope')).data.error, 'invalid_email');
+  assert.equal((await send({ email: 'owner@test.co' })).status, 403);                                          // no order at all
+  assert.equal((await ask(c, 'owner@test.co', { token: 'x'.repeat(40) })).status, 403);                        // forged token
+  assert.equal((await ask(c, 'owner@test.co', { link: LINK() })).status, 403);                                 // another tab's key
+  assert.equal((await ask(c, 'owner@test.co', { link: undefined })).status, 403);
+  const empty = await conversation({ business_type: 'מספרה' });                                                // facts but no direction
+  assert.equal((await ask(empty, 'owner@test.co', {}, '10.0.0.10')).data.error, 'nothing_to_send');
+  assert.equal((await sql(`SELECT count(*)::int n FROM summary_requests`))[0].n, 0); assert.equal(mails().length, 0);
+  let last; for (let i = 0; i < 11; i++) last = await ask(c, 'owner@test.co', {}, '10.9.9.9');
   assert.equal(last.status, 429);
 });
 

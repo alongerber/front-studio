@@ -97,7 +97,7 @@
       : 'NOT OPENED: the help form could not be shown. Tell the customer the link is at the bottom of the page, under "עזרה בהזמנה".';
   }
   var tools = {
-    send_summary: function (p) { return F.sendSummary(p && p.email, p && p.direction); },
+    send_summary: function (p) { return F.sendSummary(p && p.email); },
     save_brief_note: function (p) { return F.saveNote(p && p.field || 'other', p && p.value).then(function (r) { refresh(); return r; }); },
     open_support: supportTool, show_whatsapp: supportTool,   // show_whatsapp: older agent versions; it opens the same help form
     open_payment: function () { return 'NOT OPENED: payment is not opened from the order page. To know whether the payment arrived, call check_payment.'; },

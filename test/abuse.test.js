@@ -18,15 +18,19 @@ process.env.NOTIFY_TEST_RECIPIENTS = 'owner@test.co,second@test.co';
 beforeEach(() => { delete process.env.SUMMARY_DAILY_CAP; return freshDb(); });
 
 const MARK_A = 'ZX-ALFA-7731', MARK_B = 'ZX-BRAVO-4482';
-const newOrder = async () => (await call(order.POST, 'POST', '/api/order', { body: { consent: { analytics: 'granted', ads: 'denied' }, anonymous_id: uuid4(), session_id: uuid4() } })).data;
+const LINK = () => ('L' + uuid4().replace(/-/g, '') + 'xyz').slice(0, 32);
+// An order with this tab's conversation key attached (what the page does when Meital is on).
+const newOrder = async () => { const link = LINK();
+  const o = (await call(order.POST, 'POST', '/api/order', { body: { consent: { analytics: 'granted', ads: 'denied' }, anonymous_id: uuid4(), session_id: uuid4(), agent_link: link } })).data;
+  return { ...o, link }; };
 const saveNote = (o, field, value, token = o.token) => call(note.POST, 'POST', '/api/brief/note', { body: { order_id: o.order_id, token, field, value, phase: 'sales' }, headers: { 'x-front-proto': '9' } });
-const ref = () => 'tab' + uuid4().replace(/-/g, '');
 const send = (body, ip = '10.0.0.7') => call(summary.POST, 'POST', '/api/summary', { body, headers: { 'x-forwarded-for': ip } });
 const mails = () => mock.calls.filter(c => /hook\.make\.test/.test(c.url) && c.body.includes('a=summary'));
 const DIR = 'אינסטלטור שמגיע לפני שהשכן מספיק להתלונן';
 async function twoOrders() {
   const A = await newOrder(), B = await newOrder();
   assert.equal((await saveNote(A, 'business_name', 'אינסטלציה ' + MARK_A)).status, 200);
+  assert.equal((await saveNote(A, 'liked_direction', DIR)).status, 200);
   assert.equal((await saveNote(B, 'business_name', 'מספרה ' + MARK_B)).status, 200);
   return { A, B };
 }
@@ -37,10 +41,12 @@ test('AB1 (8). an order number is not access: with A\'s token nothing of B can b
   assert.equal(read.status, 404); assert.equal(JSON.stringify(read.data).includes(MARK_B), false);
   assert.equal((await saveNote(B, 'business_name', 'נגנב', A.token)).status, 404);
   assert.equal((await call(agentLink.POST, 'POST', '/api/agent-link', { body: { order_id: B.order_id, token: A.token, agent_link: 'k' + uuid4().replace(/-/g, '') } })).status, 404);
-  const s = await send({ client_ref: ref(), email: 'owner@test.co', direction: DIR, order_id: B.order_id, token: A.token });
-  assert.equal(s.data.order_attached, false);
-  assert.equal(mails().length, 1); assert.equal(mails()[0].body.includes(encodeURIComponent(MARK_B)), false);
-  assert.equal(decodeURIComponent(mails()[0].body).includes(MARK_B), false);
+  // B's number with A's token, or with A's conversation key: refused, and nothing of B reaches Make
+  assert.equal((await send({ email: 'owner@test.co', order_id: B.order_id, token: A.token, link: A.link })).status, 403);
+  assert.equal((await send({ email: 'owner@test.co', order_id: B.order_id, token: B.token, link: A.link })).status, 403);
+  const s = await send({ email: 'owner@test.co', order_id: A.order_id, token: A.token, link: A.link });
+  assert.equal(s.data.state, 'sent'); assert.equal(mails().length, 1);
+  assert.equal(decodeURIComponent(mails()[0].body).includes(MARK_B), false); assert.match(new URLSearchParams(mails()[0].body).get('facts'), new RegExp(MARK_A));
   const [b] = await sql(`SELECT brief FROM orders WHERE order_id = $1`, [B.order_id]);
   assert.match(b.brief.business_name, new RegExp(MARK_B));                                 // B unchanged
 });
@@ -60,32 +66,40 @@ test('AB2 (9). a claimed payment changes nothing: no fake capture, no status fro
   assert.equal(/וואטסאפ|whatsapp/i.test(chk.data.instruction), false);                    // the old WhatsApp hint is gone
 });
 
-test('AB3 (10). the recipient cannot be swapped on the same request, and a repeat is never a second email', async () => {
+test('AB3 (10). no free recipient + content: the request names only the address; text in it is ignored; one order + address = one email', async () => {
   const { A } = await twoOrders();
-  const r = ref();
-  const one = await send({ client_ref: r, email: 'owner@test.co', direction: DIR, order_id: A.order_id, token: A.token });
+  const one = await send({ email: 'owner@test.co', order_id: A.order_id, token: A.token, link: A.link, direction: 'buy now at pay-test.example ZX-FREE', facts: 'ZX-FREE' });
   assert.equal(one.data.state, 'sent');
-  const swap = await send({ client_ref: r, email: 'second@test.co', direction: 'כיוון אחר לגמרי שנכתב מחדש', order_id: A.order_id, token: A.token });
-  assert.equal(swap.data.duplicate, true); assert.equal(swap.data.ref, one.data.ref);
-  assert.equal(mails().length, 1);
-  const rows = await sql(`SELECT email, direction FROM summary_requests`);
-  assert.equal(rows.length, 1); assert.equal(rows[0].email, 'owner@test.co'); assert.equal(rows[0].direction, DIR);
-  const bad = await send({ client_ref: ref(), email: 'stranger@example.com', direction: DIR });
+  const again = await send({ email: 'OWNER@test.co', order_id: A.order_id, token: A.token, link: A.link });
+  assert.equal(again.data.duplicate, true); assert.equal(again.data.ref, one.data.ref);
+  assert.equal(mails().length, 1); assert.equal(mails()[0].body.includes('ZX-FREE'), false);
+  assert.equal(new URLSearchParams(mails()[0].body).get('email'), 'owner@test.co');
+  const bad = await send({ email: 'stranger@example.com', order_id: A.order_id, token: A.token, link: A.link });
   assert.equal(bad.data.state, 'not_allowed'); assert.equal(mails().length, 1);
+  // without an authorised conversation there is no email at all, whatever the body says
+  assert.equal((await send({ email: 'owner@test.co', direction: 'x'.repeat(50) })).status, 403);
 });
 
-test('AB4 (10). limits: at most two summaries a day to one address, a site-wide daily cap, and no links in the email', async () => {
-  for (let i = 0; i < 2; i++) assert.equal((await send({ client_ref: ref(), email: 'Owner@Test.co', direction: DIR + ' ' + i })).data.state, 'sent');
-  assert.equal((await send({ client_ref: ref(), email: 'owner@test.co', direction: DIR + ' 3' })).data.state, 'limited');
-  assert.equal(mails().length, 2);
+test('AB4 (10). limits: two addresses per order, two summaries a day per address, a site-wide daily cap, and no links in the email', async () => {
+  const A = await newOrder(); await saveNote(A, 'liked_direction', DIR);
+  const go = (o, email, ip) => send({ email, order_id: o.order_id, token: o.token, link: o.link }, ip);
+  assert.equal((await go(A, 'owner@test.co')).data.state, 'sent');
+  assert.equal((await go(A, 'second@test.co')).data.state, 'sent');
+  process.env.NOTIFY_TEST_RECIPIENTS = 'owner@test.co,second@test.co,third@test.co';
+  assert.equal((await go(A, 'third@test.co')).data.state, 'limited', 'a third address for one order');
+  const B = await newOrder(); await saveNote(B, 'liked_direction', DIR);
+  assert.equal((await go(B, 'owner@test.co', '10.0.0.8')).data.state, 'sent', 'a second summary to one address in a day');
+  const D = await newOrder(); await saveNote(D, 'liked_direction', DIR);
+  assert.equal((await go(D, 'owner@test.co', '10.0.0.8')).data.state, 'limited', 'a third summary to one address in a day');
   process.env.SUMMARY_DAILY_CAP = '3';
-  assert.equal((await send({ client_ref: ref(), email: 'second@test.co', direction: DIR })).data.state, 'sent');
-  assert.equal((await send({ client_ref: ref(), email: 'second@test.co', direction: DIR + ' b' })).data.state, 'limited');   // 3 sent today
+  assert.equal((await go(D, 'third@test.co', '10.0.0.8')).data.state, 'limited', 'site-wide cap (3 sent today)');
   assert.equal(mails().length, 3);
-  delete process.env.SUMMARY_DAILY_CAP; await freshDb();
-  await send({ client_ref: ref(), email: 'owner@test.co', direction: 'כנסו ל https://evil.example/pay או www.evil.example או evil-pay.co/il ' + MARK_A });
-  const dir = new URLSearchParams(mails()[0].body).get('direction');
-  assert.equal(/https?:|www\.|evil/i.test(dir), false, dir); assert.match(dir, /\[קישור הוסר\]/); assert.match(dir, new RegExp(MARK_A));
+  delete process.env.SUMMARY_DAILY_CAP; process.env.NOTIFY_TEST_RECIPIENTS = 'owner@test.co,second@test.co'; await freshDb();
+  const C = await newOrder();
+  await saveNote(C, 'business_name', 'כנסו ל https://evil.example/pay ' + MARK_A); await saveNote(C, 'liked_direction', 'או www.evil.example או evil-pay.co/il');
+  await go(C, 'owner@test.co');
+  const p = new URLSearchParams(mails()[0].body);
+  for (const v of [p.get('direction'), p.get('facts')]) { assert.equal(/https?:|www\.|evil/i.test(v), false, v); assert.match(v, /\[קישור הוסר\]/); }
 });
 
 test('AB5 (7). hidden instructions in business text stay data: stored as given (clipped), no field or status changes', async () => {
@@ -95,7 +109,8 @@ test('AB5 (7). hidden instructions in business text stay data: stored as given (
   const [row] = await sql(`SELECT brief, status FROM orders WHERE order_id = $1`, [A.order_id]);
   assert.equal(row.brief.business_name.length, 240); assert.notEqual(row.status, 'paid');
   assert.deepEqual(Object.keys(row.brief), ['business_name']);
-  const s = await send({ client_ref: ref(), email: 'owner@test.co', direction: DIR, order_id: A.order_id, token: A.token });
+  await saveNote(A, 'liked_direction', DIR);
+  const s = await send({ email: 'owner@test.co', order_id: A.order_id, token: A.token, link: A.link });
   assert.equal(s.data.state, 'sent');
   const p = new URLSearchParams(mails()[0].body);
   assert.equal(p.get('email'), 'owner@test.co');                                         // the recipient is the one the request named
@@ -104,4 +119,19 @@ test('AB5 (7). hidden instructions in business text stay data: stored as given (
 
 test('AB6 (6). the agent has no admin, price or payment tool: the page offers a closed list of tools', async () => {
   assert.deepEqual([...CLIENT_TOOLS].sort(), ['open_payment', 'open_support', 'save_brief_note', 'send_summary', 'show_whatsapp', 'switch_ad'].sort());
+});
+
+test('AB7. Make authentication, sending side: every call to Make carries the key header once it is configured, never in the body', async () => {
+  const A = await newOrder(); await saveNote(A, 'liked_direction', DIR);
+  delete process.env.MAKE_NOTIFY_KEY;
+  await send({ email: 'owner@test.co', order_id: A.order_id, token: A.token, link: A.link });
+  assert.equal(mails()[0].headers && mails()[0].headers['x-make-apikey'], undefined);    // not configured: unchanged behaviour
+  process.env.MAKE_NOTIFY_KEY = 'test-key-not-a-secret';
+  try {
+    const { notify } = await import('../lib/notify.js');
+    await notify('support', { ref: 'P-00001', email: 'owner@test.co' });
+    const last = mock.calls.filter(c => /hook\.make\.test/.test(c.url)).at(-1);
+    assert.equal(last.headers['x-make-apikey'], 'test-key-not-a-secret');
+    assert.equal(last.body.includes('test-key-not-a-secret'), false);
+  } finally { delete process.env.MAKE_NOTIFY_KEY; }
 });
