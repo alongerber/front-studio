@@ -428,6 +428,9 @@
     for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
     return ('t' + sumTab + '-' + h.toString(36)).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 80);
   }
+  // Customer text placed into the agent's context: one line, no quote marks that could close the quotation, clipped.
+  F.quoteData = function (v) { return String(v == null ? '' : v).replace(/[\r\n\t]+/g, ' ').replace(/[«»"]/g, "'").slice(0, 240); };
+  F.shortName = function (v) { v = String(v || '').replace(/\s+/g, ' ').trim(); return v && v.length <= 40 && !/[{}<>\[\]:;!?]/.test(v) ? v : ''; };
   F.sendSummary = function (email, direction) {
     callStarted = true;
     var o = F.order, ids = F.ids();
@@ -435,6 +438,7 @@
       order_id: o ? o.order_id : null, token: o ? o.token : null, session_id: ids.session_id || null }).then(function (j) {
       if (j.state === 'sent') return 'SENT: the email service accepted the summary for this address (' + j.ref + '). Say it was sent; do not say it arrived or was read.';
       if (j.state === 'queued') return 'QUEUED: the summary is saved and will be retried automatically; the email service has not confirmed yet. Say it is registered for sending, not that it was sent.';
+      if (j.state === 'limited') return 'NOT SENT: the daily limit for summaries was reached. Say it cannot be sent right now; do not try another address.';
       if (j.state === 'not_allowed') return 'NOT SENT: this is a test environment and only the test address may receive emails. Say the summary cannot be sent to this address here. Do not ask for another address.';
       return 'NOT SENT: sending failed. Say so briefly and plainly; the customer may ask to try once more later. Do not say it was sent.';
     }, function (e) {

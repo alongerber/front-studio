@@ -25,6 +25,6 @@ export const POST = handle(async (request) => {
   }
   try { await flushSummary({ id: saved.id }); } catch (e) { console.error('[summary notify]', e.message); }
   const s = await summaryState(saved.id);
-  const state = s.status === 'sent' ? 'sent' : s.status === 'not_allowed' ? 'not_allowed' : s.status === 'failed' ? 'failed' : 'queued';
+  const state = ['sent', 'not_allowed', 'failed', 'limited'].includes(s.status) ? s.status : 'queued';
   return json({ ok: true, ref: summaryRef(saved.id), state, duplicate: saved.duplicate, order_attached: !!order });
 });
