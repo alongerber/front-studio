@@ -8,7 +8,7 @@ import * as manage from '../api/admin/manage.js';
 import * as adminOrder from '../api/admin/order.js';
 import * as summary from '../api/admin/summary.js';
 import * as login from '../api/admin/login.js';
-import { dueBaseFor, delayBusinessDays, israelDate } from '../lib/production.js';
+import { dueBaseFor, delayBusinessDays, israelDate, addBusinessDays } from '../lib/production.js';
 
 process.env.ADMIN_EMAIL = 'owner@front.test';
 beforeEach(freshDb);
@@ -128,22 +128,28 @@ test('OP6. target = 7 business days (Sun–Thu, Israel time) after the paid day'
 });
 
 test('OP7. delays and target corrections: stored, need a reason, no double counting, survive a re-read', async () => {
+  // Fixed dates (independent of the weekday the suite runs on): paid Sunday 4/10/2026, target = 7 business days later.
   const o = await paidOrder();
+  await sql(`UPDATE orders SET paid_at = '2026-10-04T08:00:00Z', due_base = NULL WHERE order_id = $1`, [o.order_id]);
   const today = israelDate(Date.now());
-  assert.equal((await act({ action: 'add_delay', order_id: o.order_id, started_on: today })).data.error, 'reason_required');
+  assert.equal((await act({ action: 'add_delay', order_id: o.order_id, started_on: '2026-10-05' })).data.error, 'reason_required');
   assert.equal((await act({ action: 'add_delay', order_id: o.order_id, started_on: '2020-01-01', reason: 'חומרים' })).data.error, 'before_payment');
-  const a = await act({ action: 'add_delay', order_id: o.order_id, started_on: today, reason: 'מחכים ללוגו מהלקוח' });
-  const dup = await act({ action: 'add_delay', order_id: o.order_id, started_on: today, reason: 'מחכים ללוגו מהלקוח' });
+  const future = addBusinessDays(today, 3);
+  assert.equal((await act({ action: 'add_delay', order_id: o.order_id, started_on: future, reason: 'חומרים' })).data.error, 'start_in_future');
+  assert.equal((await act({ action: 'add_delay', order_id: o.order_id, started_on: '2026-10-05', ended_on: future, reason: 'חומרים' })).data.error, 'end_in_future');
+  const a = await act({ action: 'add_delay', order_id: o.order_id, started_on: '2026-10-05', reason: 'מחכים ללוגו מהלקוח' });     // Monday
+  const dup = await act({ action: 'add_delay', order_id: o.order_id, started_on: '2026-10-05', reason: 'מחכים ללוגו מהלקוח' });
   assert.equal(a.data.duplicate, false); assert.equal(dup.data.duplicate, true);
   assert.equal((await sql(`SELECT count(*)::int c FROM order_delays WHERE order_id = $1`, [o.order_id]))[0].c, 1);
   const w1 = (await call(adminOrder.GET, 'GET', '/api/admin/order?order_id=' + o.order_id, { headers: basic() })).data;
   assert.equal(w1.work.delay_open, true);
   const delayId = w1.delays[0].id;
-  const end = new Date(Date.now() + 3 * 864e5).toISOString().slice(0, 10);
-  assert.equal((await act({ action: 'end_delay', order_id: o.order_id, delay_id: delayId, ended_on: end })).status, 200);
-  assert.equal((await act({ action: 'end_delay', order_id: o.order_id, delay_id: delayId, ended_on: end })).status, 409, 'cannot end twice');
+  assert.equal((await act({ action: 'end_delay', order_id: o.order_id, delay_id: delayId, ended_on: future })).data.error, 'end_in_future');
+  assert.equal((await act({ action: 'end_delay', order_id: o.order_id, delay_id: delayId, ended_on: '2026-10-07' })).status, 200);   // Wednesday
+  assert.equal((await act({ action: 'end_delay', order_id: o.order_id, delay_id: delayId, ended_on: '2026-10-07' })).status, 409, 'cannot end twice');
   const w2 = (await call(adminOrder.GET, 'GET', '/api/admin/order?order_id=' + o.order_id, { headers: basic() })).data.work;
-  assert.ok(w2.delay_days >= 1 && w2.due_current > w2.due_base, JSON.stringify(w2));
+  // Mon 5 – Tue 6 (the end day is when the material arrived): 2 business days; base 4/10 + 7 = Tue 13/10, current = Thu 15/10.
+  assert.deepEqual([w2.delay_days, w2.due_base, w2.due_current], [2, '2026-10-13', '2026-10-15'], JSON.stringify(w2));
   assert.equal((await act({ action: 'set_due', order_id: o.order_id, date: '2026-12-01', reason: '' })).data.error, 'reason_required');
   assert.equal((await act({ action: 'set_due', order_id: o.order_id, date: '2026-12-01', reason: 'סוכם עם הלקוח' })).status, 200);
   const w3 = (await call(adminOrder.GET, 'GET', '/api/admin/order?order_id=' + o.order_id, { headers: basic() })).data.work;
@@ -152,6 +158,14 @@ test('OP7. delays and target corrections: stored, need a reason, no double count
   assert.deepEqual(au.map(x => x.action), ['delay_added', 'delay_ended', 'due_override_set']);
   const stored = (await sql(`SELECT due_base IS NOT NULL AS b FROM orders WHERE order_id = $1`, [o.order_id]))[0].b;
   assert.equal(stored, true, 'base target is stored, not only computed for display');
+});
+
+test('OP7b. delay day rule: weekends never count, the end day is excluded, an open delay runs through today', () => {
+  assert.equal(delayBusinessDays([{ started_on: '2026-10-16', ended_on: '2026-10-18' }], '2026-10-20'), 0, 'Fri–Sat only');
+  assert.equal(delayBusinessDays([{ started_on: '2026-10-15', ended_on: '2026-10-18' }], '2026-10-20'), 1, 'Thu, then the weekend');
+  assert.equal(delayBusinessDays([{ started_on: '2026-10-18', ended_on: '2026-10-18' }], '2026-10-20'), 0, 'same day: nothing was late');
+  assert.equal(delayBusinessDays([{ started_on: '2026-10-18' }], '2026-10-20'), 3, 'open since Sunday, today Tuesday: Sun, Mon, Tue');
+  assert.equal(addBusinessDays('2026-10-15', 1), '2026-10-18', 'one business day after Thursday is Sunday');
 });
 
 /* ── work list ── */

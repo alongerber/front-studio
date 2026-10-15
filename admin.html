@@ -477,7 +477,7 @@ function openOrder(id){
       return api('/api/admin/manage', Object.assign({order_id:o.order_id}, body)).then(function(r){ out.textContent=okText; return Promise.all([openOrder(o.order_id), load()]).then(function(){ var el=$(out.id); if(el){ el.textContent=okText; el.className='st-ok'; } return r; }); },
         function(e){ btn.disabled=false; out.textContent=(errs&&errs[e.message])||('לא נשמר ('+e.message+').'); throw e; }); }
     var ERR={not_paid:'ההזמנה לא שולמה.',refunded:'ההזמנה הוחזרה.',stage_changed:'השלב כבר עודכן בינתיים. הכרטיס נטען מחדש.',reason_required:'צריך סיבה.',bad_date:'תאריך לא תקין.',
-      before_payment:'תחילת העיכוב לפני התשלום.',end_before_start:'הסיום לפני ההתחלה.',delay_not_open:'העיכוב כבר נסגר.',not_active:'ההזמנה לא פעילה.'};
+      before_payment:'תחילת העיכוב לפני התשלום.',end_before_start:'הסיום לפני ההתחלה.',start_in_future:'תאריך ההתחלה בעתיד. רושמים עיכוב כשהוא קורה.',end_in_future:'תאריך הסיום בעתיד. סוגרים עיכוב ביום שהלקוח מסר.',delay_not_open:'העיכוב כבר נסגר.',not_active:'ההזמנה לא פעילה.'};
     if($('stGo')) $('stGo').onclick=function(){ var to=$('stSel').value; if(to===w.stage&&!w.stage_inferred){ $('stMsg').textContent='זה כבר השלב הנוכחי.'; return; }
       run(this,$('stMsg'),{action:'set_stage',from:w.stage,to:to},'השלב עודכן.',ERR).catch(function(e){ if(e.message==='stage_changed') openOrder(o.order_id).catch(function(){}); }); };
     if($('dueGo')) $('dueGo').onclick=function(){ var dd=$('dueD').value, rr=$('dueR').value.trim(); if(!dd){ $('dueMsg').textContent='בחרו תאריך.'; return; } if(!rr){ $('dueMsg').textContent='צריך סיבה.'; return; }
