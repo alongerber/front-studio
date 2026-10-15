@@ -154,6 +154,22 @@
   - **מסלול ה-webhook של PayPal אומת ב-Preview:** אימות חתימה, עיבוד ומשלוח חוזר בלי כפילות.
   - סיבת ה-400 המקורית בחיפוש האירועים עדיין לא הוכחה. היא לא חוזרת.
 
+### Update 15/10: Meital acceptance test, preparation and code fixes (Preview only)
+- **Where the full details are:** `docs/agent/ACCEPTANCE_2026-10-15.md`.
+- **Fixes (`5ff7a46`):**
+  - The summary has abuse limits: 2 per address per day, a site-wide daily cap, links removed, and a `limited` state.
+  - The customer's saved text goes into the agent as data, not as instructions.
+  - The opening line uses only a short name.
+  - check_payment no longer offers WhatsApp.
+- **Tests:** local, AB1–AB6 and U6–U7.
+- **Prompt hardening:** written in the files, **not published** (a baseline run comes first).
+- **Not done yet:**
+  - The live summary on Preview, because of the environment's network block.
+  - Stage 2.
+  - The 10 text tests: created, not run, waiting for cost approval.
+  - Voice.
+- **Open decision:** a shared header between the server and Make (scenario 7867409).
+
 ### עדכון 14/10 — מיטל: ההחלטות המאושרות (Preview בלבד)
 - הסוכנת 5801 עודכנה לגרסה `agtvrsn_8501m4xheyvzee1tgxq774n65as2`, **שלב 1**: החלטות 1–10 וכלי שמירה חדש (`tool_3601…`) עם השדות goal, change_reason ו-liked_direction. הכלי המשותף `tool_4901` לא שונה. פירוט ב-`docs/agent/DECISIONS_2026-10-14_meital.md`.
 - **הסיכום במייל:** הקוד נבנה (`/api/summary`, מיגרציה 009, מסלול Make 35 `a=summary`, הכלי `send_summary`), אבל **הפרומפט לא מציע אותו עדיין**. שלב 2 מחכה לבדיקת קונסול חינמית שמתוארת במסמך.
