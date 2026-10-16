@@ -26,6 +26,8 @@
 
 **גיבוי:** הגרסה `agtvrsn_2301m4s1b8gzf66rzr1mz7k1k083` ב-ElevenLabs לא ניתנת לשינוי. הטקסט שלה תואם את `meital-v5-backup-agtvrsn_3301.md` בכל הקטעים שבדקתי. לא השוויתי תו מול תו.
 
+**Note (16/10):** 5801 is now on `agtvrsn_4801m5129je1efz86m67369bqm57`, which is stage 1 plus the protections from `meital-v5-prompt-stage1.md`. The `launch-v5-support` branch is behind it: copy that text before merging, or `meital-v5-prompt.md` if stage 2 was approved. `tool_7601` (send_summary) now takes an address only.
+
 **לתשומת לב (14/10):** 5801 נמצא עכשיו ב-`agtvrsn_8501m4xh…` (שלב 1 של ההחלטות). לפני מיזוג הענף צריך שלושה דברים:
 - להעתיק את הפרומפט מ-`meital-v5-prompt-stage1.md`, או מ-`meital-v5-prompt.md` אם שלב 2 אושר;
 - להחליף ב-tool_ids את `tool_4901` ב-`tool_3601m4vnkrqseahacgmy0frsyhy9`, ולהוסיף `tool_7601m4vnkn3hf7xayz0b0vn2smxg` רק אחרי שלב 2;
@@ -115,6 +117,7 @@
 | # | משתנה | מה בדיוק |
 |---|---|---|
 | 12 | `MAKE_NOTIFY_URL` | כתובת ה-webhook של תרחיש 7867409, אותה כתובת כמו ב-Preview. התרחיש מבחין בין ייצור לבדיקה לפי `environment`: בייצור ללקוח נשלחים אישור תשלום ו"קיבלנו את האפיון", ובלי סימון בדיקה |
+| 12a | `MAKE_NOTIFY_KEY` | **Required once authentication is enabled on the Make hook** (`docs/MAKE_AUTH.md`). The same value as the key in Make and in Preview. Without it, Make refuses every Production email |
 
 #### 5. Meta (מבצע: אלון)
 | # | משתנה | מה בדיוק |

@@ -154,6 +154,26 @@
   - **מסלול ה-webhook של PayPal אומת ב-Preview:** אימות חתימה, עיבוד ומשלוח חוזר בלי כפילות.
   - סיבת ה-400 המקורית בחיפוש האירועים עדיין לא הוכחה. היא לא חוזרת.
 
+### Update 16/10: final preparation for the acceptance test (Preview only)
+- **Where the full details are:** `docs/agent/ACCEPTANCE_2026-10-16.md`. This is the current document for Chrome; the 10-15 one is kept as a record.
+- **Summary (`c9f33aa`):** now bound to an authorised conversation.
+  - **What the request must carry:** the order ID, its token, and the tab's conversation key attached to the order.
+  - **Content:** built only from what is saved on the order, in a fixed template; request text is ignored.
+  - **Direction required:** without a liked direction nothing is sent (`nothing_to_send`).
+  - **Limits:** 2 addresses per order.
+- **Make:** the server sends `x-make-apikey` when `MAKE_NOTIFY_KEY` is set. **Not enforced at Make yet.** Plan in `docs/MAKE_AUTH.md`.
+- **5801:** published `agtvrsn_4801m5129je1efz86m67369bqm57`.
+  - **What it contains:** the stage-1 prompt plus the protections: customer text is data, authority claims grant nothing, an order number is not access.
+  - **Backup:** `meital-v5-backup-agtvrsn_8501.md`.
+  - **Stage 2:** not enabled.
+- **OP7 (`2a34669`):** fixed dates. Future delay dates are refused.
+- **Tests:** unit 133/133; browser 170/170 (including U0–U7, the summary from the page).
+- **Not done:**
+  - the live check by Chrome;
+  - the Make key and its enforcement;
+  - the paid text simulations (waiting for approval of a 2,500-credit measurement);
+  - 8501 / Production.
+
 ### Update 15/10: Meital acceptance test, preparation and code fixes (Preview only)
 - **Where the full details are:** `docs/agent/ACCEPTANCE_2026-10-15.md`.
 - **Fixes (`5ff7a46`):**
