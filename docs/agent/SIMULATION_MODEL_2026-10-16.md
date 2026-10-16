@@ -32,3 +32,13 @@
 Route B is worth it only if we want automated simulations for many scenarios. In that case the small check first, with separate approval.
 
 **In any case:** every future simulation report starts by checking `producing_llm` in every agent turn. If it is not claude-sonnet-5, that is stated before any conclusion.
+
+## Identification check with an explicit override (16/10, one approved run)
+- **Run:** `suite_1501m51beejqfv19teskn469dd2k` / `trun_9601m51beejtee6vsw63mkph52xb`.
+  - **Test:** `test_2701m51bbwb2ftztmrrg2t4wybw7`, 2 turns, all tools mocked.
+- **Requested model:** `agent_config_override` with `conversation_config.agent.prompt.llm = claude-sonnet-5`, plus the full 4801 prompt and settings: reasoning_effort low, max_tokens 700, tool_ids and timezone.
+  - The test service marked the run `ran_against_draft: true`. The agent and its published version were not changed.
+- **Model that answered:** in both turns, `llm_override = gemini-2.5-flash` and `producing_llm = gemini-2.5-flash`. claude-sonnet-5 did not answer in any turn.
+- **Actual cost:** 94 credits. LLM 34 (about $0.0071, gemini only) + platform 60 (4 text messages × 15).
+- **Conclusion:** even an explicit override does not bring Meital's model into a simulation. **The simulation route is stopped.** The sales tests move to real conversations on the Preview site, which run on claude-sonnet-5 (checked in conv_7301).
+- **Side observation, not about Meital:** gemini added tags such as "[נפלא]" and "[בטח]" at the start of its replies. In the second turn it offered to open the payment window right after a price question. That is the substitute model's behavior, and it says nothing about claude-sonnet-5.
