@@ -1,0 +1,7 @@
+# Not part of the site: never uploaded to any deployment (preview or production).
+test/
+docs/
+scripts/
+.github/
+README.md
+*.md

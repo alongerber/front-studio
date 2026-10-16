@@ -1,0 +1,20 @@
+{
+  "name": "front-studio",
+  "private": true,
+  "type": "module",
+  "version": "5.0.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test --test-concurrency=1 test/*.test.js",
+    "migrate": "node scripts/migrate.js",
+    "e2e": "sh test/run-e2e.sh"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.0"
+  }
+}

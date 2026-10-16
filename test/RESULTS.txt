@@ -1,0 +1,106 @@
+== npm test (2026-10-09T21:35:09Z) ==
+ok 1 - 1. visiting thanks / returning without a verified capture creates no purchase
+ok 2 - 2. approved payment is captured by the webhook alone (buyer closed the tab)
+ok 3 - 3. duplicate webhooks + capture endpoint → exactly one purchase
+ok 4 - 3b. forged PayPal webhook is rejected and changes nothing
+ok 5 - 3c. wrong amount or wrong payee is not a purchase
+ok 6 - 3d. pending capture is not a purchase until COMPLETED arrives
+ok 7 - 4. conversation + brief link only to the order that owns the link key
+ok 8 - 4b. webhook that arrives before the order is back-filled when the order attaches its key
+ok 9 - 5. a customer cannot read or change another order
+ok 10 - 6. completed brief is stored and readable in admin, even if the email fails
+ok 11 - 7. Meta down → order still paid, outbox retries later; no ads consent → nothing sent
+ok 12 - 8. manual Bit verification needs admin, a reference and an explicit confirmation; it is audited
+ok 13 - 9. tracking: consent required, whitelist enforced, fbclid kept; dashboard returns absolute counts
+ok 14 - 10. rate limiting and input validation
+ok 15 - 11. refunds mark the order refunded and are reported
+ok 16 - F1a. finishing without payment is refused; notes before payment are still saved
+ok 17 - F1b. finishing a paid order with no content is refused and says what is missing
+ok 18 - F2a. Meta queue insert fails → nothing is marked paid; the retry stores paid AND the queue
+ok 19 - F2b. the stored capture alone is enough: the recovery sweep marks the order paid without any webhook
+ok 20 - F2c. rows lost by any other path are re-created by the sweep (and Purchase still sent once)
+ok 21 - F3. a full refund makes the order not paid, cancels an unsent Purchase, and blocks production
+ok 22 - F3b. a partial refund keeps the order paid and shows it
+ok 23 - F3c. partial refunds that add up to the full amount end the order like a full refund
+ok 24 - F3d. a refund without custom_id is matched to the order through its capture
+ok 25 - F3e. a queued "go to production" email is not sent after a full refund
+ok 26 - F3f. partial refunds that add up to the full amount also cancel a queued production email
+ok 27 - F8. outside production a Purchase is never sent to Meta without a test event code
+ok 28 - F4a. ads consent withdrawn after payment (Purchase still queued) → nothing is sent, matching data removed
+ok 29 - F4b. ads consent given after payment → the queued Purchase is sent with the new matching data
+ok 30 - F4c. analytics consent withdrawn → ids and attribution removed from the order
+ok 31 - F5a. processing fails → 200, the delivery is kept and replayed by the sweep
+ok 32 - F5b. storing the delivery fails → 500 so ElevenLabs retries; the retry is processed once
+ok 33 - F6. Make down at finish → brief saved, email queued, delivered later; "Accepted" without a route is not a delivery
+ok 34 - F7. scripts/migrate.js applies all migrations, is idempotent, and fails clearly without DATABASE_URL
+# tests 34
+# pass 34
+# fail 0
+
+== e2e ==
+PASS A1 consent banner shown on first visit
+PASS A2 no tracking request before a choice
+PASS A3 no Meta pixel / Clarity before a choice
+PASS A4 "only necessary" → still nothing sent
+PASS A5 no analytics cookie without consent
+PASS A6 no JS errors (home, denied)
+PASS B1 pixel PageView after ads consent
+PASS B2 checkout sheet with PayPal buttons opens
+PASS B3 order token removed from the address bar
+PASS B4 thanks shows paid from the server
+PASS B5 browser never sent Purchase
+PASS B6 order paid in DB
+PASS B7 fbclid kept whole (194 chars) on the order
+PASS B8 fbc built from the full fbclid
+PASS B9 exactly one purchase_verified
+PASS B10 one CAPI Purchase sent by the server
+PASS B11 tracked landing_view
+PASS B11 tracked consent_updated
+PASS B11 tracked cta_click
+PASS B11 tracked checkout_presented
+PASS B11 tracked checkout_clicked
+PASS B12 no JS errors (checkout)
+PASS B13 reloading thanks does not add a purchase
+PASS C1 /thanks with no order shows "not found"
+PASS C2 /thanks creates no purchase
+PASS D1 widget gets a link key, no token
+PASS D2 save_brief_note returns only after the server saved
+PASS D3 note stored on the server before payment
+PASS D4 order carries this tab's link key
+PASS D5 not paid
+PASS D6 open_payment shows checkout (customer still has to click)
+PASS D7 checkout reused the pre-payment order (brief kept)
+PASS D8 known brief shown from the server
+PASS D9 contact saved
+PASS D10 brief-phase widget told payment is verified (from server)
+PASS D11 brief completed and stored
+PASS D12 no JS errors (agent + brief)
+PASS E1 wrong token → order not shown
+PASS F1 cancelled checkout is not paid
+PASS F3 order without a call carries no agent link (no false "waiting for call data")
+PASS F2 order without consent stores no ids
+PASS G1 (simulated FB UA) checkout renders, no errors
+PASS I1 order created with ads consent and matching data
+PASS I2 withdrawing ads consent updates the order and drops matching data
+PASS I3 no JS errors (consent change)
+PASS J1 unpaid: send to production is disabled and explained
+PASS J2 paid: send enabled
+PASS J3 empty brief: the page asks for the missing details
+PASS J4 completed with the minimum content
+PASS J5 no JS errors (order page)
+PASS H1 wrong password refused
+PASS H2 funnel shows absolute numbers next to rates
+PASS H3 order detail opens (brief visible to production)
+PASS K1 every "talk" button opens the agent
+PASS K2 agent opens with the one first question
+PASS K3 every "order" button opens checkout
+PASS K4 price on page and in checkout is 1,290 and labelled final
+PASS K5 no banned words in the marketing copy
+PASS K6 no JS errors (landing)
+PASS M1 consent banner up → mobile bar hidden
+PASS M2 hero buttons off screen → mobile bar shown, page padded by its height
+PASS M3 the bar does not cover the end of the page
+PASS M4 no sideways scroll on mobile
+PASS M5 agent open → mobile bar hidden
+PASS R1 reduced motion: hero loop does not autoplay, pause/play control shown
+PASS R2 reduced motion: content is visible without scrolling effects
