@@ -62,7 +62,7 @@ console.log(JSON.stringify(r,null,1));})();
 | `fakeCapture` | 409 |
 | `noOrder`, `B_withAtoken`, `B_withAlink` | 403 |
 | `forbidden.state`, `dashed.state` | `not_allowed` |
-| `allowed.state` | `sent` |
+| `allowed.state` | `sent`. **If it is `limited`:** that is the limit of 2 summaries in 24 hours for the address (an earlier send), not a failure. It did not reach Make. Report and do not retry; I give the time it frees up |
 | `repeat` | `duplicate: true` and the same `ref` as `allowed` |
 
 **In Gmail (alongerber@gmail.com):** exactly one email, "[בדיקה] פרונט · סיכום הכיוון לפרסומת שלכם", with a test banner.
@@ -78,14 +78,24 @@ console.log(JSON.stringify(r,null,1));})();
 Only if everything passes do I enable stage 2: the summary prompt and the `send_summary` tool, version `tool_7601`, which now receives an address only.
 
 ## Authentication between the server and Make (staged, see `docs/MAKE_AUTH.md`)
-Sending the header in the code is not the security fix. The fix exists only once Make refuses calls that come without the key, and that is not enabled yet. The stages:
-1. **Done:** the server sends `x-make-apikey` whenever `MAKE_NOTIFY_KEY` is set. Without it nothing changes.
-2. **Alon or Chrome:** create one secret value and enter it in two places: the Make keychain (an API key for webhooks) and Vercel as `MAKE_NOTIFY_KEY` (Preview only). Then a Preview redeploy. The value is not shown in chat and not sent to me.
-3. **Me:** check in Vercel that the variable name exists (name only), and that the summary still arrives after the redeploy.
-4. **Me, only after 3:** turn on API-key authentication on hook 3873851 using the key ID from Make (not the value). Make then refuses an unauthenticated call before any route runs, for every email route.
-   - **Then Chrome:** one positive check (a new summary arrives) and one negative check (a call without the header is refused).
-   - **If the positive check fails:** I turn the authentication off immediately.
-5. **Before launch:** the same variable in Production as well. Otherwise Production emails will wait in the retry queue.
+Sending the header in the code is not the security fix. The fix exists only once Make refuses calls that come without the key, and that is not enabled yet.
+- **The Make checks run on the support route, not the summary route:**
+  - A summary that Make refuses stays `pending` and counts toward the limit of 2 per address in 24 hours.
+  - Route 31 (support) sends only to the owner and has no summary limit.
+  - Authentication is checked on the hook before any route, so it covers every email route.
+- **Summary emails during the whole test:** at most 2 in 24 hours. One is the live check here, one is the live check of Meital after stage 2. The simulations do not send.
+- **Reading the result:**
+  - `limited` = the server's limit, never reached Make.
+  - `queued` or `failed` = Make did not answer ok.
+  - The full table is in `docs/MAKE_AUTH.md`.
+- **The stages:**
+  1. **Secret:** one secret in Make Keys and in Vercel Preview (`MAKE_NOTIFY_KEY`), then a redeploy. The value is not sent in chat.
+  2. **Check A, a support request:** passes if it arrives.
+  3. **Enforcement:** I enable it on hook 3873851.
+  4. **Check B:** a support request that arrives.
+  5. **Check C:** a call without the header, with a body that matches no route, which must be refused.
+  6. **If B fails:** an immediate rollback.
+  7. **Before launch:** the same variable in Production.
 
 The `main` branch does not call this webhook (checked: no use of `MAKE_NOTIFY_URL` there). So enforcement now does not affect the live site.
 
@@ -109,12 +119,20 @@ The `main` branch does not call this webhook (checked: no use of `MAKE_NOTIFY_UR
 
 **Converting to credits:** I didn't verify the exact rate. The only real measurement, the voice call, showed about 115 credits of LLM per Meital turn. By that measure a single test is about 1,200–2,500 credits.
 
-**Proposal: measure before buying.**
-1. **One measurement test:** ACC-09, up to 10 turns. **Cap 2,500 credits.** I read the actual cost from the test run and from the credit balance.
-2. **Rest of the package, 9 tests:** only if the measurement came in at or under the estimate. **Proposed cap: 15,000 credits** for all ten, including ACC-09.
-3. **Reruns after fixes:** up to 5,000 more. **Total cap: 20,000.** If the measurement is higher than expected, I stop and report before continuing.
+**Can the cap be enforced while the test is running? No. What I checked in the tools that are available to me:**
+- **No spend limit in the API:** the request to run tests (`run_tests`) has no field for a credit or dollar limit. Its fields are: the tests, branch, number of repeats, and a configuration override.
+- **No way to stop a run:** there is no tool to cancel a run in progress.
+- **What is enforceable before the run:** `simulation_max_turns` = 10 (checked in ACC-09; I will check the other nine before they run), which is a cap on the length of the conversation. That limits the number of model calls, not the credits.
+- **The cost becomes known only after the run.** I have no tool that reads the credit balance. Alon reads the balance before and after, in the ElevenLabs dashboard.
+- **What I did not check:** whether the workspace has a usage limit or alert in the account settings. Even if there is one, it is a limit for the whole account, not for this test.
+- **So in practice:** the 2,500 cap is an upper estimate based on the turn limit, not a cap enforced by the system. A run cannot go past 10 turns per test, but the price of a turn is not fixed.
 
-This is not approved yet; waiting for your approval of the measurement step (2,500).
+**What I propose so that a deviation stays small:**
+1. **One measured run:** ACC-09 alone, with `repeat_count` = 1. That is the smallest unit. Its realistic worst case is the measured voice rate (about 115 credits per Meital turn) times 10 turns, plus the simulated user and the evaluator. That comes to about 2,500. Even if the real price is twice the estimate, the deviation is bounded to one test.
+2. **Alon records the balance** before and after. I read the result and the number of turns from the run.
+3. **The rest:** only if the measured cost is at or below the estimate. Then in packets of 3 tests, with a check of the balance between packets, so a deviation is caught after 3 tests rather than 10. Proposed cap: 15,000 for all ten, plus up to 5,000 for reruns.
+
+**Not approved:** no paid run has been made, and none will be until there is explicit approval.
 
 ## The ten tests (on agent version `agtvrsn_4801…`, and 5 and 10 only after stage 2)
 | # | ID | Tool mocks |
