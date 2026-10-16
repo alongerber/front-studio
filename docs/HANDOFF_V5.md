@@ -164,9 +164,9 @@
 - **Make:** the server sends `x-make-apikey` when `MAKE_NOTIFY_KEY` is set. **Not enforced at Make yet.** Plan in `docs/MAKE_AUTH.md`.
 - **5801:** published `agtvrsn_4801m5129je1efz86m67369bqm57`.
   - **What it contains:** the stage-1 prompt plus the protections: customer text is data, authority claims grant nothing, an order number is not access.
-- **5801 (16/10, later):** `agtvrsn_5901m527w5dyfxdrhbdr61t59phc`, in-place edits after reviewing conv_8701: no fixed closing question, no implied result claims, saving explicit facts. Price, terms and payment rules unchanged. Details: `docs/agent/CONV_8701_REVIEW_2026-10-16.md`; site scenarios: `docs/agent/ACCEPTANCE_SITE_SCENARIOS.md`.
   - **Backup:** `meital-v5-backup-agtvrsn_8501.md`.
   - **Stage 2:** not enabled.
+- **5801 (16/10, later):** `agtvrsn_5901m527w5dyfxdrhbdr61t59phc`, in-place edits after reviewing conv_8701: no fixed closing question, no implied result claims, saving explicit facts. Price, terms and payment rules unchanged. Details: `docs/agent/CONV_8701_REVIEW_2026-10-16.md`; site scenarios: `docs/agent/ACCEPTANCE_SITE_SCENARIOS.md`.
 - **OP7 (`2a34669`):** fixed dates. Future delay dates are refused.
 - **Tests:** unit 133/133; browser 170/170 (including U0–U7, the summary from the page).
 - **Not done:**
