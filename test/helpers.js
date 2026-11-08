@@ -23,10 +23,15 @@ export function failNext(re, times = 1) { injections.push({ re, times }); }
 export async function freshDb() {
   pg = new PGlite();
   injections.length = 0;
-  setDb(async (text, params) => {
+  const run = async (db, text, params) => {
     for (const inj of injections) if (inj.times > 0 && inj.re.test(text)) { inj.times--; throw new Error('injected failure: ' + inj.re); }
-    return (await pg.query(text, params)).rows;
-  });
+    return (await db.query(text, params)).rows;
+  };
+  setDb((text, params) => run(pg, text, params), statements => pg.transaction(async tx => {
+    const results = [];
+    for (const { text, params = [] } of statements) results.push(await run(tx, text, params));
+    return results;
+  }));
   resetPaypalToken();
   mock.reset();
 }
