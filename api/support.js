@@ -22,7 +22,7 @@ export const POST = handle(async (request) => {
   }
   if (!orderId && b.order_ref) claimed = clip(String(b.order_ref).trim().toUpperCase(), 40) || null;
   const saved = await saveSupport({ clientRef: b.client_ref, email, message, orderId, claimedRef: claimed,
-    source: ['home', 'thanks', 'agent'].includes(b.source) ? b.source : null });
+    source: ['home', 'thanks', 'agent', 'checkout', 'terms', 'accessibility'].includes(b.source) ? b.source : null });
   if (!saved) throw httpError(409, 'conflict');
   if (!saved.duplicate) {
     await serverEvent('support_requested', { eventId: 'support_requested:' + saved.id, orderId, props: { verified_order: !!orderId, source: b.source || null } });

@@ -2,6 +2,7 @@
 import { cfg } from '../lib/config.js';
 import { json, handle } from '../lib/util.js';
 import { CLIENT_TOOLS, PAGE_PROTOCOL } from '../lib/agent-tools.js';
+import { checkoutStatus } from '../lib/readiness.js';
 
 export const GET = handle(async () => {
   const agentId = cfg.elevenlabs.agentId || null;
@@ -13,7 +14,9 @@ export const GET = handle(async () => {
   paypal_env: cfg.paypal.env,
   test_mode: cfg.environment !== 'production',        // preview/test: no real money (no Bit, PayPal sandbox only)
   delivery_time: cfg.deliveryTime || null,
-  checkout_open: cfg.checkoutOpen,                    // false in production until a delivery time is approved
+  checkout_open: checkoutStatus().open,
+  bit_enabled: cfg.environment === 'production' && process.env.BIT_ENABLED === 'true' && /^972[0-9]{8,9}$/.test(process.env.BIT_WHATSAPP || ''),
+  bit_phone: cfg.environment === 'production' && process.env.BIT_ENABLED === 'true' && /^972[0-9]{8,9}$/.test(process.env.BIT_WHATSAPP || '') ? process.env.BIT_WHATSAPP : null,
   currency: cfg.product.currency,
   amount: cfg.product.amount,
   consent_mode: cfg.consentMode,

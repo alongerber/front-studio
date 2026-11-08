@@ -9,7 +9,7 @@
   var meta = document.querySelector('meta[name="front-build"]');
   var CFG = F.CFG = {
     pixel: '', clarity: 'xdrn5fa9p1', agent: '',   // pixel and agent are set only by the server (/api/config)
-    version: meta ? meta.content : 'v5', wa: '972559501280', price: 1290, product: 'ad_1290'
+    version: meta ? meta.content : 'v5', wa: '', price: 1290, product: 'ad_1290'
   };
 
   /* ── small utils ── */
@@ -370,7 +370,7 @@
       front_link: LINK, anonymous_id: ids.anonymous_id || '', session_id: ids.session_id || '', order_id: F.order && linkOrder ? F.order.order_id : '', site_version: CFG.version,
       // What the agent may offer. Until the server confirms production: PayPal sandbox only, never Bit.
       payment_methods: !F.checkoutOpen ? 'ההזמנה עוד לא פתוחה לתשלום. אל תפעילי open_payment; לשאלה או לבעיה הפעילי open_support (טופס עזרה).'
-        : F.live ? 'פייפאל (גם בכרטיס אשראי בלי חשבון) או ביט'
+        : F.live ? 'פייפאל (גם בכרטיס אשראי בלי חשבון)' + (F.bitEnabled ? ' או ביט' : '')
         : 'סביבת בדיקה: רק תשלום בדיקה בפייפאל, בלי כסף אמיתי. אין ביט.'
     });
     var w = document.createElement('elevenlabs-convai');
@@ -456,11 +456,14 @@
     if (!cfgReady) { cfgReady = api('/api/config'); cfgReady.catch(function () { cfgReady = null; }); }
     return cfgReady;
   };
-  F.live = false; F.checkoutOpen = true; F.deliveryTime = null;
+  F.live = false; F.bitEnabled = false; F.checkoutOpen = false; F.deliveryTime = null;
   function markEnv() {
     F.config().then(function (c) {
       F.live = c.test_mode === false && c.environment === 'production';
-      F.checkoutOpen = c.checkout_open !== false;
+      F.checkoutOpen = c.checkout_open === true;
+      F.bitEnabled = F.live && c.bit_enabled === true && /^972[0-9]{8,9}$/.test(c.bit_phone || '');
+      CFG.wa = F.bitEnabled ? c.bit_phone : '';
+      document.documentElement.classList.toggle('env-bit', F.bitEnabled);
       F.deliveryTime = c.delivery_time || null;
       document.documentElement.classList.toggle('env-live', F.live);
       document.documentElement.classList.toggle('checkout-closed', !F.checkoutOpen);
@@ -522,7 +525,7 @@
           return api('/api/paypal/capture', { order_id: o.order_id, token: o.token, paypal_order_id: data.orderID }).then(function (r) {
             if (r.paid || r.pending) { flush(true); location.href = F.resumeUrl(o); return; }
             if (r.status === 'APPROVED' && actions && actions.restart) return actions.restart();   // e.g. card declined → choose another
-            say('התשלום לא הושלם. לא חויבתם. אפשר לנסות שוב' + (F.live ? ' או לשלם בביט.' : '.'), 'err');
+            say('התשלום טרם אושר אצלנו. בדקו את מצב ההזמנה לפני ניסיון תשלום נוסף.', 'err');
           }, function (e) {
             report('capture', e);
             // The webhook still captures an approved payment even if this call failed.
@@ -531,7 +534,7 @@
           });
         },
         onCancel: function () { track('payment_cancelled', { method: 'paypal' }); say('החלון נסגר בלי תשלום. אפשר לנסות שוב.'); },
-        onError: function (err) { report('paypal', err); say('משהו השתבש בתשלום בפייפאל. לא חויבתם. אפשר לנסות שוב' + (F.live ? ' או לשלם בביט.' : '.'), 'err'); }
+        onError: function (err) { report('paypal', err); say('לא הצלחנו לוודא את מצב התשלום. אם אישרתם בפייפאל, בדקו את קישור ההזמנה לפני ניסיון נוסף. אפשר לפנות דרך עזרה בהזמנה.', 'err'); }
       }).render(ui.buttons).then(function () {
         if (!('IntersectionObserver' in window)) return track('checkout_presented', { method: 'paypal' });
         var t = 0, io = new IntersectionObserver(function (es) {
@@ -543,16 +546,17 @@
         io.observe(ui.buttons);
       });
     }).catch(function (e) {
-      if (e && e.closed) return say('ההזמנה עוד לא פתוחה: זמן האספקה חסר בהגדרות. אפשר לדבר עם מיטל, ולבעיה יש טופס עזרה בהזמנה.', 'err');
+      if (e && e.closed) return say('ההזמנה עוד לא פתוחה לתשלום. אפשר לדבר עם מיטל או לפנות דרך עזרה בהזמנה.', 'err');
       report('paypal_load', e);
       if (!F.live) return say(e && e.message === 'paypal_not_configured' ? 'סביבת בדיקה — אין להעביר כסף. תשלום הבדיקה (PayPal Sandbox) עדיין לא מחובר.' : 'סביבת בדיקה — אין להעביר כסף. לא הצלחנו לטעון את PayPal Sandbox.', 'err');
-      say(e && e.message === 'paypal_not_configured' ? 'תשלום בפייפאל לא זמין כרגע. אפשר לשלם בביט.' : 'לא הצלחנו לטעון את פייפאל בדפדפן הזה. אפשר לפתוח את האתר בדפדפן רגיל, או לשלם בביט.', 'err');
+      say('לא הצלחנו לטעון את אפשרויות התשלום. אפשר לנסות שוב בדפדפן רגיל או לפנות דרך עזרה בהזמנה.', 'err');
     });
   };
   // Bit: we create the order first so the WhatsApp message carries its number for manual verification.
   F.payWithBit = function (where) {
     if (!F.live) return Promise.reject(new Error('bit_disabled_in_test'));
-    if (!F.checkoutOpen) return Promise.reject(new Error('checkout_closed_delivery_time'));   // never route a test visitor to a real transfer
+    if (!F.checkoutOpen) return Promise.reject(new Error('checkout_closed_delivery_time'));
+    if (!F.bitEnabled || !CFG.wa) return Promise.reject(new Error('bit_not_enabled'));   // never route a test visitor to a real transfer
     return F.ensureOrder(true).then(function (o) {
       var text = 'היי, אני רוצה לשלם בביט על פרסומת ב-1,290 ₪. מספר הזמנה ' + o.order_id;
       var id = track('whatsapp_click', {}, { cta: where || 'bit' }); F.pixel('Contact', {}, id);
@@ -583,7 +587,8 @@
   }
   F.openSupport = function (source) {
     supStyle();
-    if (supEl) supEl.remove();
+    if (supEl) { supEl.querySelector('#supX').click(); }
+    var previousFocus = document.activeElement, previousOverflow = document.body.style.overflow;
     var d = supDraft(), ord = F.supportOrder;
     supEl = document.createElement('div'); supEl.className = 'sup'; supEl.id = 'support';
     supEl.innerHTML = '<form class="sup__c" role="dialog" aria-modal="true" aria-labelledby="supH" novalidate>' +
@@ -595,14 +600,25 @@
       '<div class="sup__b"><button type="submit" class="sup__go" id="supSend">שליחה</button><button type="button" class="sup__x" id="supX">סגירה</button></div>' +
       '<p class="sup__m" id="supMsgOut" role="status" aria-live="polite"></p></form>';
     document.body.appendChild(supEl);
-    var $s = function (id) { return supEl.querySelector('#' + id); };
+    document.body.style.overflow = 'hidden';
+    var current = supEl;
+    var $s = function (id) { return current.querySelector('#' + id); };
     $s('supEmail').value = d.email || ''; $s('supMsg').value = d.message || ''; if ($s('supRef')) $s('supRef').value = d.order_ref || '';
     var save = function () { var x = supDraft(); x.email = $s('supEmail').value; x.message = $s('supMsg').value; if ($s('supRef')) x.order_ref = $s('supRef').value; wr(S, SUP, x); };
     supEl.addEventListener('input', save);
-    var close = function () { if (supEl) { supEl.remove(); supEl = null; } };
+    var close = function () { if (supEl === current) { current.remove(); supEl = null; document.body.style.overflow = previousOverflow;
+      if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus(); } };
     $s('supX').onclick = close;
     supEl.addEventListener('click', function (e) { if (e.target === supEl) close(); });
-    supEl.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    supEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { e.stopPropagation(); close(); return; }
+      if (e.key !== 'Tab') return;
+      e.stopPropagation();
+      var fields = [].filter.call(current.querySelectorAll('input,textarea,button'), function (x) { return !x.disabled && x.getClientRects().length; });
+      var first = fields[0], last = fields[fields.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
     var out = $s('supMsgOut'), btn = $s('supSend');
     var say = function (t, cls) { out.className = 'sup__m' + (cls ? ' ' + cls : ''); out.textContent = t; };
     supEl.querySelector('form').addEventListener('submit', function (e) {
@@ -630,7 +646,7 @@
         say('הפנייה לא נשלחה. מה שכתבתם נשאר כאן; אפשר לנסות שוב.', 'err');
       }).then(function () { supSending = false; });
     });
-    setTimeout(function () { ($s('supEmail').value ? $s('supMsg') : $s('supEmail')).focus(); }, 0);
+    setTimeout(function () { if (current.isConnected) ($s('supEmail').value ? $s('supMsg') : $s('supEmail')).focus(); }, 0);
     return supEl;
   };
   document.addEventListener('click', function (e) {

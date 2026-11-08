@@ -77,11 +77,10 @@ document.querySelectorAll('.q > button').forEach(function(b){
   });
   document.querySelectorAll('[data-checkout]').forEach(function(b){ b.addEventListener('click',function(){ open(b.getAttribute('data-checkout')); }); });
   document.querySelectorAll('[data-bit]').forEach(function(b){ b.addEventListener('click',function(){
-    if(!F.live||!F.checkoutOpen) return;                  // test environment or checkout closed: Bit does nothing
+    if(!F.live||!F.checkoutOpen||!F.bitEnabled) return;                  // test environment or checkout closed: Bit does nothing
     var t=b.textContent; b.disabled=true; b.textContent='פותחים וואטסאפ…';
     F.payWithBit(b.getAttribute('data-bit')).catch(function(e){ b.disabled=false; b.textContent=t;
-      if(!F.live||(e&&e.message==='bit_disabled_in_test')) return;
-      location.href='https://wa.me/'+F.CFG.wa+'?text='+encodeURIComponent('היי, אני רוצה לשלם בביט על פרסומת ב-1,290 ₪'); }); }); });
+      close(); F.openSupport('checkout'); }); }); });
 
   /* ══ Meital ══ */
   // What the customer said earlier goes into the prompt as quoted data, never as instructions.
@@ -98,11 +97,12 @@ document.querySelectorAll('.q > button').forEach(function(b){
     var st=F.order?F.orderStatus().catch(function(){return null;}):Promise.resolve(null);
     return st.then(function(o){
       if(o&&o.paid&&!o.brief_done) return 'NOT OPENED: the order in this browser is already paid (server-verified). Do not open payment again; continue the brief. A second ad can be ordered after this brief is sent.';
+      if(!F.checkoutOpen) return 'NOT OPENED: checkout is not available. Offer open_support; do not say payment options opened.';
       // Report what actually happened on screen, never what was intended.
       try{ open('agent'); }catch(e){}
       if(sheet.hidden||!sheet.getClientRects().length) return 'NOT OPENED: the payment window could not be shown on this screen. Do not say it opened. Say there is a display problem: the order button on the page opens the same payment window, and the help form is at the bottom of the page.';
       return F.live
-        ? 'OPENED: payment options are shown on screen (PayPal or Bit). The customer must click to pay. Opening the window is not a payment.'
+        ? 'OPENED: payment options are shown on screen ('+(F.bitEnabled?'PayPal or Bit':'PayPal')+'). The customer must click to pay. Opening the window is not a payment.'
         : 'OPENED: TEST ENVIRONMENT, only a PayPal sandbox test payment is shown, no real money. Do not mention Bit. The customer must click to pay. Opening the window is not a payment.';
     });
   }
@@ -160,6 +160,8 @@ document.querySelectorAll('.q > button').forEach(function(b){
     document.body.appendChild(d); document.getElementById('top').style.top='42px'; }).catch(function(){});
 
   F.observeSections();
+  var helpSource=new URLSearchParams(location.search).get('help');
+  if(['terms','accessibility'].indexOf(helpSource)!==-1) F.openSupport(helpSource);
   document.querySelectorAll('video[data-video]').forEach(function(x){ F.observeVideo(x,x.getAttribute('data-video')); });
 })();
 

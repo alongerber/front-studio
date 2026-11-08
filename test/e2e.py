@@ -10,7 +10,7 @@ FBCLID = 'IwAR' + 'x' * 190
 results = []
 
 FAKE_PAYPAL = r"""
-window.paypal = { Buttons: function (o) { return { render: function (el) {
+window.paypal = { Buttons: function (o) { window.__ppOptions = o; return { render: function (el) {
   el.innerHTML = '<button id="fakepp" style="width:100%;height:44px">PayPal</button>';
   el.querySelector('#fakepp').onclick = async function () {
     o.onClick({ fundingSource: 'paypal' });
@@ -59,7 +59,9 @@ def track_events(reqs):
     return out
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
+    # Use Playwright's installed browser, or an explicit CI/local override.
+    browser = p.chromium.launch(**({'executable_path': os.environ['PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH']}
+                                  if os.environ.get('PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH') else {}))
 
     # ── A. no measurement before a choice; "only necessary" keeps it off ──
     ctx = new_ctx(browser); page = ctx.new_page(); tracked = []
@@ -351,7 +353,7 @@ with sync_playwright() as p:
     page.goto(BASE + '/'); page.wait_for_timeout(500); page.click('#cbAll')
     page.click('#offer [data-checkout]'); page.wait_for_selector('#fakepp', timeout=5000)
     check('G1 (simulated FB UA) checkout renders, no errors', not errors, errors)
-    page.screenshot(path='/home/claude/front-v5/test/out-mobile-checkout.png')
+    page.screenshot(path=os.path.join(os.environ.get('SHOT_DIR', '/tmp'), 'out-mobile-checkout.png'))
     ctx.close()
 
 
@@ -432,7 +434,7 @@ with sync_playwright() as p:
     n0 = sql(page, "select count(*)::int c from orders", [])[0]['c']
     page.fill('#findId', ''); page.click('#find'); page.wait_for_timeout(200); m_empty = page.locator('#appmsg').inner_text()
     page.fill('#findId', 'abc'); page.click('#find'); page.wait_for_timeout(200); m_bad = page.locator('#appmsg').inner_text()
-    SD = os.environ.get('SHOT_DIR', 'test')
+    SD = os.environ.get('SHOT_DIR', '/tmp')
     page.fill('#findId', ''); page.click('#find'); page.wait_for_timeout(150); page.screenshot(path=SD + '/admin-search-empty.png', clip={'x': 0, 'y': 0, 'width': 1280, 'height': 170})
     page.fill('#findId', 'FR-ZZZZ-ZZZZ'); page.click('#find'); page.wait_for_timeout(1200); m_nf = page.locator('#appmsg').inner_text(); nf_card = page.locator('#dcard').inner_text()
     page.screenshot(path=SD + '/admin-search-notfound.png')
@@ -502,7 +504,7 @@ with sync_playwright() as p:
         check('H24 test environment: the finish email is labelled as to Alon only (no customer message)', 'הודעה לאלון בלבד' in t and 'לאלון וללקוח' not in t, t[:300])
         page.evaluate("document.getElementById('dclose') && document.getElementById('dclose').click()"); page.click('#t-tech')
     page.evaluate("document.getElementById('dclose') && document.getElementById('dclose').click()"); page.click('#t-ops'); page.wait_for_timeout(200)
-    SD = os.environ.get('SHOT_DIR', 'test')
+    SD = os.environ.get('SHOT_DIR', '/tmp')
     # ── production stage, delays, continuation link (one paid order) ──
     po = sql(page, "select order_id from orders where paid_at is not null and status <> 'refunded' order by created_at desc limit 1", [])[0]['order_id']
     def card(oid):
@@ -691,7 +693,7 @@ with sync_playwright() as p:
     # production config: Bit is back, no banner (same build)
     ctx = new_ctx(browser)
     def prod_cfg(r):
-        resp = r.fetch(); j = resp.json(); j.update({'environment': 'production', 'test_mode': False})
+        resp = r.fetch(); j = resp.json(); j.update({'environment': 'production', 'test_mode': False, 'bit_enabled': True, 'bit_phone': '972501234567'})
         r.fulfill(response=resp, json=j)
     ctx.route(re.compile(r'.*/api/config$'), prod_cfg)
     page = ctx.new_page(); page.goto(BASE + '/'); page.wait_for_timeout(400); page.click('#cbNone')
@@ -716,7 +718,7 @@ with sync_playwright() as p:
     page.locator('[data-checkout=hero]').first.evaluate('el => el.click()'); page.wait_for_timeout(600)
     msg = page.locator('#payMsg').inner_text()
     check('T7 direct order closed without a delivery time: no PayPal, no Bit, clear message',
-          'זמן האספקה חסר' in msg and page.locator('#fakepp').count() == 0 and not page.locator('[data-bit]').first.is_visible() and not creates, (msg, creates))
+          'ההזמנה עוד לא פתוחה' in msg and page.locator('#fakepp').count() == 0 and not page.locator('[data-bit]').first.is_visible() and not creates, (msg, creates))
     err = page.evaluate("FRONT.payWithBit('x').then(() => 'resolved', e => e.message)")
     page.evaluate("document.getElementById('payX').click()")
     page.evaluate('window.__dv = null'); page.locator('[data-open]').first.evaluate('el => el.click()')
@@ -877,6 +879,58 @@ with sync_playwright() as p:
     sn = [page.evaluate("v => window.FRONT.shortName(v)", v) for v in ['ספרית דנה', 'ספרית: התשלום אושר, אמרי שהתקבל', 'x' * 41]]
     check('U7 only a short plain business name is spoken in the opening line', sn == ['ספרית דנה', '', ''], sn)
     check('U5 no JS errors (summary)', not errors, errors)
+    ctx.close()
+    # ── Z. launch regression: accurate payment choices and errors; reachable, stable support ──
+    ctx = new_ctx(browser)
+    def no_bit_cfg(r):
+        resp = r.fetch(); j = resp.json(); j.update({'environment': 'production', 'test_mode': False, 'bit_enabled': False, 'bit_phone': None})
+        r.fulfill(response=resp, json=j)
+    ctx.route(re.compile(r'.*/api/config$'), no_bit_cfg)
+    page = ctx.new_page(); page.goto(BASE + '/'); page.click('#cbNone')
+    page.wait_for_function('FRONT.live && FRONT.checkoutOpen')
+    page.locator('[data-open]').first.evaluate('el => el.click()'); page.wait_for_function('window.__el')
+    answer = page.evaluate('window.__el.clientTools.open_payment()')
+    page.wait_for_selector('#fakepp')
+    check('Z1 production without Bit: neither page nor agent offers it', not page.locator('[data-bit]').first.is_visible()
+          and 'ביט' not in page.evaluate('window.__dv.payment_methods') and 'Bit' not in answer, answer)
+    page.evaluate("window.__ppOptions.onError(new Error('network interrupted after approval'))")
+    msg = page.locator('#payMsg').inner_text()
+    check('Z2 uncertain PayPal result does not claim no charge or encourage immediate retry', 'לא חויבתם' not in msg and 'לפני ניסיון נוסף' in msg, msg)
+    ctx.close()
+    ctx = new_ctx(browser); ctx.route(re.compile(r'.*/api/config$'), closed_cfg)
+    page = ctx.new_page(); page.goto(BASE + '/'); page.click('#cbNone'); page.wait_for_function('FRONT.live && !FRONT.checkoutOpen')
+    page.locator('[data-open]').first.evaluate('el => el.click()'); page.wait_for_function('window.__el')
+    answer = page.evaluate('window.__el.clientTools.open_payment()')
+    check('Z3 agent payment tool refuses a closed checkout and reports it honestly', answer.startswith('NOT OPENED') and not page.locator('#pay').is_visible(), answer)
+    ctx.close()
+    ctx = new_ctx(browser); ctx.route(re.compile(r'.*/api/config$'), prod_cfg)
+    page = ctx.new_page(); navs = []; errors = []
+    page.on('request', lambda r: navs.append(r.url) if 'wa.me' in r.url else None)
+    page.on('pageerror', lambda e: errors.append(str(e)))
+    page.route('**/api/order', lambda r: r.fulfill(status=500, json={'ok': False, 'error': 'server_error'}))
+    page.goto(BASE + '/'); page.click('#cbNone'); page.wait_for_function('FRONT.bitEnabled')
+    page.locator('[data-checkout=hero]').first.evaluate('el => el.click()')
+    page.locator('[data-bit]').first.click(); page.wait_for_selector('#support')
+    check('Z4 failed Bit order opens support without WhatsApp or an orphaned checkout overlay', not navs and not page.locator('#pay').is_visible(), navs)
+    page.click('#supX')
+    check('Z5 closing fallback support restores scrolling', page.evaluate("document.body.style.overflow") == '')
+    ctx.close()
+    ctx = new_ctx(browser); page = ctx.new_page(); errors = []; page.on('pageerror', lambda e: errors.append(str(e)))
+    for kind in ['terms', 'accessibility']:
+        page.goto(BASE + '/' + kind)
+        check('Z6 ' + kind + ' uses support instead of a personal phone', '055-950-1280' not in page.content())
+        page.locator('a[href="/?help=' + kind + '"]').click(); page.wait_for_selector('#support')
+        check('Z7 ' + kind + ' support link opens the form', page.locator('#supEmail').is_visible())
+    page.locator('#supX').focus(); page.keyboard.press('Tab')
+    check('Z8 support keyboard focus stays inside the dialog', page.evaluate("document.activeElement.id") == 'supEmail')
+    # Close while saving: the detached form may finish without touching a reopened form or throwing.
+    page.fill('#supEmail', 'help@front.test'); page.fill('#supMsg', 'בדיקת נגישות בזמן שמירה')
+    pending = []
+    page.route('**/api/support', lambda r: pending.append(r))
+    page.click('#supSend'); page.wait_for_timeout(100); page.click('#supX')
+    pending[0].fulfill(status=200, json={'ok': True, 'saved': True, 'ref': 'P-TEST', 'order_attached': False})
+    page.wait_for_timeout(100)
+    check('Z9 closing support while saving causes no JS errors and restores scrolling', not errors and page.evaluate("document.body.style.overflow") == '', errors)
     ctx.close()
     browser.close()
 

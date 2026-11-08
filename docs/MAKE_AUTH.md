@@ -1,5 +1,7 @@
 # Authentication between the server and Make (staged)
 
+> 8 November 2026: Vercel metadata confirms `MAKE_NOTIFY_KEY` is still absent in Preview and Production. Receiver settings could not be rechecked because Make requires sign-in. The last confirmed receiver state below is historical, not a fresh observation.
+
 **Goal:** Make refuses any call to the webhook that does not carry the shared key. The key lives in two places only: the Make keychain and Vercel. It never appears in chat, code, logs or a document.
 
 **Hook:** `gateway-webhook`, id 3873851, scenario 7867409. Every email route (summary, support, payment, recovery) goes through it, so enforcement on the hook covers every route at once, before any route runs.

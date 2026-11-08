@@ -37,6 +37,31 @@
       "source": "/node_modules/:path*",
       "destination": "/",
       "permanent": false
+    },
+    {
+      "source": "/test/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/docs/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/scripts/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/README.md",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/AGENTS.md",
+      "destination": "/",
+      "permanent": false
     }
   ],
   "headers": [

@@ -240,9 +240,15 @@ test('F8c. a manual retry after the Meta settings were added sends at once; a ro
 test('F8b. production still on PayPal Sandbox: a Purchase is never sent to Meta as a real event', async () => {
   const saved = { env: process.env.FRONT_ENV, pp: process.env.PAYPAL_ENV, code: process.env.META_TEST_EVENT_CODE };
   try {
+    // A Sandbox order approved before a misconfigured production release still needs reconciliation.
+    const o = await newOrder();
+    const pp = await call(ppCreate.POST, 'POST', '/api/paypal/create', { body: { order_id: o.order_id, token: o.token } });
+    mock.approve(pp.data.id);
+    await sql(`UPDATE orders SET environment = 'production' WHERE order_id = $1`, [o.order_id]);
     process.env.FRONT_ENV = 'production'; process.env.PAYPAL_ENV = 'sandbox'; delete process.env.META_TEST_EVENT_CODE;
     const before = mock.count(/graph\.facebook/);
-    const o = await newOrder(); await pay(o); await dueNow(); await runCron();
+    await call(ppCapture.POST, 'POST', '/api/paypal/capture', { body: { order_id: o.order_id, token: o.token, paypal_order_id: pp.data.id } });
+    await dueNow(); await runCron();
     assert.equal(mock.count(/graph\.facebook/), before, 'a sandbox purchase is not a real Purchase');
     assert.equal((await sql(`SELECT last_error FROM meta_outbox WHERE order_id = $1`, [o.order_id]))[0].last_error, 'test_code_required');
   } finally {
@@ -267,13 +273,13 @@ test('F9. outside production PayPal is always sandbox and the browser is told it
   } finally { process.env.FRONT_ENV = saved.env; process.env.PAYPAL_ENV = saved.pp; }
 });
 
-test('F10. approved delivery time opens production checkout; without one, production takes no PayPal payment', async () => {
+test('F10. delivery time is required for production; sandbox remains available for acceptance tests', async () => {
   const saved = { env: process.env.FRONT_ENV, d: process.env.DELIVERY_TIME_TEXT, a: cfg.approvedDeliveryTime };
   try {
     delete process.env.DELIVERY_TIME_TEXT;
     process.env.FRONT_ENV = 'production';
     const appr = (await call(configApi.GET, 'GET', '/api/config')).data;
-    assert.equal(appr.checkout_open, true); assert.equal(appr.delivery_time, '7 ימי עסקים מרגע ההזמנה');
+    assert.equal(appr.checkout_open, false, 'a delivery promise alone cannot enable production'); assert.equal(appr.delivery_time, '7 ימי עסקים מרגע ההזמנה');
     process.env.FRONT_ENV = saved.env;
     cfg.approvedDeliveryTime = '';
     const o = await newOrder();
@@ -285,7 +291,7 @@ test('F10. approved delivery time opens production checkout; without one, produc
     assert.equal(mock.count(/paypal/), before, 'PayPal never called');
     process.env.DELIVERY_TIME_TEXT = 'עד 10 ימי עבודה מאישור התסריט';
     const c = (await call(configApi.GET, 'GET', '/api/config')).data;
-    assert.equal(c.checkout_open, true); assert.equal(c.delivery_time, 'עד 10 ימי עבודה מאישור התסריט');
+    assert.equal(c.checkout_open, false, 'other release requirements still apply'); assert.equal(c.delivery_time, 'עד 10 ימי עבודה מאישור התסריט');
     process.env.FRONT_ENV = 'test'; delete process.env.DELIVERY_TIME_TEXT;
     const ok = await call(ppCreate.POST, 'POST', '/api/paypal/create', { body: { order_id: o.order_id, token: o.token } });
     assert.equal(ok.status, 200, 'preview/test: sandbox checkout stays open without a delivery time');
