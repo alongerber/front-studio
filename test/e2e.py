@@ -612,8 +612,8 @@ with sync_playwright() as p:
     check('K6 no JS errors (landing)', not errs, errs)
     # ── L. launch: approved copy, mobile order of content, keyboard and focus, contrast, legal pages ──
     copy_all = page.locator('main').inner_text()
-    need = ['הרגע עצרתם בשביל טונה.', 'מה יגרום ללקוחות לבחור דווקא בכם?', 'הפרסומת לא צריכה לספר הכול על העסק. היא צריכה לתת סיבה להתעניין בו.',
-            'נמצא את הסיבה הזאת, נכתוב לה תסריט ונתאים לה דמות. אתם לא צריכים להצטלם.', 'בואו נדבר על הפרסומת שלי', 'מספיק לפרסם טונה. עכשיו אותי',
+    need = ['הרגע עצרתם בשביל טונה.', 'עכשיו שיעצרו בשבילכם.', 'הפרסומת לא צריכה לספר הכול על העסק. היא צריכה לתת סיבה להתעניין בו.',
+            'רעיון, תסריט ודמות שנבנים לעסק שלכם. בלי להצטלם.', 'בואו נדבר על הפרסומת שלי', 'מספיק לפרסם טונה. עכשיו אותי',
             'להזמנת פרסומת · 1,290 ₪', 'הפרסומת שלכם לא מגיעה עם הדוגמן מהטונה.', 'נבחר דמות, סיפור וסגנון שמתאימים למה שאתם מוכרים.',
             '1,290 ₪. מהרעיון ועד ׳אפשר לפרסם׳.', 'את פרונט מנהל אלון', 'קונספט']
     missing = [x for x in need if x not in copy_all]
@@ -647,11 +647,11 @@ with sync_playwright() as p:
     mctx.route(re.compile(r'https://(www\.paypal|unpkg|connect\.facebook|www\.clarity|fonts\.)'), lambda r: r.abort())
     mp = mctx.new_page(); mp.goto(BASE + '/'); mp.wait_for_timeout(500); mp.click('#cbNone'); mp.wait_for_timeout(300)
     tops = mp.evaluate("""() => ['section[data-section=hero] .btn[data-open]','section[data-section=hero] [data-checkout]','.h3__price','#loop'].map(s => Math.round(document.querySelector(s).getBoundingClientRect().top))""")
-    check('L5 mobile: price and both buttons come before the loop video, talk button within the first screen and a half', tops[0] < 844 * 1.5 and tops[1] < tops[3] and tops[2] < tops[3], tops)
+    check('L5 mobile: the presenter from the ad comes first, and the price and the talk button are on the first screen', tops[3] < tops[2] < tops[0] < 844 and tops[0] < tops[1], tops)
     HERO_FIT = """() => { const v = document.getElementById('loop'), r = v.getBoundingClientRect(), cs = getComputedStyle(v);
       return {fit: cs.objectFit, ratio: Math.round(r.width / r.height * 1000) / 1000, h: Math.round(r.height), w: Math.round(r.width), vw: innerWidth, poster: v.getAttribute('poster')}; }"""
     hm = mp.evaluate(HERO_FIT)
-    check('L8b mobile hero: whole frame (contain, 9:16 box), not taller than 62% of the screen, inside the width', hm['fit'] == 'contain' and abs(hm['ratio'] - 0.5625) < 0.01 and hm['h'] <= 844 * 0.62 and hm['w'] <= hm['vw'], hm)
+    check('L8b mobile hero: cropped to the sign, face and can (cover), not taller than 45% of the screen, inside the width', hm['fit'] == 'cover' and hm['h'] <= 844 * 0.45 and hm['w'] <= hm['vw'], hm)
     mp.screenshot(path=os.environ.get('SHOT_DIR', '/tmp') + '/hero-390.png')
     mp.locator('.h3__m').screenshot(path=os.environ.get('SHOT_DIR', '/tmp') + '/hero-390-video.png')
     mctx.close()
@@ -919,7 +919,7 @@ with sync_playwright() as p:
     for kind in ['terms', 'accessibility']:
         page.goto(BASE + '/' + kind)
         check('Z6 ' + kind + ' uses support instead of a personal phone', '055-950-1280' not in page.content())
-        page.locator('a[href="/?help=' + kind + '"]').click(); page.wait_for_selector('#support')
+        page.locator('a[href="/?help=' + kind + '"]').last.click(); page.wait_for_selector('#support')
         check('Z7 ' + kind + ' support link opens the form', page.locator('#supEmail').is_visible())
     page.locator('#supX').focus(); page.keyboard.press('Tab')
     check('Z8 support keyboard focus stays inside the dialog', page.evaluate("document.activeElement.id") == 'supEmail')
