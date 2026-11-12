@@ -1,0 +1,10 @@
+{"agent_id":"agent_5801m4a74w3dfawt9hdjhbe1nrjc","version_id":"agtvrsn_4101m4vhe0b2fkxac9pm7z9a5aza","backed_up":"2026-10-13",
+ "prompt_file":"meital-v5-backup-agtvrsn_4101.md",
+ "llm":"claude-sonnet-5","reasoning_effort":"low","max_tokens":700,"timezone":"Asia/Jerusalem","first_message":"{{opening_line}}","language":"he",
+ "tool_ids":["tool_1001m4a7vzwpebwtfhwxv29tnfrn","tool_9001m4s9xsn5fv5tgb0fh0qthf76","tool_4901m4ge6p94ehd85x29rv0p8jcw","tool_6901m4jkva6kfxf9gxsrdhwk8sj5","tool_8301m4k4mf57fcwrs3d0j78dynzc"],
+ "turn":{"turn_timeout":8,"silence_end_call_timeout":60,"mode":"turn","turn_eagerness":"normal","spelling_patience":"auto","speculative_turn":false,"retranscribe_on_turn_timeout":true,"turn_model":"turn_v3","soft_timeout_seconds":-1},
+ "asr":{"quality":"high","provider":"scribe_realtime","keywords_count":44},
+ "tts":{"model_id":"eleven_v4_turbo","voice_id":"1Sa5WPfDNRteIcvsqk0L","stability":0.5,"speed":1,"similarity_boost":0.8,"text_normalisation_type":"system_prompt"},
+ "vad":{"background_voice_detection":true},
+ "conversation":{"max_duration_seconds":600},
+ "save_brief_note_tool_4901":{"field_enum":["business_type","business_name","promote","audience","customer_questions","past_experience","concern","avoid","call_to_action","tone","contact_details","other"],"value_description":"העובדה עצמה, במילים של הלקוח ככל האפשר, עד 20 מילים","response_timeout_secs":12}}
