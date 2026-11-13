@@ -613,7 +613,7 @@ with sync_playwright() as p:
     # ── L. launch: approved copy, mobile order of content, keyboard and focus, contrast, legal pages ──
     copy_all = page.locator('main').inner_text()
     need = ['הרגע עצרתם בשביל טונה.', 'עכשיו שיעצרו בשבילכם.', 'הפרסומת לא צריכה לספר הכול על העסק. היא צריכה לתת סיבה להתעניין בו.',
-            'רעיון, תסריט ודמות שנבנים לעסק שלכם. בלי להצטלם.', 'בואו נדבר על הפרסומת שלי', 'מספיק לפרסם טונה. עכשיו אותי',
+            'פרסומת מוכנה לעסק שלכם תוך 7 ימי עסקים. בלי להצטלם.', 'התסריט לא שכנע?', 'בואו נדבר על הפרסומת שלי', 'מספיק לפרסם טונה. עכשיו אותי',
             'להזמנת פרסומת · 1,290 ₪', 'הפרסומת שלכם לא מגיעה עם הדוגמן מהטונה.', 'נבחר דמות, סיפור וסגנון שמתאימים למה שאתם מוכרים.',
             '1,290 ₪. מהרעיון ועד ׳אפשר לפרסם׳.', 'את פרונט מנהל אלון', 'קונספט']
     missing = [x for x in need if x not in copy_all]
@@ -636,7 +636,7 @@ with sync_playwright() as p:
         return 'rgb(' + [0,1,2].map(i => Math.round(f[i]*a + b[i]*(1-a))).join(',') + ')'; };
       const bgOf = el => { while (el) { const c = getComputedStyle(el).backgroundColor; if (c && !/rgba\(0, 0, 0, 0\)|transparent/.test(c)) return c; el = el.parentElement; } return 'rgb(20,18,16)'; };
       const r = (el) => { const bg = bgOf(el), fg = mix(getComputedStyle(el).color, bg), a = lum(fg)+0.05, b = lum(bg)+0.05; return Math.round(Math.max(a,b)/Math.min(a,b)*100)/100; };
-      const sel = ['.h3__sub','.h3__offer','.h3 .btn','.ordr small','.lead','.inc span','.steps span','.q button','footer a','.terms'];
+      const sel = ['.h3__sub','.h3__offer','.h3__g','.h3 .btn','.ordr small','.lead','.inc span','.steps span','.q button','footer a','.terms'];
       return sel.map(s => { const el = document.querySelector(s); return [s, el ? r(el) : null]; });
     }""")
     low = [x for x in ratios if x[1] is not None and x[1] < 4.5]
