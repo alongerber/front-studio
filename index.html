@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="front-build" content="v5.3.0">
+<meta name="front-build" content="v5.7.0">
 <title>פרונט — פרסומת לעסק שלכם · 1,290 ₪</title>
 <meta name="description" content="פרסומת למוצר או לשירות שלכם: רעיון, תסריט, עריכה, מוזיקה, כתוביות ושילוב הלוגו. בלי שתצטרכו להצטלם. 1,290 ₪, המחיר הסופי.">
 <link rel="canonical" href="https://front-studio.vercel.app/">
@@ -87,11 +87,20 @@ section{padding-block:clamp(72px,10vw,128px);position:relative}
 .h3__price b{font-weight:900;font-size:clamp(34px,4vw,48px);letter-spacing:-.02em;white-space:nowrap}
 .h3__price span{font-size:clamp(18px,1.8vw,22px);color:var(--ink2)}
 @media(max-width:899px){
+  /* phone: the presenter from the ad comes first (cropped to the sign, the face and the can), then the offer */
   .h3{min-height:0}
-  .h3__in{padding-top:70px;gap:26px}
-  .h3__t{order:1}.h3__m{order:2}
-  .h3__m{height:min(58svh,520px);width:auto;max-width:100%;border-radius:18px}
+  .h3__in{padding-top:60px;gap:18px}
+  .h3__m{aspect-ratio:1/1;max-height:42svh;max-width:none;border-radius:18px}
+  .h3__m video{object-fit:cover;object-position:50% 13%}
+  .h3 h1{font-size:clamp(27px,7.6vw,40px)}
+  .h3__sub{display:none}
+  .h3__offer,.h3__price{margin-top:12px}
+  .h3__offer{text-wrap:balance}
+  .h3__cta{margin-top:18px}
   .h3__cta .btn{flex:1 1 100%}
+  .cb{inset-inline:8px;bottom:8px;padding:10px 12px;font-size:13.5px;border-radius:14px}
+  .cb__b{margin-top:8px;gap:6px;flex-wrap:nowrap}
+  .cb__b button{min-height:40px;padding:0 10px;font-size:13.5px;flex:1 1 auto;white-space:nowrap}
 }
 @media(min-width:900px){
   .h3__in{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(40px,6vw,96px)}
@@ -253,10 +262,10 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
       </button>
     </figure>
     <div class="h3__t">
-      <h1 id="h1"><span>הרגע עצרתם בשביל טונה.</span><span class="l2">מה יגרום ללקוחות לבחור דווקא בכם?</span></h1>
+      <h1 id="h1"><span>הרגע עצרתם בשביל טונה.</span><span class="l2">עכשיו שיעצרו בשבילכם.</span></h1>
       <p class="h3__sub">הפרסומת לא צריכה לספר הכול על העסק. היא צריכה לתת סיבה להתעניין בו.</p>
-      <p class="h3__offer">נמצא את הסיבה הזאת, נכתוב לה תסריט ונתאים לה דמות. אתם לא צריכים להצטלם.</p>
-      <p class="h3__price"><span>פרסומת מלאה ב־</span><b>1,290 ₪</b></p>
+      <p class="h3__offer">פרסומת לעסק שלכם, מוכנה תוך 7 ימי עסקים. בלי להצטלם.</p>
+      <p class="h3__price"><span>הכול כלול, מחיר סופי:</span><b>1,290 ₪</b></p>
       <div class="ctas h3__cta" id="heroCta">
         <button class="btn" type="button" data-open="chat" data-cta="hero" data-cta-target="agent">בואו נדבר על הפרסומת שלי</button>
         <span class="ordr">
@@ -343,7 +352,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
     <div>
       <p class="eyebrow rv">החבילה</p>
       <h2 class="h2 rv">1,290 ₪. מהרעיון ועד ׳אפשר לפרסם׳.</h2>
-      <p class="offer__sub rv">המחיר הסופי, בלי תוספות. משולם במלואו בהזמנה, לפני האפיון.</p>
+      <p class="offer__sub rv">במקום צלם, שחקן, עורך ויום צילום. המחיר הסופי, בלי תוספות, משולם במלואו בהזמנה ולפני האפיון.</p>
       <div class="ctas rv">
         <button class="btn" type="button" data-checkout="offer" data-cta="offer" data-cta-target="checkout">להזמנת פרסומת · 1,290 ₪</button>
         <button class="tlink" type="button" data-open="chat" data-cta="offer" data-cta-target="agent">עוד לא בטוחים? בואו נדבר</button>
@@ -408,7 +417,7 @@ footer a{border-bottom:1px solid transparent}footer a:hover{color:var(--ink2);bo
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a3">מי בוחר את הדמות?</button><div id="a3" hidden>אנחנו מציעים דמות שמתאימה לרעיון, והיא מתוארת בתסריט שמגיע אליכם לאישור. לא מתאים לכם? אומרים לפני שמפיקים.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a4">מה כלול, ומה לא?</button><div id="a4" hidden>אפיון ורעיון, תסריט לאישור, דמות וקול, עריכה, מוזיקה, כתוביות ושילוב הלוגו הקיים, באורך 30–40 שניות, עם סבב תיקונים אחד (הערות מרוכזות על טקסט, כתוביות, מוזיקה וקצב), תוך 7 ימי עסקים מרגע ההזמנה. עיכוב מצדכם במסירת חומרים, בהשלמת האפיון או באישור התסריט דוחה את מועד המסירה בהתאם. שינוי רעיון או דמות אחרי אישור התסריט מתומחר בנפרד. לא כלולים: הפצה, ניהול קמפיין ותקציב קידום ברשתות, עיצוב לוגו חדש, צילום וליהוק שחקנים, וגרסאות נוספות.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a5">מה קורה אחרי התשלום?</button><div id="a5" hidden>התשלום המלא, 1,290 ₪, משולם בהזמנה ולפני האפיון. מקבלים מספר הזמנה וקישור אישי, וממשיכים לאפיון עם מיטל — בכתב או בקול. מה שכבר סיפרתם לפני ההזמנה שמור ולא נשאל שוב. אחרי שהאפיון נשלח, התסריט מגיע אליכם לאישור, ורק אז מפיקים.</div></div>
-      <div class="q"><button type="button" aria-expanded="false" aria-controls="a8">אפשר לבטל?</button><div id="a8" hidden>כן. לפני ששלחנו אליכם תסריט: החזר מלא. אחרי שהתסריט נשלח ולפני שאישרתם אותו: החזר של 990 ₪, ו־300 ₪ נשארים על האפיון והתסריט. אחרי אישור התסריט ההפקה מתחילה, ואין החזר. הפירוט ב<a href="/terms" class="tlink">תנאי ההזמנה</a>.</div></div>
+      <div class="q"><button type="button" aria-expanded="false" aria-controls="a8">אפשר לבטל?</button><div id="a8" hidden>אחרי התשלום אין ביטולים ואין החזרים. לפני שמזמינים אפשר לשאול כל שאלה את מיטל או בטופס העזרה, והתסריט מגיע לאישורכם לפני שמפיקים. הפירוט ב<a href="/terms" class="tlink">תנאי ההזמנה</a>.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a6">מי זו מיטל?</button><div id="a6" hidden>הסוכנת של פרונט, לא בן אדם. היא עוזרת להבין אם זה מתאים לכם ושומרת את מה שסיפרתם להזמנה. לא חייבים לדבר איתה: אפשר <button type="button" class="tlink" data-checkout="faq" data-cta="faq" data-cta-target="checkout">להזמין ישירות</button>, ולבעיה בהזמנה יש <a href="#" class="tlink" data-support="home">טופס עזרה</a>.</div></div>
       <div class="q"><button type="button" aria-expanded="false" aria-controls="a7">זה מבטיח לקוחות?</button><div id="a7" hidden>לא, וגם אף אחד אחר לא יכול להבטיח. מה שאנחנו עושים: פרסומת שגורמת לעצור ולהבין מה אתם מוכרים. מה שקורה אחר כך תלוי גם בהצעה, בקהל ובכמה מהר עונים.</div></div>
     </div>

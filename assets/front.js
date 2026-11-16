@@ -97,7 +97,7 @@
     banner = document.createElement('div'); banner.className = 'cb'; banner.setAttribute('role', 'dialog'); banner.setAttribute('aria-label', 'הגדרות פרטיות');
     banner.setAttribute('data-clarity-mask', 'true');
     banner.innerHTML =
-      '<p class="cb__t">האתר משתמש בכלים לשיפור האתר ולמדידת פרסום. אפשר לבחור.</p>' +
+      '<p class="cb__t">האתר משתמש בכלי מדידה לשיפור ולפרסום. אפשר לבחור.</p>' +
       '<div class="cb__o"' + (withChoices ? '' : ' hidden') + '>' +
       '<label><input type="checkbox" id="cbA"' + (A() ? ' checked' : '') + '> מדידת שימוש באתר (כדי לשפר אותו)</label>' +
       '<label><input type="checkbox" id="cbD"' + (AD() ? ' checked' : '') + '> מדידת פרסום (Meta)</label></div>' +
